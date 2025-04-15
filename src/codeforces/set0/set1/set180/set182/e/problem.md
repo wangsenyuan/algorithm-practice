@@ -1,0 +1,21 @@
+Vasya has recently bought some land and decided to surround it with a wooden fence.
+
+He went to a company called "Wooden board" that produces wooden boards for fences. Vasya read in the catalog of products that the company has at its disposal n different types of wood. The company uses the i-th type of wood to produce a board of this type that is a rectangular ai by bi block.
+
+Vasya decided to order boards in this company and build a fence from them. It turned out that the storehouse of the company is so large that Vasya can order arbitrary number of boards of every type. Note that Vasya is allowed to turn the boards as he builds the fence. However, Vasya cannot turn square boards.
+
+Vasya is required to construct a fence of length l, however, an arbitrary fence won't do. Vasya wants his fence to look beautiful. We'll say that a fence is beautiful if and only if the following two conditions are fulfilled:
+
+there are no two successive boards of the same type
+the first board of the fence has an arbitrary length, and the length of each subsequent board equals the width of the previous one
+In other words, the fence is considered beautiful, if the type of the i-th board in the fence is different from the i - 1-th board's type; besides, the i-th board's length is equal to the i - 1-th board's width (for all i, starting from 2).
+
+Now Vasya wonders, how many variants of arranging a fence for his land exist. Your task is to count the number of different beautiful fences of length l.
+
+Two fences will be considered the same if the corresponding sequences of fence boards types and rotations are the same, otherwise the fences are different. Since the sought number can be large enough, you need to calculate the answer modulo 1000000007 (109 + 7).
+
+Input
+The first line contains two integers n and l (1 ≤ n ≤ 100, 1 ≤ l ≤ 3000) — the number of different board types and the fence length, correspondingly. Next n lines contain descriptions of board types: the i-th line contains two integers ai and bi (1 ≤ ai, bi ≤ 100) — the sizes of the board of the i-th type. All numbers on the lines are separated by spaces.
+
+Output
+Print a single integer — the sought number of variants modulo 1000000007 (109 + 7).
