@@ -130,6 +130,7 @@ func solve(a []int) int {
 			return
 		}
 		if sz[x]&1 == 1 && sz[y]&1 == 1 {
+			// 两段奇数长的component合并
 			now--
 		}
 
