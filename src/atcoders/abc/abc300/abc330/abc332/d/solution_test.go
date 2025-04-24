@@ -1,0 +1,58 @@
+package main
+
+import (
+	"bufio"
+	"strings"
+	"testing"
+)
+
+func runSample(t *testing.T, s string, expect int) {
+	reader := bufio.NewReader(strings.NewReader(s))
+	res := process(reader)
+	if res != expect {
+		t.Errorf("Sample expect %d, but got %d", expect, res)
+	}
+}
+
+func TestSample1(t *testing.T) {
+	s := `4 5
+1 2 3 4 5
+6 7 8 9 10
+11 12 13 14 15
+16 17 18 19 20
+1 3 2 5 4
+11 13 12 15 14
+6 8 7 10 9
+16 18 17 20 19
+`
+	expect := 3
+	runSample(t, s, expect)
+}
+
+func TestSample2(t *testing.T) {
+	s := `2 2
+1 1
+1 1
+1 1
+1 1000000000
+`
+	expect := -1
+	runSample(t, s, expect)
+}
+
+func TestSample3(t *testing.T) {
+	s := `5 5
+710511029 136397527 763027379 644706927 447672230
+979861204 57882493 442931589 951053644 152300688
+43971370 126515475 962139996 541282303 834022578
+312523039 506696497 664922712 414720753 304621362
+325269832 191410838 286751784 732741849 806602693
+806602693 732741849 286751784 191410838 325269832
+304621362 414720753 664922712 506696497 312523039
+834022578 541282303 962139996 126515475 43971370
+152300688 951053644 442931589 57882493 979861204
+447672230 644706927 763027379 136397527 710511029
+`
+	expect := 20
+	runSample(t, s, expect)
+}
