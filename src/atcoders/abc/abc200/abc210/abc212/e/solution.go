@@ -8,22 +8,8 @@ import (
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-	k := readNNums(reader, 3)
-	t := readNNums(reader, 3)
-	n := readNum(reader)
-	c := readNNums(reader, n)
-	res := solve(k, t, c)
+	res := process(reader)
 	fmt.Println(res)
-}
-
-func readString(reader *bufio.Reader) string {
-	s, _ := reader.ReadString('\n')
-	for i := 0; i < len(s); i++ {
-		if s[i] == '\n' || s[i] == '\r' {
-			return s[:i]
-		}
-	}
-	return s
 }
 
 func readInt(bytes []byte, from int, val *int) int {
@@ -73,32 +59,59 @@ func readNNums(reader *bufio.Reader, n int) []int {
 	return res
 }
 
-const inf = 1 << 50
+func process(reader *bufio.Reader) int {
+	n, m, k := readThreeNums(reader)
+	bad := make([][]int, m)
+	for i := 0; i < m; i++ {
+		bad[i] = readNNums(reader, 2)
+	}
+	return solve(n, bad, k)
+}
 
-func solve(k []int, t []int, c []int) int {
-	n := len(c)
+const mod = 998244353
 
-	a := make([]int, n)
-	copy(a, c)
+func add(a, b int) int {
+	a += b
+	if a >= mod {
+		a -= mod
+	}
+	return a
+}
 
-	process := func(x int, y int) {
+func mul(a, b int) int {
+	return a * b % mod
+}
+
+func sub(a, b int) int {
+	return add(a, mod-b)
+}
+
+func solve(n int, bad [][]int, k int) int {
+	g := make([][]int, n)
+	for _, cur := range bad {
+		u, v := cur[0]-1, cur[1]-1
+		g[u] = append(g[u], v)
+		g[v] = append(g[v], u)
+	}
+
+	dp := make([]int, n)
+	dp[0] = 1
+	fp := make([]int, n)
+	for k > 0 {
+		k--
+		var sum int
+		for _, v := range dp {
+			sum = add(sum, v)
+		}
+
 		for i := 0; i < n; i++ {
-			if i < x {
-				a[i] += y
-			} else {
-				a[i] = max(a[i], a[i-x]) + y
+			fp[i] = sub(sum, dp[i])
+			for _, v := range g[i] {
+				fp[i] = sub(fp[i], dp[v])
 			}
 		}
+		copy(dp, fp)
 	}
 
-	for i := 0; i < len(k); i++ {
-		process(k[i], t[i])
-	}
-
-	var res int
-	for i := 0; i < n; i++ {
-		res = max(res, a[i]-c[i])
-	}
-
-	return res
+	return dp[0]
 }

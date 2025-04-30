@@ -8,22 +8,9 @@ import (
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-	k := readNNums(reader, 3)
-	t := readNNums(reader, 3)
 	n := readNum(reader)
-	c := readNNums(reader, n)
-	res := solve(k, t, c)
-	fmt.Println(res)
-}
-
-func readString(reader *bufio.Reader) string {
-	s, _ := reader.ReadString('\n')
-	for i := 0; i < len(s); i++ {
-		if s[i] == '\n' || s[i] == '\r' {
-			return s[:i]
-		}
-	}
-	return s
+	a := readNNums(reader, n)
+	fmt.Println(solve(a))
 }
 
 func readInt(bytes []byte, from int, val *int) int {
@@ -73,32 +60,26 @@ func readNNums(reader *bufio.Reader, n int) []int {
 	return res
 }
 
-const inf = 1 << 50
+func solve(a []int) int {
+	n := len(a)
+	var ans int
 
-func solve(k []int, t []int, c []int) int {
-	n := len(c)
+	best := make([]int, 30)
 
-	a := make([]int, n)
-	copy(a, c)
-
-	process := func(x int, y int) {
-		for i := 0; i < n; i++ {
-			if i < x {
-				a[i] += y
-			} else {
-				a[i] = max(a[i], a[i-x]) + y
+	for i := 0; i < n; i++ {
+		var tmp int
+		for d := 0; d < 30; d++ {
+			if (a[i]>>d)&1 == 1 {
+				tmp = max(tmp, best[d]+1)
+			}
+		}
+		ans = max(ans, tmp)
+		for d := 0; d < 30; d++ {
+			if (a[i]>>d)&1 == 1 {
+				best[d] = max(best[d], tmp)
 			}
 		}
 	}
 
-	for i := 0; i < len(k); i++ {
-		process(k[i], t[i])
-	}
-
-	var res int
-	for i := 0; i < n; i++ {
-		res = max(res, a[i]-c[i])
-	}
-
-	return res
+	return ans
 }

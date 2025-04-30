@@ -8,22 +8,13 @@ import (
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-	k := readNNums(reader, 3)
-	t := readNNums(reader, 3)
-	n := readNum(reader)
-	c := readNNums(reader, n)
-	res := solve(k, t, c)
-	fmt.Println(res)
-}
-
-func readString(reader *bufio.Reader) string {
-	s, _ := reader.ReadString('\n')
-	for i := 0; i < len(s); i++ {
-		if s[i] == '\n' || s[i] == '\r' {
-			return s[:i]
-		}
+	res := process(reader)
+	if len(res) == 0 {
+		fmt.Println(-1)
+	} else {
+		s := fmt.Sprintf("%v", res)
+		fmt.Println(s[1 : len(s)-1])
 	}
-	return s
 }
 
 func readInt(bytes []byte, from int, val *int) int {
@@ -73,32 +64,43 @@ func readNNums(reader *bufio.Reader, n int) []int {
 	return res
 }
 
-const inf = 1 << 50
+func process(reader *bufio.Reader) []int {
+	n := readNum(reader)
+	a := readNNums(reader, n-1)
+	return solve(a)
+}
 
-func solve(k []int, t []int, c []int) int {
-	n := len(c)
+func solve(a []int) []int {
+	n := len(a) + 1
 
-	a := make([]int, n)
-	copy(a, c)
-
-	process := func(x int, y int) {
-		for i := 0; i < n; i++ {
-			if i < x {
-				a[i] += y
-			} else {
-				a[i] = max(a[i], a[i-x]) + y
-			}
+	diff := make([]int, n)
+	at := 0
+	for i := 1; i < n; i++ {
+		diff[i] = diff[i-1] + a[i-1]
+		if diff[i] < diff[at] {
+			at = i
 		}
 	}
-
-	for i := 0; i < len(k); i++ {
-		process(k[i], t[i])
+	// res[at] = 1
+	res := make([]int, n)
+	res[at] = 1
+	for i := at - 1; i >= 0; i-- {
+		res[i] = res[i+1] - a[i]
+	}
+	for i := at + 1; i < n; i++ {
+		res[i] = a[i-1] + res[i-1]
 	}
 
-	var res int
+	marked := make([]bool, n+1)
 	for i := 0; i < n; i++ {
-		res = max(res, a[i]-c[i])
-	}
+		if res[i] < 1 || res[i] > n || marked[res[i]] {
+			return nil
+		}
+		marked[res[i]] = true
 
+		if i > 0 && res[i]-res[i-1] != a[i-1] {
+			return nil
+		}
+	}
 	return res
 }
