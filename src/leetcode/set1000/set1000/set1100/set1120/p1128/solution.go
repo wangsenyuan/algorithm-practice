@@ -1,4 +1,4 @@
-package p5130
+package p1128
 
 func numEquivDominoPairs(dominoes [][]int) int {
 	n := len(dominoes)
