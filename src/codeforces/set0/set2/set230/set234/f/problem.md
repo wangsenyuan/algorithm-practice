@@ -1,0 +1,6 @@
+Vasya should paint a fence in front of his own cottage. The fence is a sequence of n wooden boards arranged in a single row. Each board is a 1 centimeter wide rectangle. Let's number the board fence using numbers 1, 2, ..., n from left to right. The height of the i-th board is hi centimeters.
+
+Vasya has a 1 centimeter wide brush and the paint of two colors, red and green. Of course, the amount of the paint is limited. Vasya counted the area he can paint each of the colors. It turned out that he can not paint over a square centimeters of the fence red, and he can not paint over b square centimeters green. Each board of the fence should be painted exactly one of the two colors. Perhaps Vasya won't need one of the colors.
+
+In addition, Vasya wants his fence to look smart. To do this, he should paint the fence so as to minimize the value that Vasya called the fence unattractiveness value. Vasya believes that two consecutive fence boards, painted different colors, look unattractive. The unattractiveness value of a fence is the total length of contact between the neighboring boards of various colors. To make the fence look nice, you need to minimize the value as low as possible. Your task is to find what is the minimum unattractiveness Vasya can get, if he paints his fence completely.
+

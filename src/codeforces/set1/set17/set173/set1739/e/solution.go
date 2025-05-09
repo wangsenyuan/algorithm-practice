@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -115,6 +116,20 @@ func readNNums(reader *bufio.Reader, n int) []int {
 }
 
 func solve(board []string) int {
+	n := len(board[0])
+	f := make([][2]int, n+1)
+	for j := n - 2; j >= 0; j-- {
+		for i := range 2 {
+			f[j][i] = f[j+1][i] + int(board[i^1][j]&1)
+			if board[i^1][j] == '1' {
+				f[j][i] = min(f[j][i], f[j+2][i^1]+int(board[i][j+1]&1))
+			}
+		}
+	}
+	return strings.Count(board[0], "1") + strings.Count(board[1], "1") - f[0][0]
+}
+
+func solve1(board []string) int {
 	n := len(board[0])
 	if n == 1 {
 		return 0
