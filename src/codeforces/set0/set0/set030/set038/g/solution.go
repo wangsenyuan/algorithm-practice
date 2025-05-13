@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"math"
+	"math/rand"
 	"os"
 )
 
@@ -70,12 +71,137 @@ func process(reader *bufio.Reader) []int {
 	return solve(people)
 }
 
+func solve(people [][]int) []int {
+	var tr *treap
+
+	for i, cur := range people {
+		i++
+		a, c := cur[0], cur[1]
+		var root_l, root_r *treap
+		splitSize(tr, &root_l, &root_r, i-c-1)
+		var root_rl, root_rr *treap
+		cnt := find(root_r, a)
+		splitSize(root_r, &root_rl, &root_rr, cnt)
+		merge(&root_rr, NewTreap(i, a), root_rr)
+		merge(&root_r, root_rl, root_rr)
+		merge(&tr, root_l, root_r)
+	}
+
+	var res []int
+
+	var dfs func(u *treap)
+	dfs = func(u *treap) {
+		if u == nil {
+			return
+		}
+		dfs(u.left)
+		res = append(res, u.id)
+		dfs(u.right)
+	}
+
+	dfs(tr)
+
+	return res
+}
+
+type treap struct {
+	id          int
+	val         int
+	max_value   int
+	size        int
+	priority    int
+	left, right *treap
+}
+
+func NewTreap(id int, val int) *treap {
+	pri := rand.Int()
+	return &treap{id: id, val: val, max_value: val, size: 1, priority: pri, left: nil, right: nil}
+}
+
+func (t *treap) GetSize() int {
+	if t == nil {
+		return 0
+	}
+	return t.size
+}
+
+func (t *treap) GetMaxValue() int {
+	if t == nil {
+		return -inf
+	}
+	return t.max_value
+}
+
+func (t *treap) pullUp() {
+	if t == nil {
+		return
+	}
+
+	t.size = t.left.GetSize() + t.right.GetSize() + 1
+	t.max_value = max(t.val, max(t.left.GetMaxValue(), t.right.GetMaxValue()))
+}
+
+func merge(u **treap, l *treap, r *treap) {
+	if l == nil || r == nil {
+		if l == nil {
+			*u = r
+		} else {
+			*u = l
+		}
+		return
+	}
+	if l.priority >= r.priority {
+		// 将l.right 和 r合并, 结果作为l.right
+		merge(&(l.right), l.right, r)
+		*u = l
+	} else {
+		merge(&(r.left), l, r.left)
+		*u = r
+	}
+
+	(*u).pullUp()
+}
+
+func splitSize(u *treap, l **treap, r **treap, cnt int) {
+	if u == nil {
+		*l = nil
+		*r = nil
+		return
+	}
+	// 将u分解成两个子树，到l, r中
+	// l的size为cnt
+	if u.left.GetSize()+1 <= cnt {
+		*l = u
+		splitSize(u.right, &(u.right), r, cnt-u.left.GetSize()-1)
+	} else {
+		*r = u
+		splitSize(u.left, l, &(u.left), cnt)
+	}
+	u.pullUp()
+}
+
+func find(u *treap, val int) int {
+	if u == nil {
+		return 0
+	}
+	if u.right.GetMaxValue() > val {
+		return u.left.GetSize() + 1 + find(u.right, val)
+	}
+	if u.val > val {
+		return u.left.GetSize() + 1
+	}
+	if u.left.GetMaxValue() > val {
+		return find(u.left, val)
+	}
+	return 0
+}
+
 type pair struct {
 	first  int
 	second int
 }
 
-func solve(people [][]int) []int {
+func solve1(people [][]int) []int {
 	n := len(people)
 	s := min(int(math.Sqrt(float64(n)))+1, 300)
 	m := (n + s - 1) / s

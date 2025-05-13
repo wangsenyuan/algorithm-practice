@@ -1,0 +1,3 @@
+It is well known that the planet suffers from the energy crisis. Little Petya doesn't like that and wants to save the world. For this purpose he needs every accumulator to contain the same amount of energy. Initially every accumulator has some amount of energy: the i-th accumulator has ai units of energy. Energy can be transferred from one accumulator to the other. Every time x units of energy are transferred (x is not necessarily an integer) k percent of it is lost. That is, if x units were transferred from one accumulator to the other, amount of energy in the first one decreased by x units and in other increased by  units.
+
+Your task is to help Petya find what maximum equal amount of energy can be stored in each accumulator after the transfers.
