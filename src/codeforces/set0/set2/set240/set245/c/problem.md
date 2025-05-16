@@ -15,3 +15,4 @@ Print a single integer — the minimum number of moves needed to finish the game
 2. 如果n是偶数，貌似是没法把n给去掉 => -1
 3. n是奇数，那么x就是确定的
 4. got
+
