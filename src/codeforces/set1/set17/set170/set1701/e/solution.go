@@ -77,7 +77,7 @@ func process(reader *bufio.Reader) int {
 	readString(reader)
 	s := readString(reader)
 	t := readString(reader)
-	return solve(s, t)
+	return solve1(s, t)
 }
 
 func zf(s []byte, z []int) {
@@ -207,75 +207,63 @@ func solve1(s string, t string) int {
 	// 从s中获取t
 	n := len(s)
 	m := len(t)
-	if n < m {
-		return -1
-	}
 
-	// 假设到达位置(i, j)，t[:i] = 处理后的s[:j]
-	// 这个时候，t[i:] 应该包含在s[j:]中（否则就无效）
-	// 从后往前移动并删除的距离，应该是t[i:]和s[j:]最长的匹配串的位置k, n - k
-	fp := make([][]int, m+1)
-	gp := make([][]int, m+1)
-	for i := range m + 1 {
-		fp[i] = make([]int, n+1)
-		gp[i] = make([]int, n+1)
-	}
-
+	pos := make([]int, m)
 	for i := m - 1; i >= 0; i-- {
-		for j := n - 1; j >= 0; j-- {
-			if t[i] == s[j] {
-				fp[i][j] = fp[i+1][j+1] + 1
-				gp[i][j] = gp[i+1][j+1] + 1
-			} else {
-				fp[i][j] = 0
-				// 如果i/j不匹配，那么 i/(j+1)就必须匹配
-				gp[i][j] = gp[i][j+1]
-			}
+		if i < m-1 {
+			pos[i] = pos[i+1] - 1
+		} else {
+			pos[i] = n - 1
+		}
+		for pos[i] >= 0 && s[pos[i]] != t[i] {
+			pos[i]--
+		}
+		if pos[i] < 0 {
+			return -1
 		}
 	}
 
-	if gp[0][0] != m {
-		return -1
-	}
-
 	// 从后面往前移动的最少的位置
-	ans := n - fp[0][0]
+	ans := n
 
 	// dp可以被压缩，fp，表示从(i, j)开始的最远距离, 好像没法压缩呐
 	dp := make([][]int, 2)
 	for i := range 2 {
 		dp[i] = make([]int, n+1)
-		for j := range n + 1 {
-			dp[i][j] = inf
-		}
 	}
 
-	// dp[i][j]表示从头部开始移动到(i, j)且从t[:j]中得到s[:i]的最优解
-	for j := 0; j <= n; j++ {
-		// 要删掉s[:j]去和 t[:0]匹配
-		dp[0][j] = j * 2
-		if gp[0][j] == m {
-			ans = min(ans, dp[0][j]+1+n-(j+fp[0][j]))
-		}
-	}
+	buf := make([]byte, n+m+1)
+	z := make([]int, n+m+1)
 
-	for i := 1; i <= m; i++ {
+	for i := 0; i <= m; i++ {
 		for j := range n + 1 {
-			// reset it
 			dp[i&1][j] = inf
 		}
-		for j := 1; j <= n; j++ {
-			// 需要删除掉s[j-1]
-			dp[i&1][j] = min(dp[i&1][j], dp[i&1][j-1]+2)
-			if t[i-1] == s[j-1] {
-				// 只需要移动不需要删除
-				dp[i&1][j] = min(dp[i&1][j], dp[(i-1)&1][j-1]+1)
+		copy(buf, t[i:])
+		k := m - i
+		buf[k] = '#'
+		copy(buf[k+1:], s)
+		k++
+		zf(buf[:k+n], z)
+		for j := 0; j <= n; j++ {
+			if i == 0 {
+				dp[0][j] = j * 2
+			} else if j > 0 {
+				// 需要删除掉s[j-1]
+				dp[i&1][j] = min(dp[i&1][j], dp[i&1][j-1]+2)
+				if t[i-1] == s[j-1] {
+					// 只需要移动不需要删除
+					dp[i&1][j] = min(dp[i&1][j], dp[(i-1)&1][j-1]+1)
+				}
 			}
-			// 先跳到Home, 然后匹配到位置(i, j)
-			// 移动到Home + 1
-			tmp := dp[i&1][j] + 1 + n - (j + fp[i][j])
-			if gp[i][j] == m-i {
-				// s[j+1:]必须包含t[i+1:]
+			if i == m || pos[i] >= j {
+				// 先跳到Home, 然后匹配到位置(i, j)
+				// 移动到Home + 1
+				tmp := dp[i&1][j]
+				if tmp > 0 {
+					tmp++
+				}
+				tmp += n - z[j+k] - j
 				ans = min(ans, tmp)
 			}
 		}

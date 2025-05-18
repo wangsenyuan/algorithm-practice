@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"container/heap"
 	"fmt"
 	"os"
 )
@@ -122,45 +121,3 @@ func abs(x int) int {
 }
 
 const inf = 1 << 60
-
-type Item struct {
-	id       int
-	priority int
-	index    int
-}
-
-type PriorityQueue []*Item
-
-func (pq PriorityQueue) Len() int {
-	return len(pq)
-}
-
-func (pq PriorityQueue) Less(i, j int) bool {
-	return pq[i].priority < pq[j].priority
-}
-
-func (pq PriorityQueue) Swap(i, j int) {
-	pq[i], pq[j] = pq[j], pq[i]
-	pq[i].index = i
-	pq[j].index = j
-}
-
-func (pq *PriorityQueue) Push(x any) {
-	it := x.(*Item)
-	it.index = len(*pq)
-	*pq = append(*pq, it)
-}
-
-func (pq *PriorityQueue) Pop() any {
-	old := *pq
-	n := len(old)
-	it := old[n-1]
-	*pq = old[:n-1]
-	it.index = -1
-	return it
-}
-
-func (pq *PriorityQueue) update(it *Item, v int) {
-	it.priority = v
-	heap.Fix(pq, it.index)
-}
