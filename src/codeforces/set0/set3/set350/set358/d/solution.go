@@ -84,8 +84,8 @@ func solve(n int, arr [][]int) int {
 		clear(fp)
 		for l := r; l >= 0; l-- {
 			for s := range 4 {
-				d := bits.OnesCount(uint(s))
 				if l == r {
+					d := bits.OnesCount(uint(s))
 					fp[s] = arr[d][l]
 					ndp[l][s] = arr[d][l]
 				} else {
