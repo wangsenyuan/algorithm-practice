@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math/bits"
 	"os"
 )
 
@@ -73,21 +72,42 @@ func process(reader *bufio.Reader) int {
 const inf = 1 << 60
 
 func solve(n int, arr [][]int) int {
+	a := arr[0]
+	b := arr[1]
+	c := arr[2]
+	dp := make([]int, 2)
+	dp[0] = a[n-1]
+	dp[1] = b[n-1]
+
+	for i := n - 2; i >= 0; i-- {
+		// 要饿先i，那么对于后面来说就是dp[1], 要么后i
+		x := max(a[i]+dp[1], b[i]+dp[0])
+		// 要么先i，那么对于i+1，来说，就是要计算dp[1]
+		// 要么后i，那么对于i+1来说，就是dp[0]
+		y := max(b[i]+dp[1], c[i]+dp[0])
+		dp[0] = x
+		dp[1] = y
+	}
+
+	return dp[0]
+}
+
+func solve1(n int, arr [][]int) int {
 	dp := make([][]int, n)
 	ndp := make([][]int, n)
 	for i := range n {
 		dp[i] = make([]int, 4)
 		ndp[i] = make([]int, 4)
 	}
+	cnt := []int{0, 1, 1, 2}
 	fp := make([]int, 4)
 	for r := 0; r < n; r++ {
 		clear(fp)
 		for l := r; l >= 0; l-- {
 			for s := range 4 {
 				if l == r {
-					d := bits.OnesCount(uint(s))
-					fp[s] = arr[d][l]
-					ndp[l][s] = arr[d][l]
+					fp[s] = arr[cnt[s]][l]
+					ndp[l][s] = arr[cnt[s]][l]
 				} else {
 					// l < r
 					// 先处理l+1...r
@@ -109,6 +129,9 @@ func solve(n int, arr [][]int) int {
 					tmp++
 					ndp[l][s] = max(ndp[l][s], dp[l][sl]+arr[tmp][r])
 				}
+			}
+			for s := range 4 {
+				fp[s] = ndp[l][s]
 			}
 		}
 		for l := range r + 1 {
