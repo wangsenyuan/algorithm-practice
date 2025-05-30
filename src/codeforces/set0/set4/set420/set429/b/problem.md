@@ -1,0 +1,30 @@
+# Problem: Summer is coming!
+
+Summer is coming! It's time for Iahub and Iahubina to work out, as they both want to look hot at the beach. The gym where they go is a matrix $a$ with $n$ lines and $m$ columns. Let number $a[i][j]$ represent the calories burned by performing workout at the cell of gym in the $i$-th line and the $j$-th column.
+
+Iahub starts with workout located at line 1 and column 1. He needs to finish with workout $a[n][m]$. After finishing workout $a[i][j]$, he can go to workout $a[i+1][j]$ or $a[i][j+1]$.
+
+Similarly, Iahubina starts with workout $a[n][1]$ and she needs to finish with workout $a[1][m]$. After finishing workout from cell $a[i][j]$, she goes to either $a[i][j+1]$ or $a[i-1][j]$.
+
+There is one additional condition for their training. They have to meet in exactly one cell of gym. At that cell, none of them will work out. They will talk about fast exponentiation (pretty odd small talk) and then both of them will move to the next workout.
+
+If a workout was done by either Iahub or Iahubina, it counts as total gain. Please plan a workout for Iahub and Iahubina such that total gain is as big as possible. Note that Iahub and Iahubina can perform workouts with different speed, so the number of cells that they use to reach the meeting cell may differ.
+
+---
+
+## Input
+
+The first line of the input contains two integers $n$ and $m$ ($3 \leq n, m \leq 1000$).
+
+Each of the next $n$ lines contains $m$ integers: $j$-th number from $i$-th line denotes element $a[i][j]$ ($0 \leq a[i][j] \leq 10^5$).
+
+---
+
+## Output
+
+The output contains a single number — the maximum total gain possible.
+
+
+## ideas
+1. 他们可以在任何一个点相遇
+2. 计算在这个点相遇的最优解
