@@ -82,6 +82,32 @@ func readNNums(reader *bufio.Reader, n int) []int {
 }
 
 func solve(a []int) int {
+	freq := make(map[[3]int]int)
+
+	n := len(a)
+
+	var res int
+	for i := 0; i+3 <= n; i++ {
+		cur := [3]int{a[i], a[i+1], a[i+2]}
+		w := freq[cur]
+		for j := range 3 {
+			v := cur[j]
+			cur[j] = -1
+			res += freq[cur] - w
+			cur[j] = v
+		}
+		for j := range 3 {
+			v := cur[j]
+			cur[j] = -1
+			freq[cur]++
+			cur[j] = v
+		}
+		freq[cur]++
+	}
+	return res
+}
+
+func solve1(a []int) int {
 	var res int
 
 	mem := make(map[Record]int)
