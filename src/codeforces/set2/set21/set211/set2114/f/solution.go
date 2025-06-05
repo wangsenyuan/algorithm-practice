@@ -5,33 +5,19 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"sort"
 )
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-
-	tc := readNum(reader)
-
 	var buf bytes.Buffer
-
-	for tc > 0 {
-		tc--
-		n, x := readTwoNums(reader)
-		a := readNNums(reader, n)
-		res := solve(a, x)
+	tc := readNum(reader)
+	for range tc {
+		n, m, k := readThreeNums(reader)
+		res := solve(n, m, k)
 		buf.WriteString(fmt.Sprintf("%d\n", res))
 	}
-
 	fmt.Print(buf.String())
-}
-func readString(reader *bufio.Reader) string {
-	s, _ := reader.ReadString('\n')
-	for i := 0; i < len(s); i++ {
-		if s[i] == '\n' || s[i] == '\r' {
-			return s[:i]
-		}
-	}
-	return s
 }
 
 func readInt(bytes []byte, from int, val *int) int {
@@ -81,22 +67,59 @@ func readNNums(reader *bufio.Reader, n int) []int {
 	return res
 }
 
-func solve(a []int, x int) int {
-	n := len(a)
-	dp := make([]int, n+2)
-	dp[n] = 0
-	var res int
-	var sum int
-	for i, j := n-1, n; i >= 0; i-- {
-		sum += a[i]
-		for sum > x {
-			sum -= a[j-1]
-			j--
-		}
-		// sum <= x
-		dp[i] = dp[j+1] + j - i
-		res += dp[i]
-	}
+func solve(x int, y int, k int) int {
+	g := gcd(x, y)
 
-	return res
+	res := get(x/g, k)
+	if res < 0 {
+		return -1
+	}
+	res2 := get(y/g, k)
+	if res2 < 0 {
+		return -1
+	}
+	return res + res2
+}
+
+func gcd(a, b int) int {
+	for b > 0 {
+		a, b = b, a%b
+	}
+	return a
+}
+
+func get(x int, k int) int {
+	if x == 1 {
+		return 0
+	}
+	var divs []int
+	for i := 1; i <= x/i; i++ {
+		if x%i == 0 {
+			divs = append(divs, i)
+			if i*i != x {
+				divs = append(divs, x/i)
+			}
+		}
+	}
+	sort.Ints(divs)
+	n := len(divs)
+	dp := make([]int, n)
+	for i := range n {
+		dp[i] = 100
+	}
+	dp[0] = 0
+	for i := 1; i < n; i++ {
+		for j := i - 1; j >= 0; j-- {
+			if divs[i]/divs[j] > k {
+				break
+			}
+			if divs[i]%divs[j] == 0 {
+				dp[i] = min(dp[i], dp[j]+1)
+			}
+		}
+	}
+	if dp[n-1] == 100 {
+		return -1
+	}
+	return dp[n-1]
 }

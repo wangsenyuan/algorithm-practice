@@ -2,36 +2,15 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"os"
 )
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-
-	tc := readNum(reader)
-
-	var buf bytes.Buffer
-
-	for tc > 0 {
-		tc--
-		n, x := readTwoNums(reader)
-		a := readNNums(reader, n)
-		res := solve(a, x)
-		buf.WriteString(fmt.Sprintf("%d\n", res))
-	}
-
-	fmt.Print(buf.String())
-}
-func readString(reader *bufio.Reader) string {
-	s, _ := reader.ReadString('\n')
-	for i := 0; i < len(s); i++ {
-		if s[i] == '\n' || s[i] == '\r' {
-			return s[:i]
-		}
-	}
-	return s
+	n, m, s := readThreeNums(reader)
+	res := solve(n, m, s)
+	fmt.Println(res)
 }
 
 func readInt(bytes []byte, from int, val *int) int {
@@ -81,22 +60,43 @@ func readNNums(reader *bufio.Reader, n int) []int {
 	return res
 }
 
-func solve(a []int, x int) int {
-	n := len(a)
-	dp := make([]int, n+2)
-	dp[n] = 0
-	var res int
-	var sum int
-	for i, j := n-1, n; i >= 0; i-- {
-		sum += a[i]
-		for sum > x {
-			sum -= a[j-1]
-			j--
-		}
-		// sum <= x
-		dp[i] = dp[j+1] + j - i
-		res += dp[i]
-	}
+func count(a int, b int) int {
+	return a - b + 1
+}
 
+func solve(n int, m int, s int) int {
+	if n > m {
+		n, m = m, n
+	}
+	var res int
+	for th := 1; th <= n; th += 2 {
+		for tw := 1; tw <= m; tw += 2 {
+			tmp := count(n, th) * count(m, tw)
+
+			if th*tw <= s {
+				if th*tw == s {
+					res += tmp * (2*(th/2+1)*(tw/2+1) - 1)
+				}
+				continue
+			}
+
+			corner := th*tw - s
+			// corner > 0
+			if corner%4 != 0 {
+				continue
+			}
+			corner /= 4
+
+			for h := 1; h*2 < th; h++ {
+				if corner%h == 0 {
+					w := corner / h
+					if 2*w >= tw {
+						continue
+					}
+					res += 2 * tmp
+				}
+			}
+		}
+	}
 	return res
 }
