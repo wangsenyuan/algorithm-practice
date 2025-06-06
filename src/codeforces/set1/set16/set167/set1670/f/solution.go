@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math/bits"
 	"os"
 )
 
@@ -101,12 +102,52 @@ func readNNums(reader *bufio.Reader, n int) []int {
 }
 
 func solve(n int, l int64, r int64, z int64) int {
-	ans := compute(n, r, z)
-	ans = modAdd(ans, MOD-compute(n, l-1, z))
+	ans := compute(n, int(r), int(z))
+	ans = modAdd(ans, MOD-compute(n, int(l-1), int(z)))
 	return ans
 }
 
-func compute(n int, v int64, z int64) int {
+func compute(n int, r int, z int) int {
+	if r < z {
+		return 0
+	}
+	m := bits.Len(uint(r))
+	dp := make([][][2]int, m)
+	for i := range dp {
+		dp[i] = make([][2]int, n)
+		for j := range dp[i] {
+			dp[i][j] = [2]int{-1, -1}
+		}
+	}
+	var f func(int, int, int) int
+	f = func(i, s, gr int) (res int) {
+		if i == m {
+			if s == 0 && gr == 0 {
+				return 1
+			}
+			return 0
+		}
+		p := &dp[i][s][gr]
+		if *p >= 0 {
+			return *p
+		}
+		for j := z >> i & 1; j <= n; j += 2 {
+			bit := (s + j) & 1
+			newGr := 0
+			if bit == r>>i&1 {
+				newGr = gr
+			} else if bit > r>>i&1 {
+				newGr = 1
+			}
+			res = (res + f(i+1, (s+j)>>1, newGr)*nCr(n, j)) % MOD
+		}
+		*p = res
+		return
+	}
+	return f(0, 0, 0)
+}
+
+func compute1(n int, v int64, z int64) int {
 	dp := make([][]int, H)
 	for i := 0; i < H; i++ {
 		dp[i] = make([]int, N)
