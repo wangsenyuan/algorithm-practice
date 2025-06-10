@@ -98,10 +98,6 @@ func solve(songes [][]int) []int {
 
 	n := len(xs) + len(ys)
 	m := len(songes)
-	g := make([]map[int]struct{}, n)
-	for i := range n {
-		g[i] = make(map[int]struct{})
-	}
 
 	type edge struct {
 		u  int
@@ -109,20 +105,27 @@ func solve(songes [][]int) []int {
 		id int
 	}
 
-	pos := make([]edge, m)
+	edges := make([]edge, m)
+
+	marked := make([]bool, m)
+	g := NewGraph(n, 2*m)
+
+	deg := make([]int, n)
 
 	for i, cur := range songes {
 		u := sort.SearchInts(xs, cur[0])
 		v := sort.SearchInts(ys, cur[1]) + len(xs)
-		g[u][v] = struct{}{}
-		g[v][u] = struct{}{}
-		pos[i] = edge{u, v, i}
+		g.AddEdge(u, v, i)
+		g.AddEdge(v, u, i)
+		edges[i] = edge{u, v, i}
+		deg[u]++
+		deg[v]++
 	}
 
 	var odd int
 	var start int
 	for i := range n {
-		if len(g[i])%2 == 1 {
+		if deg[i]%2 == 1 {
 			odd++
 			start = i
 		}
@@ -131,13 +134,22 @@ func solve(songes [][]int) []int {
 		return nil
 	}
 
+	pos := make([]int, n)
+	for i := range n {
+		pos[i] = g.nodes[i]
+	}
+
 	var arr []int
 	var dfs func(u int)
 	dfs = func(u int) {
-		for v := range g[u] {
-			delete(g[u], v)
-			delete(g[v], u)
-			dfs(v)
+		for pos[u] > 0 {
+			v := g.to[pos[u]]
+			w := g.val[pos[u]]
+			pos[u] = g.next[pos[u]]
+			if !marked[w] {
+				marked[w] = true
+				dfs(v)
+			}
 		}
 		arr = append(arr, u)
 	}
@@ -148,13 +160,13 @@ func solve(songes [][]int) []int {
 		return nil
 	}
 
-	slices.SortFunc(pos, func(a, b edge) int {
+	slices.SortFunc(edges, func(a, b edge) int {
 		return cmp.Or(a.u-b.u, a.v-b.v)
 	})
 
-	marked := make([]bool, m)
-
 	res := make([]int, m)
+
+	clear(marked)
 
 	for i := range m {
 		u := arr[i]
@@ -164,17 +176,17 @@ func solve(songes [][]int) []int {
 			u, v = v, u
 		}
 		j := sort.Search(m, func(j int) bool {
-			if pos[j].u > u || pos[j].u == u && pos[j].v >= v {
+			if edges[j].u > u || edges[j].u == u && edges[j].v >= v {
 				return true
 			}
 			return false
 		})
 
-		if j == m || marked[j] || pos[j].u != u || pos[j].v != v {
+		if j == m || marked[j] || edges[j].u != u || edges[j].v != v {
 			return nil
 		}
 		marked[j] = true
-		res[i] = pos[j].id + 1
+		res[i] = edges[j].id + 1
 	}
 	return res
 }
@@ -191,4 +203,30 @@ func sortAndUnique(arr []int) []int {
 		}
 	}
 	return res[:n]
+}
+
+type Graph struct {
+	nodes []int
+	next  []int
+	to    []int
+	val   []int
+	cur   int
+}
+
+func NewGraph(n int, e int) *Graph {
+	g := new(Graph)
+	g.nodes = make([]int, n)
+	g.next = make([]int, e+3)
+	g.to = make([]int, e+3)
+	g.val = make([]int, e+3)
+	g.cur = 0
+	return g
+}
+
+func (g *Graph) AddEdge(u, v, w int) {
+	g.cur++
+	g.next[g.cur] = g.nodes[u]
+	g.nodes[u] = g.cur
+	g.to[g.cur] = v
+	g.val[g.cur] = w
 }
