@@ -100,6 +100,39 @@ func solve(a []int) int {
 		}
 		return 1
 	}
+	dp := make([]int, n+1)
+	dp[0] = 1
+	// dp[i]表示第i个人说真话时的计数
+	for i := 1; i <= n; i++ {
+		if a[i-1] < i {
+			// i如果说真话
+			if i == 1 {
+				dp[i] = 1
+				continue
+			}
+			// i >= 2
+
+			if a[i-2] == a[i-1] {
+				dp[i] = dp[i-1]
+			}
+			if i == 2 && a[i-1] == 1 || i >= 3 && a[i-3]+1 == a[i-1] {
+				// 在i说真话的情况下，且i-1是在说假话, 但是i-2说的是真话
+				dp[i] = add(dp[i], dp[i-2])
+			}
+		}
+	}
+	// 要么n在说假话，要么说真话
+	return add(dp[n-1], dp[n])
+}
+
+func solve1(a []int) int {
+	n := len(a)
+	if n == 1 {
+		if a[0] == 0 {
+			return 2
+		}
+		return 1
+	}
 	type pair struct {
 		first  int
 		second int
