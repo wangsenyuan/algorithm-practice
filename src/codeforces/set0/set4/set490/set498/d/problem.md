@@ -1,0 +1,33 @@
+# Problem Statement
+
+Some country consists of \(n + 1\) cities, located along a straight highway. Let's number the cities with consecutive integers from 1 to \(n + 1\) in the order they occur along the highway. Thus, the cities are connected by \(n\) segments of the highway, the \(i\)-th segment connects cities number \(i\) and \(i + 1\). Every segment of the highway is associated with a positive integer \(a_i > 1\) — the period of traffic jams appearance on it.
+
+In order to get from city \(x\) to city \(y\) (\(x < y\)), some drivers use the following tactics:
+
+Initially the driver is in city \(x\) and the current time \(t\) equals zero. Until the driver arrives in city \(y\), he performs the following actions:
+
+1. If the current time \(t\) is a multiple of \(a_x\), then the segment of the highway number \(x\) is now having traffic problems and the driver stays in the current city for one unit of time (formally speaking, we assign \(t = t + 1\)).
+2. If the current time \(t\) is not a multiple of \(a_x\), then the segment of the highway number \(x\) is now clear and that's why the driver uses one unit of time to move to city \(x + 1\) (formally, we assign \(t = t + 1\) and \(x = x + 1\)).
+
+You are developing a new traffic control system. You want to consecutively process \(q\) queries of two types:
+
+- **Type 1:** Determine the final value of time \(t\) after the ride from city \(x\) to city \(y\) (\(x < y\)) assuming that we apply the tactics that is described above. Note that for each query \(t\) is being reset to 0.
+- **Type 2:** Replace the period of traffic jams appearing on the segment number \(x\) by value \(y\) (formally, assign \(a_x = y\)).
+
+Write a code that will effectively process the queries given above.
+
+---
+
+## Input
+
+- The first line contains a single integer \(n\) (\(1 \leq n \leq 10^5\)) — the number of highway segments that connect the \(n + 1\) cities.
+- The second line contains \(n\) integers \(a_1, a_2, \ldots, a_n\) (\(2 \leq a_i \leq 6\)) — the periods of traffic jams appearance on segments of the highway.
+- The next line contains a single integer \(q\) (\(1 \leq q \leq 10^5\)) — the number of queries to process.
+- The next \(q\) lines contain the descriptions of the queries in the format `c, x, y` (\(c\) — the query type).
+    - If \(c\) is character `'A'`, then your task is to process a query of the first type. In this case the following constraints are satisfied: \(1 \leq x < y \leq n + 1\).
+    - If \(c\) is character `'C'`, then you need to process a query of the second type. In such case, the following constraints are satisfied: \(1 \leq x \leq n\), \(2 \leq y \leq 6\).
+
+## Output
+
+For each query of the first type output a single integer — the final value of time \(t\) after driving from city \(x\) to city \(y\). Process the queries in the order in which they are given in the input.
+

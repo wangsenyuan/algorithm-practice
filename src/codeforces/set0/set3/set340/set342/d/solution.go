@@ -62,6 +62,68 @@ func add(a, b int) int {
 func solve(s []string) int {
 	n := len(s[0])
 
+	dp := make([]int, 8*2)
+	dp[7*2] = 1
+	ndp := make([]int, 16)
+
+	get := func(j int) int {
+		var res int
+		for i := range 3 {
+			if s[i][j] != '.' {
+				res |= 1 << i
+			}
+		}
+		return res
+	}
+
+	play := func(prev int, val int, f int, mask int, j int) {
+		// 这里只考虑放置横向的部分, mask表示已经被放置的位置
+		tmp := mask
+		nf := f
+		for i := range 3 {
+			if (prev>>i)&1 == 0 {
+				if (mask>>i)&1 == 1 {
+					return
+				}
+				// 这里必须放置一个横向的
+				tmp |= 1 << i
+				if j-2 >= 0 && s[i][j-2] == 'O' {
+					nf = 1
+				}
+				if j+1 < n && s[i][j+1] == 'O' {
+					nf = 1
+				}
+			}
+		}
+		ndp[tmp*2+nf] = add(ndp[tmp*2+nf], val)
+	}
+
+	for i := range n {
+		for prev := range 8 {
+			for f := range 2 {
+				if dp[prev*2+f] == 0 {
+					continue
+				}
+				flag := get(i)
+				if flag&3 == 0 {
+					play(prev, dp[prev*2+f], f|check(s[2][i] == 'O'), flag|3, i)
+				}
+				if flag&6 == 0 {
+					play(prev, dp[prev*2+f], f|check(s[0][i] == 'O'), flag|6, i)
+				}
+				play(prev, dp[prev*2+f], f, flag, i)
+			}
+		}
+		copy(dp, ndp)
+		clear(ndp)
+	}
+
+	return dp[15]
+}
+
+func solve1(s []string) int {
+	n := len(s[0])
+
 	dp := make([][][]int, n)
 	for i := range n {
 		dp[i] = make([][]int, 8)
