@@ -26,7 +26,7 @@ func solve(s string) string {
 	var buf bytes.Buffer
 	var prev int
 	for i := 1; i+1 < n; i++ {
-		if isConstant(s[i-1]) && isConstant(s[i]) && isConstant(s[i+1]) {
+		if prev <= i-1 && isConstant(s[i-1]) && isConstant(s[i]) && isConstant(s[i+1]) {
 			if s[i-1] != s[i] || s[i] != s[i+1] || s[i-1] != s[i+1] {
 				buf.WriteString(s[prev : i+1])
 				buf.WriteByte(' ')
