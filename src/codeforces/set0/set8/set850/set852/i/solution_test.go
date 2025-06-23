@@ -1,0 +1,36 @@
+package main
+
+import (
+	"bufio"
+	"strings"
+	"testing"
+)
+
+func runSample(t *testing.T, s string) {
+	reader := bufio.NewReader(strings.NewReader(s))
+	res := process(reader)
+
+	for _, x := range res {
+		expect := readNum(reader)
+		if x != expect {
+			t.Errorf("Sample expect %d, but got %d", expect, x)
+		}
+	}
+}
+
+func TestSample1(t *testing.T) {
+	runSample(t, `7
+1 0 0 1 0 1 0
+9 2 9 2 2 9 9
+2 6
+1 2
+4 2
+6 5
+3 6
+7 4
+2
+1 3
+7 5
+2
+3`)
+}
