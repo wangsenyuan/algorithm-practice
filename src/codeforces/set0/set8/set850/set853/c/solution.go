@@ -73,118 +73,70 @@ func process(reader *bufio.Reader) []int {
 	}
 	return solve(n, p, qs)
 }
+
+func ways(n int) int {
+	return n * (n - 1) / 2
+}
+
 func solve(n int, p []int, qs [][]int) []int {
 	// n * (n - 1) / 2 - 上下左右 + 四个角落
-
-	trs := make([]*Tree, n+1)
-
-	for i := 1; i <= n; i++ {
-		trs[i] = trs[i-1].Add(p[i-1], 1, n)
-	}
-
 	ans := make([]int, len(qs))
-
-	count := func(m int) int {
-		return m * (m - 1) / 2
+	at_l := make([][]int, n+1)
+	at_r := make([][]int, n+1)
+	for i := range qs {
+		l, d, r, u := qs[i][0], qs[i][1], qs[i][2], qs[i][3]
+		ans[i] = ways(n) - ways(l-1) - ways(d-1) - ways(n-r) - ways(n-u)
+		at_l[l] = append(at_l[l], i)
+		at_r[r] = append(at_r[r], i)
 	}
 
-	find := func(l int, d int, r int, u int) int {
-		ans := count(n)
+	cnt := make(BIT, n+3)
 
-		ans -= count(l - 1)
-		ans -= count(n - r)
-		if d > 1 {
-			w := trs[n].Query(d-1, 1, n)
-			ans -= count(w)
+	for l := 1; l <= n; l++ {
+		for _, i := range at_l[l] {
+			d, u := qs[i][1], qs[i][3]
+			w := cnt.Get(d - 1)
+			ans[i] += ways(w)
+			w = cnt.GetRange(u+1, n)
+			ans[i] += ways(w)
 		}
-		if u < n {
-			w := n - trs[n].Query(u, 1, n)
-			ans -= count(w)
-		}
-
-		// 左下角
-		if l > 1 {
-			if d > 1 {
-				w := trs[l-1].Query(d-1, 1, n)
-				ans += count(w)
-			}
-			if u < n {
-				w := trs[l-1].Query(n, 1, n) - trs[l-1].Query(u, 1, n)
-				ans += count(w)
-			}
-		}
-		if r < n {
-			if d > 1 {
-				w := trs[n].Query(d-1, 1, n) - trs[r].Query(d-1, 1, n)
-				ans += count(w)
-			}
-			if u < n {
-				w := trs[n].Query(n, 1, n) - trs[n].Query(u, 1, n)
-				w -= trs[r].Query(n, 1, n) - trs[r].Query(u, 1, n)
-				ans += count(w)
-			}
-		}
-
-		return ans
+		cnt.Add(p[l-1], 1)
 	}
 
-	for i, cur := range qs {
-		ans[i] = find(cur[0], cur[1], cur[2], cur[3])
+	clear(cnt)
+
+	for r := n; r > 0; r-- {
+		for _, i := range at_r[r] {
+			d, u := qs[i][1], qs[i][3]
+			w := cnt.Get(d - 1)
+			ans[i] += ways(w)
+			w = cnt.GetRange(u+1, n)
+			ans[i] += ways(w)
+		}
+		cnt.Add(p[r-1], 1)
 	}
 
 	return ans
 }
 
-type Tree struct {
-	children []*Tree
-	cnt      int
+type BIT []int
+
+func (bit BIT) Add(i int, v int) {
+	for i < len(bit) {
+		bit[i] += v
+		i += i & -i
+	}
 }
 
-func (tr *Tree) copy() *Tree {
-	res := new(Tree)
-	res.children = make([]*Tree, 2)
-
-	if tr != nil {
-		copy(res.children, tr.children)
-		res.cnt = tr.cnt
+func (bit BIT) Get(i int) int {
+	var res int
+	for i > 0 {
+		res += bit[i]
+		i -= i & -i
 	}
 	return res
 }
 
-func (tr *Tree) Count() int {
-	if tr == nil {
-		return 0
-	}
-	return tr.cnt
-}
-
-func (tr *Tree) Add(x int, l int, r int) *Tree {
-	res := tr.copy()
-	if l == r {
-		res.cnt++
-		return res
-	}
-	mid := (l + r) >> 1
-	if x <= mid {
-		res.children[0] = res.children[0].Add(x, l, mid)
-	} else {
-		res.children[1] = res.children[1].Add(x, mid+1, r)
-	}
-	res.cnt = res.children[0].Count() + res.children[1].Count()
-	return res
-}
-
-func (tr *Tree) Query(x int, l int, r int) int {
-	if tr == nil {
-		return 0
-	}
-	if l == r {
-		return tr.cnt
-	}
-	mid := (l + r) >> 1
-	if x <= mid {
-		return tr.children[0].Query(x, l, mid)
-	}
-	res := tr.children[0].Count()
-	return res + tr.children[1].Query(x, mid+1, r)
+func (bit BIT) GetRange(l int, r int) int {
+	return bit.Get(r) - bit.Get(l-1)
 }
