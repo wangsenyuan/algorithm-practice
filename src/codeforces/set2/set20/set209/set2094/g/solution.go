@@ -86,6 +86,40 @@ func process(reader *bufio.Reader) []int {
 }
 
 func solve(queries [][]int) []int {
+	ans := make([]int, len(queries))
+	var n, s, ss, revS int
+	var l, r []int
+	for i, cur := range queries {
+		op := cur[0]
+		if op == 1 {
+			var v int
+			if len(r) > 0 {
+				v = r[len(r)-1]
+				r = r[:len(r)-1]
+			} else {
+				v = l[0]
+				l = l[1:]
+			}
+			l = append(l, v)
+			ss += s - v*n
+			revS += v*n - s
+		} else if op == 2 {
+			l, r = r, l
+			ss, revS = revS, ss
+		} else {
+			v := cur[1]
+			r = append(r, v)
+			n++
+			ss += v * n
+			s += v
+			revS += s
+		}
+		ans[i] = ss
+	}
+	return ans
+}
+
+func solve1(queries [][]int) []int {
 	m := len(queries)
 	todo := NewTodo(2 * m)
 

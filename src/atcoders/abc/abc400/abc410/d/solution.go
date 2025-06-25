@@ -70,6 +70,8 @@ func process(reader *bufio.Reader) int {
 
 const H = 10
 
+const inf = 1 << 60
+
 func solve(n int, edges [][]int) int {
 	// 得用数位dp
 	g := NewGraph(n, len(edges))
@@ -84,15 +86,15 @@ func solve(n int, edges [][]int) int {
 	que[head] = 0
 	head++
 
-	marked := make([][1000]bool, n)
+	marked := make([][1024]bool, n)
 	marked[0][0] = true
 
-	ans := 1 << H
+	ans := inf
 
 	for tail < head {
 		cur := que[tail]
 		tail++
-		u, s := cur/1000, cur%1000
+		u, s := cur/1024, cur%1024
 		if u == n-1 {
 			ans = min(ans, s)
 		}
@@ -101,13 +103,13 @@ func solve(n int, edges [][]int) int {
 			w := g.val[i]
 			if !marked[v][s^w] {
 				marked[v][s^w] = true
-				que[head] = v*1000 + (s ^ w)
+				que[head] = v*1024 + (s ^ w)
 				head++
 			}
 		}
 	}
 
-	if ans == 1<<H {
+	if ans == inf {
 		return -1
 	}
 

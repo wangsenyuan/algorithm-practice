@@ -1,0 +1,33 @@
+# Problem B: Hedgehog's Puzzle
+
+## Problem Description
+
+The Hedgehog recently remembered one of his favorite childhood activities — solving puzzles, and got into it with new vigor. He would sit day in, day out with his friend buried into thousands of tiny pieces of the picture, looking for the required items one by one.
+
+Soon the Hedgehog came up with a brilliant idea: instead of buying ready-made puzzles, one can take his own large piece of paper with some picture and cut it into many small rectangular pieces, then mix them and solve the resulting puzzle, trying to piece together the picture. The resulting task is even more challenging than the classic puzzle: now all the fragments have the same rectangular shape, and one can assemble the puzzle only relying on the picture drawn on the pieces.
+
+All puzzle pieces turn out to be of the same size X × Y, because the picture is cut first by horizontal cuts with the pitch of X, then with vertical cuts with the pitch of Y. If we denote the initial size of the picture as A × B, then A must be divisible by X and B must be divisible by Y (X and Y are integer numbers).
+
+However, not every such cutting of the picture will result in a good puzzle. The Hedgehog finds a puzzle good if no two pieces in it are the same (It is allowed to rotate the pieces when comparing them, but it is forbidden to turn them over).
+
+Your task is to count for a given picture the number of good puzzles that you can make from it, and also to find the puzzle with the minimal piece size.
+
+## Input
+
+The first line contains two numbers A and B which are the sizes of the picture. They are positive integers not exceeding 20.
+
+Then follow A lines containing B symbols each, describing the actual picture. The lines only contain uppercase English letters.
+
+## Output
+
+In the first line print the number of possible good puzzles (in other words, the number of pairs (X, Y) such that the puzzle with the corresponding element sizes will be good). This number should always be positive, because the whole picture is a good puzzle itself.
+
+In the second line print two numbers — the sizes X and Y of the smallest possible element among all good puzzles. The comparison is made firstly by the area XY of one element and secondly — by the length X.
+
+## ideas
+1. 对于给定的a, b，如何快速的检查它是否可行。涉及到旋转，如何得到一个唯一的表示呢？
+2. 如果 a != b,就是两个反转的字符串中，取较小的那个作为代表
+3. 如果 a = b, 那么就是4个方向的字符串中，找出最小的，作为代表
+4. 这样子的话，就是 4 * a * b 
+5. $\sqrt{A}\times\sqrt{B}\times4\times(a)\times(b)$
+6.  
