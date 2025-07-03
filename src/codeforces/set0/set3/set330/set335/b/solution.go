@@ -16,11 +16,6 @@ func main() {
 	fmt.Println(res)
 }
 
-type pair struct {
-	first  int
-	second int
-}
-
 func solve(s string) string {
 	n := len(s)
 
