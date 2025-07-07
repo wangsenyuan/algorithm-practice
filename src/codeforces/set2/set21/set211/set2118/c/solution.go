@@ -2,18 +2,20 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"os"
 )
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-	n, m := readTwoNums(reader)
-	a := readNNums(reader, n)
-	b := readNNums(reader, m)
-	res := solve(a, b)
-
-	fmt.Println(res)
+	var buf bytes.Buffer
+	tc := readNum(reader)
+	for range tc {
+		res := process(reader)
+		buf.WriteString(fmt.Sprintf("%d\n", res))
+	}
+	fmt.Print(buf.String())
 }
 
 func readInt(bytes []byte, from int, val *int) int {
@@ -63,72 +65,38 @@ func readNNums(reader *bufio.Reader, n int) []int {
 	return res
 }
 
-func solve(a []int, b []int) int {
-	n := len(a)
+func process(reader *bufio.Reader) int {
+	n, k := readTwoNums(reader)
+	a := readNNums(reader, n)
+	return solve(a, k)
+}
 
-	bad := make(map[int]bool)
+const H = 60
 
-	for _, num := range b {
-		bad[num] = true
-	}
-
-	g := make([]int, n)
-	g[0] = a[0]
-	for i := 1; i < n; i++ {
-		g[i] = gcd(g[i-1], a[i])
-	}
-	mem := make(map[int]int)
-
-	calc := func(num int) int {
-
-		if v, ok := mem[num]; ok {
-			return v
-		}
-		x := num
-		var res int
-		for i := 2; i <= num/i; i++ {
-			for num%i == 0 {
-				if bad[i] {
-					res++
-				} else {
-					res--
-				}
-				num /= i
-			}
-		}
-		if num > 1 {
-			if bad[num] {
-				res++
-			} else {
-				res--
-			}
-		}
-		mem[x] = res
-		return res
-	}
-
-	suf := 1
-	for i := n - 1; i >= 0; i-- {
-		gain := calc(g[i] / suf)
-		if gain >= 0 {
-			suf = g[i]
-		}
-		a[i] /= suf
-	}
-
+func solve(a []int, k int) int {
 	var res int
+	for d := range H {
+		mask := (1 << d) - 1
+		var arr []int
+		for i, x := range a {
+			if (x>>d)&1 == 0 && (mask == 0 || mask&x == mask) {
+				arr = append(arr, i)
+			}
+			if (x>>d)&1 == 1 {
+				res++
+			}
+		}
 
-	for _, num := range a {
-		tmp := calc(num)
-		res -= tmp
+		for _, i := range arr {
+			tmp := 1 << d
+			if k < tmp {
+				break
+			}
+			a[i] += tmp
+			res++
+			k -= tmp
+		}
 	}
 
 	return res
-}
-
-func gcd(a, b int) int {
-	for b > 0 {
-		a, b = b, a%b
-	}
-	return a
 }

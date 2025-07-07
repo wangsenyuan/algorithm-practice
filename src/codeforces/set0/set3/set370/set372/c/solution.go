@@ -4,15 +4,12 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"slices"
 )
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-	n, m := readTwoNums(reader)
-	a := readNNums(reader, n)
-	b := readNNums(reader, m)
-	res := solve(a, b)
-
+	res := process(reader)
 	fmt.Println(res)
 }
 
@@ -63,72 +60,61 @@ func readNNums(reader *bufio.Reader, n int) []int {
 	return res
 }
 
-func solve(a []int, b []int) int {
-	n := len(a)
-
-	bad := make(map[int]bool)
-
-	for _, num := range b {
-		bad[num] = true
+func process(reader *bufio.Reader) int {
+	n, m, d := readThreeNums(reader)
+	events := make([][]int, m)
+	for i := 0; i < m; i++ {
+		events[i] = readNNums(reader, 3)
 	}
-
-	g := make([]int, n)
-	g[0] = a[0]
-	for i := 1; i < n; i++ {
-		g[i] = gcd(g[i-1], a[i])
-	}
-	mem := make(map[int]int)
-
-	calc := func(num int) int {
-
-		if v, ok := mem[num]; ok {
-			return v
-		}
-		x := num
-		var res int
-		for i := 2; i <= num/i; i++ {
-			for num%i == 0 {
-				if bad[i] {
-					res++
-				} else {
-					res--
-				}
-				num /= i
-			}
-		}
-		if num > 1 {
-			if bad[num] {
-				res++
-			} else {
-				res--
-			}
-		}
-		mem[x] = res
-		return res
-	}
-
-	suf := 1
-	for i := n - 1; i >= 0; i-- {
-		gain := calc(g[i] / suf)
-		if gain >= 0 {
-			suf = g[i]
-		}
-		a[i] /= suf
-	}
-
-	var res int
-
-	for _, num := range a {
-		tmp := calc(num)
-		res -= tmp
-	}
-
-	return res
+	return solve(n, m, d, events)
 }
 
-func gcd(a, b int) int {
-	for b > 0 {
-		a, b = b, a%b
+const inf = 1 << 60
+
+func solve(n int, m int, d int, events [][]int) int {
+	slices.SortFunc(events, func(a, b []int) int {
+		return a[2] - b[2]
+	})
+
+	dp := make([]int, n)
+
+	type pair struct {
+		first  int
+		second int
 	}
-	return a
+
+	que := make([]pair, n)
+
+	for i, cur := range events {
+		time_diff := cur[2]
+		if i > 0 {
+			time_diff -= events[i-1][2]
+		} else {
+			time_diff -= 1
+		}
+
+		var head, tail int
+
+		for j, r := 0, 0; j < n; j++ {
+			for r < n && r-j <= d*time_diff {
+				for head > tail && que[head-1].first < dp[r] {
+					head--
+				}
+				que[head] = pair{dp[r], r}
+				head++
+				r++
+			}
+
+			for tail < head && que[tail].second < j-d*time_diff {
+				tail++
+			}
+			dp[j] = que[tail].first + cur[1] - abs(j+1-cur[0])
+		}
+	}
+
+	return slices.Max(dp)
+}
+
+func abs(num int) int {
+	return max(num, -num)
 }
