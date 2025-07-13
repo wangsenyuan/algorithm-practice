@@ -10,6 +10,7 @@ func minCost(n int, edges [][]int, k int) int {
 		return a[2] - b[2]
 	})
 
+
 	set := NewDSU(n)
 
 	for _, e := range edges {

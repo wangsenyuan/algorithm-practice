@@ -27,10 +27,9 @@ func maxLen(n int, edges [][]int, label string) int {
 	}
 
 	for i := range n {
-		for j := range n {
+		for j := i + 1; j < n; j++ {
 			if i != j && g[i][j] && label[i] == label[j] {
 				dp[1<<i|1<<j][i][j] = 2
-				dp[1<<i|1<<j][j][i] = 2
 			}
 		}
 	}
@@ -40,7 +39,7 @@ func maxLen(n int, edges [][]int, label string) int {
 			if s&(1<<i) == 0 {
 				continue
 			}
-			for j := range n {
+			for j := i; j < n; j++ {
 				if s&(1<<j) == 0 || dp[s][i][j] < 0 {
 					continue
 				}
@@ -52,7 +51,7 @@ func maxLen(n int, edges [][]int, label string) int {
 						if u == v || s&(1<<v) > 0 || !g[j][v] || label[u] != label[v] {
 							continue
 						}
-						dp[s|1<<u|1<<v][u][v] = max(dp[s|1<<u|1<<v][u][v], dp[s][i][j]+2)
+						dp[s|1<<u|1<<v][min(u, v)][max(u, v)] = max(dp[s|1<<u|1<<v][min(u, v)][max(u, v)], dp[s][i][j]+2)
 					}
 				}
 			}
@@ -62,7 +61,7 @@ func maxLen(n int, edges [][]int, label string) int {
 	var ans int
 	for s := range N {
 		for i := range n {
-			for j := range n {
+			for j := i; j < n; j++ {
 				ans = max(ans, dp[s][i][j])
 			}
 		}
