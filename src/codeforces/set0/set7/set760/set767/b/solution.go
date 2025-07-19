@@ -70,14 +70,10 @@ func process(reader *bufio.Reader) (int, int, int, []int, int) {
 const inf = 1 << 60
 
 func solve(ts int, tf int, t int, a []int) int {
-	if len(a) == 0 {
+	if len(a) == 0 || a[0] > ts {
 		return ts
 	}
 	// a is already sorted
-	if a[0] > ts {
-		return ts
-	}
-
 	// a is positive
 	ans := []int{ts - a[0] + 1, a[0] - 1}
 
