@@ -66,9 +66,7 @@ func solve(s string) int {
 	cnt := make(BIT, m+2)
 	cnt.Add(sort.SearchInts(arr, 0), 1)
 	sum1 := make(BIT, m+2)
-	sum1.Add(sort.SearchInts(arr, 0), 0)
 	sum0 := make(BIT, m+2)
-	sum0.Add(sort.SearchInts(arr, 0), 0)
 
 	var res int
 	for i := 1; i <= n; i++ {
