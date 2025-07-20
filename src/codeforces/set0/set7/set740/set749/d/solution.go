@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"cmp"
 	"fmt"
 	"os"
 	"slices"
@@ -87,6 +88,64 @@ func process(reader *bufio.Reader) [][]int {
 }
 
 func solve(bids [][]int, queries [][]int) [][]int {
+	n := len(bids)
+	pos := make([][]int, n)
+	last := make([]int, n)
+	id := make([]int, n)
+
+	for i := range n {
+		id[i] = i
+		last[i] = -1
+	}
+	for i, bid := range bids {
+		x := bid[0] - 1
+		pos[x] = append(pos[x], i)
+		last[x] = i
+	}
+
+	// 越晚结束的，越早
+	slices.SortFunc(id, func(a int, b int) int {
+		return cmp.Or(last[b]-last[a], a-b)
+	})
+
+	ans := make([][]int, len(queries))
+
+	for i, cur := range queries {
+		for j := range cur {
+			cur[j]--
+		}
+		slices.SortFunc(cur, func(a int, b int) int {
+			// make result stable
+			return cmp.Or(last[b]-last[a], a-b)
+		})
+		var first int
+		for first < len(cur) && first < n && cur[first] == id[first] {
+			first++
+		}
+		if first == n || last[id[first]] == -1 {
+			ans[i] = []int{0, 0}
+			continue
+		}
+		// u是没有弃权的，最后bid的人
+		u := id[first]
+		second := first + 1
+		for second-1 < len(cur) && second < n && cur[second-1] == id[second] {
+			second++
+		}
+		if second == n || last[id[second]] == -1 {
+			ans[i] = bids[pos[u][0]]
+		} else {
+			j := sort.Search(len(pos[u]), func(j int) bool {
+				return pos[u][j] > last[id[second]]
+			})
+			ans[i] = bids[pos[u][j]]
+		}
+	}
+
+	return ans
+}
+
+func solve1(bids [][]int, queries [][]int) [][]int {
 	n := len(bids)
 	pos := make([][]int, n+1)
 	var arr []int
