@@ -2,12 +2,12 @@ name: Go CI/CD
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main]
   pull_request:
-    branches: [ main, master ]
+    branches: [main]
 
 env:
-  GO_VERSION: '1.24'
+  GO_VERSION: "1.24"
   CGO_ENABLED: 1
 
 jobs:
@@ -16,9 +16,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: [ '1.24.x' ]
-        os: [ ubuntu-latest ]
-    
+        go-version: ["1.24.x"]
+        os: [ubuntu-latest]
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -81,7 +81,7 @@ jobs:
       - name: Run gosec security scanner
         uses: securecodewarrior/github-action-gosec@master
         with:
-          args: '-fmt sarif -out results.sarif ./src/...'
+          args: "-fmt sarif -out results.sarif ./src/..."
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v3
@@ -94,14 +94,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
-        arch: [ amd64, arm64 ]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        arch: [amd64, arm64]
         exclude:
           - os: windows-latest
             arch: arm64
           - os: macos-latest
             arch: arm64
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
