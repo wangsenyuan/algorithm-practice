@@ -35,8 +35,20 @@ func secondLargest(nums []int) int {
 		}
 
 		if i < len(candidates) {
-			candidates[j] = candidates[i]
-			j++
+			// Compare the last candidate with the current winner
+			if j > 0 {
+				last := candidates[i]
+				winner := candidates[j-1]
+				if last.val >= winner.val {
+					last.less = append(last.less, winner.val)
+					candidates[j-1] = last
+				} else {
+					winner.less = append(winner.less, last.val)
+				}
+			} else {
+				candidates[j] = candidates[i]
+				j++
+			}
 		}
 		candidates = candidates[:j]
 	}

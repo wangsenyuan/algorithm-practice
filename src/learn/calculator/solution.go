@@ -59,11 +59,17 @@ func calc(a, b int, c byte) int {
 	if c == '*' {
 		return a * b
 	}
-	return a / b
+	if c == '/' {
+		if b == 0 {
+			panic("division by zero")
+		}
+		return a / b
+	}
+	panic("unknown operator")
 }
 
 func isOp(x byte) bool {
-	return x == '+' || x == '-' || x == '*' || x == '%'
+	return x == '+' || x == '-' || x == '*' || x == '/'
 }
 
 func normalize(s string) string {
