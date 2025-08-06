@@ -79,7 +79,7 @@ jobs:
           cache: true
 
       - name: Run gosec security scanner
-        uses: securecodewarrior/github-action-gosec@master
+        uses: securecodewarrior/github-action-gosec@v1
         with:
           args: "-fmt sarif -out results.sarif ./src/..."
 
