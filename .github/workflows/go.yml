@@ -78,10 +78,11 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
           cache: true
 
+      - name: Install gosec
+        run: go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
+
       - name: Run gosec security scanner
-        uses: securecodewarrior/github-action-gosec@v1
-        with:
-          args: "-fmt sarif -out results.sarif ./src/..."
+        run: gosec -fmt sarif -out results.sarif ./src/...
 
       - name: Upload SARIF file
         uses: github/codeql-action/upload-sarif@v3
