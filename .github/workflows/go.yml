@@ -1,8 +1,6 @@
 name: Go CI/CD
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
@@ -40,7 +38,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             # For pull requests, get files changed compared to base branch
-            git diff --name-only origin/${{ github.base_ref }}...HEAD > changed_files.txt
+            git diff --name-only origin/${{ github.base_ref }} HEAD > changed_files.txt
           else
             # For pushes, try to get files changed in the last commit
             # Handle case where there's only one commit (new branch)
