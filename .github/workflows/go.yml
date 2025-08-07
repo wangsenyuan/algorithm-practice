@@ -38,9 +38,38 @@ jobs:
       - name: Get changed files
         id: changed-files
         run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Base ref: ${{ github.base_ref }}"
+          echo "Current branch: ${{ github.head_ref }}"
+          echo "Available branches:"
+          git branch -a || echo "No branches found"
+          echo "Available remotes:"
+          git remote -v || echo "No remotes found"
+          
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             # For pull requests, get files changed compared to base branch
-            git diff --name-only ${{ github.base_ref }} HEAD > changed_files.txt
+            # Try different approaches to get the base branch
+            if git rev-parse ${{ github.base_ref }} >/dev/null 2>&1; then
+              # Base branch is available locally
+              echo "Using local base branch: ${{ github.base_ref }}"
+              git diff --name-only ${{ github.base_ref }} HEAD > changed_files.txt
+            elif git rev-parse origin/${{ github.base_ref }} >/dev/null 2>&1; then
+              # Base branch is available as remote reference
+              echo "Using remote base branch: origin/${{ github.base_ref }}"
+              git diff --name-only origin/${{ github.base_ref }} HEAD > changed_files.txt
+            else
+              # Fallback: try to fetch the base branch
+              echo "Attempting to fetch base branch: ${{ github.base_ref }}"
+              git fetch origin ${{ github.base_ref }}:${{ github.base_ref }} || true
+              if git rev-parse ${{ github.base_ref }} >/dev/null 2>&1; then
+                echo "Successfully fetched base branch: ${{ github.base_ref }}"
+                git diff --name-only ${{ github.base_ref }} HEAD > changed_files.txt
+              else
+                # Last resort: get all files
+                echo "Warning: Could not find base branch, getting all files"
+                git ls-files > changed_files.txt
+              fi
+            fi
           else
             # For pushes, try to get files changed in the last commit
             # Handle case where there's only one commit (new branch)
