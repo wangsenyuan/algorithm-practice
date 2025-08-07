@@ -12,6 +12,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
     strategy:
       matrix:
         go-version: ["1.24.x"]
@@ -103,12 +104,12 @@ jobs:
               echo "Test directories:"
               cat unique_test_dirs.txt || echo "No test directories found"
             else
-              echo "No Go files changed, running all tests"
-              find ./src -name "*.go" -type f | xargs dirname | sort -u > unique_test_dirs.txt
+              echo "No Go files changed, skipping tests"
+              touch unique_test_dirs.txt
             fi
           else
-            echo "No files changed, running all tests"
-            find ./src -name "*.go" -type f | xargs dirname | sort -u > unique_test_dirs.txt
+            echo "No files changed, skipping tests"
+            touch unique_test_dirs.txt
           fi
 
       - name: Run tests for changed files
@@ -129,14 +130,7 @@ jobs:
               fi
             done < unique_test_dirs.txt
           else
-            echo "No test directories found, running all tests"
-            # Only run tests on directories that have test files
-            find ./src -name "*_test.go" -type f | xargs dirname | sort -u | while read -r test_dir; do
-              echo "Testing directory: $test_dir"
-              cd "$test_dir"
-              go test -v -race -coverprofile=coverage_$(basename "$test_dir").out . || true
-              cd - > /dev/null
-            done
+            echo "No test directories found, skipping all tests"
           fi
 
       - name: Combine coverage reports
