@@ -35,8 +35,70 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
-      - name: Run tests
-        run: go test -v -race -coverprofile=coverage.out ./src/...
+      - name: Get changed files
+        id: changed-files
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            # For pull requests, get files changed compared to base branch
+            git diff --name-only origin/${{ github.base_ref }}...HEAD > changed_files.txt
+          else
+            # For pushes, get files changed in the last commit
+            git diff --name-only HEAD~1 HEAD > changed_files.txt
+          fi
+          echo "Changed files:"
+          cat changed_files.txt || echo "No files changed"
+
+      - name: Find test files to run
+        id: test-files
+        run: |
+          if [ -s changed_files.txt ]; then
+            # Find Go files that were changed
+            grep '\.go$' changed_files.txt > go_files.txt || echo "No .go files changed"
+            
+            if [ -s go_files.txt ]; then
+              # Get the directories containing changed Go files
+              while IFS= read -r file; do
+                dir=$(dirname "$file")
+                echo "$dir" >> test_dirs.txt
+              done < go_files.txt
+              
+              # Remove duplicates and sort
+              sort -u test_dirs.txt > unique_test_dirs.txt
+              
+              echo "Test directories:"
+              cat unique_test_dirs.txt || echo "No test directories found"
+            else
+              echo "No Go files changed, running all tests"
+              find ./src -name "*.go" -type f | xargs dirname | sort -u > unique_test_dirs.txt
+            fi
+          else
+            echo "No files changed, running all tests"
+            find ./src -name "*.go" -type f | xargs dirname | sort -u > unique_test_dirs.txt
+          fi
+
+      - name: Run tests for changed files
+        run: |
+          if [ -s unique_test_dirs.txt ]; then
+            while IFS= read -r test_dir; do
+              echo "Testing directory: $test_dir"
+              go test -v -race -coverprofile=coverage_$(basename "$test_dir").out "$test_dir" || true
+            done < unique_test_dirs.txt
+          else
+            echo "No test directories found, running all tests"
+            go test -v -race -coverprofile=coverage.out ./src/...
+          fi
+
+      - name: Combine coverage reports
+        run: |
+          # Combine all coverage files if they exist
+          if ls coverage_*.out 1> /dev/null 2>&1; then
+            echo "mode: set" > coverage.out
+            for file in coverage_*.out; do
+              if [ -f "$file" ]; then
+                tail -n +2 "$file" >> coverage.out || true
+              fi
+            done
+          fi
 
   dependency-review:
     name: Dependency Review
