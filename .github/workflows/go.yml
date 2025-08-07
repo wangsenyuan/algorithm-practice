@@ -38,14 +38,6 @@ jobs:
       - name: Run tests
         run: go test -v -race -coverprofile=coverage.out ./src/...
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./coverage.out
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false
-
   dependency-review:
     name: Dependency Review
     runs-on: ubuntu-latest

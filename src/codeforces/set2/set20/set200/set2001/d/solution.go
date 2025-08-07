@@ -119,6 +119,43 @@ const inf = 1 << 30
 
 func solve(a []int) []int {
 	n := len(a)
+	left := make([]int, n+1)
+	for _, v := range a {
+		left[v]++
+	}
+	stack := make([]int, n)
+	var top int
+	marked := make([]bool, n+1)
+	for _, v := range a {
+		left[v]--
+		if marked[v] {
+			continue
+		}
+		for top > 0 && left[stack[top-1]] > 0 {
+			x := stack[top-1]
+			if top%2 == 1 {
+				// x是在奇数位的，如果把x去掉后，v就要放到奇数位，如果v < x, 那么就需要把v放在x的前面的位置
+				// 但是如果无法放置，比如只有一个，或者倒数第二位更小，或者它后续无法再被选中了
+				if v < x && (top == 1 || v > stack[top-2] || left[stack[top-2]] == 0) {
+					break
+				}
+			} else {
+				if v > x && (top == 1 || v < stack[top-2] || left[stack[top-2]] == 0) {
+					break
+				}
+			}
+			top--
+			marked[x] = false
+		}
+		stack[top] = v
+		top++
+		marked[v] = true
+	}
+	return stack[:top]
+}
+
+func solve1(a []int) []int {
+	n := len(a)
 	pos := NewSegTree(n+1, inf, min)
 	x := NewSegTree(n, -inf, max)
 	y := NewSegTree(n, inf, min)
