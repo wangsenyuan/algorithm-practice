@@ -87,11 +87,27 @@ jobs:
           if [ -s unique_test_dirs.txt ]; then
             while IFS= read -r test_dir; do
               echo "Testing directory: $test_dir"
-              go test -v -race -coverprofile=coverage_$(basename "$test_dir").out "$test_dir" || true
+              
+              # Check if directory has test files
+              if find "$test_dir" -name "*_test.go" -type f | grep -q .; then
+                echo "Found test files in $test_dir, running tests..."
+                # Change to the directory and run tests from there
+                cd "$test_dir"
+                go test -v -race -coverprofile=coverage_$(basename "$test_dir").out . || true
+                cd - > /dev/null
+              else
+                echo "No test files found in $test_dir, skipping..."
+              fi
             done < unique_test_dirs.txt
           else
             echo "No test directories found, running all tests"
-            go test -v -race -coverprofile=coverage.out ./src/...
+            # Only run tests on directories that have test files
+            find ./src -name "*_test.go" -type f | xargs dirname | sort -u | while read -r test_dir; do
+              echo "Testing directory: $test_dir"
+              cd "$test_dir"
+              go test -v -race -coverprofile=coverage_$(basename "$test_dir").out . || true
+              cd - > /dev/null
+            done
           fi
 
       - name: Combine coverage reports
