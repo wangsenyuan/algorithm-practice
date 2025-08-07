@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -38,7 +40,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             # For pull requests, get files changed compared to base branch
-            git diff --name-only origin/${{ github.base_ref }} HEAD > changed_files.txt
+            git diff --name-only ${{ github.base_ref }} HEAD > changed_files.txt
           else
             # For pushes, try to get files changed in the last commit
             # Handle case where there's only one commit (new branch)
@@ -127,6 +129,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
