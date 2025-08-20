@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"math"
 	"os"
 )
 
@@ -84,9 +85,9 @@ func main() {
 }
 
 const N = 500000
-const SN = 300
 
 func solve(queries [][]int) []int {
+	SN := int(math.Sqrt(float64(N/4))) + 1
 	a := make([]int, N+1)
 	dp := make([][]int, SN+1)
 	for x := 1; x <= SN; x++ {
