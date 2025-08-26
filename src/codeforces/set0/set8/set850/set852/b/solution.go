@@ -41,7 +41,7 @@ func solve(L int, m int, first []int, second []int, third []int) int {
 	}
 	f1 := getFreq(first)
 	f2 := getFreq(second)
-	f3 := getFreq(third)
+
 	tf := make(mat, m)
 	for i := range m {
 		tf[i] = make([]int, m)
@@ -49,23 +49,27 @@ func solve(L int, m int, first []int, second []int, third []int) int {
 
 	for x := range m {
 		for y := range m {
-			tf[x][y] = add(tf[x][y], f2[(y-x+m)%m])
+			tf[x][y] = f2[(y-x+m)%m]
 		}
 	}
 	tf = mat_pow(tf, L-2)
+
 	dp := make([]int, m)
 	for x := range m {
 		for y := range m {
-			dp[(x+y)%m] = add(dp[(x+y)%m], mul(f1[x], tf[x][y]))
+			dp[y] = add(dp[y], mul(f1[x], tf[x][y]))
 		}
 	}
+
+	for i := range third {
+		third[i] += second[i]
+	}
+
+	f3 := getFreq(third)
+
 	var res int
 	for x := range m {
-		for y := range m {
-			if (x+y)%m == 0 {
-				res = add(res, mul(dp[x], f3[y]))
-			}
-		}
+		res = add(res, mul(dp[x], f3[(m-x)%m]))
 	}
 	return res
 }
@@ -94,9 +98,9 @@ func (this mat) mul(that mat) mat {
 	for i := range h {
 		res[i] = make([]int, k)
 	}
-	for l := range w {
-		for i := range h {
-			for j := range k {
+	for i := range h {
+		for j := range k {
+			for l := range w {
 				res[i][j] = add(res[i][j], mul(this[i][l], that[l][j]))
 			}
 		}
@@ -121,6 +125,7 @@ func mat_pow(a mat, n int) mat {
 		return a
 	}
 	res := mat_pow(a, n/2)
+	res = res.mul(res)
 	if n%2 == 1 {
 		res = res.mul(a)
 	}

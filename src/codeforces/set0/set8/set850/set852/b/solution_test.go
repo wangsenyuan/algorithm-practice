@@ -25,3 +25,13 @@ func TestSample1(t *testing.T) {
 	expect := 2
 	runSample(t, s, expect)
 }
+
+func TestSample2(t *testing.T) {
+	s := `2 4 5
+1 1
+1 1
+1 1
+`
+	expect := 16
+	runSample(t, s, expect)
+}
