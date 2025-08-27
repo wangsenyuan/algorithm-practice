@@ -8,9 +8,9 @@ import (
 
 func main() {
 	var a, d float64
-	fmt.Scanf("%f %f", &a, &d)
+	fmt.Scan(&a, &d)
 	var n int
-	fmt.Scanf("%d", &n)
+	fmt.Scan(&n)
 	res := solve(a, d, n)
 	var buf bytes.Buffer
 
