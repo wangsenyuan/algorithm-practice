@@ -93,19 +93,116 @@ func solve(n int, edges [][]int) []pair {
 
 	for _, edge := range edges {
 		u, v := edge[0]-1, edge[1]-1
-		g.AddEdge(u, v)
-		g.AddEdge(v, u)
+		g.AddEdge(int32(u), int32(v))
+		g.AddEdge(int32(v), int32(u))
+	}
+
+	fa := make([]int32, n)
+	deg := make([]int32, n)
+
+	var dfs func(p int32, u int32)
+
+	dfs = func(p int32, u int32) {
+		fa[u] = p
+		for i := g.nodes[u]; i > 0; i = g.next[i] {
+			v := g.to[i]
+			if p != v {
+				deg[u]++
+				dfs(u, v)
+			}
+		}
+	}
+	dfs(-1, 0)
+
+	vs := make([][]int32, n)
+	ans := make([]pair, n)
+	var que []int32
+
+	for u := range n {
+		if deg[u] == 0 {
+			que = append(que, int32(u))
+			vs[u] = append(vs[u], int32(u))
+			ans[u] = pair{1, 2}
+		}
+	}
+
+	doIt := func(u int32) {
+		p := fa[u]
+		var sum int32
+		var bst int32 = -1
+		for i := g.nodes[u]; i > 0; i = g.next[i] {
+			v := g.to[i]
+			if p != v {
+				sum += 2 * int32(len(vs[v]))
+				if bst < 0 || len(vs[v]) > len(vs[bst]) {
+					bst = v
+				}
+			}
+		}
+
+		vs[u] = vs[bst]
+		last := ans[bst].second
+		sum -= 2 * int32(len(vs[bst]))
+		sum++
+		ans[bst].second += sum
+
+		for i := g.nodes[u]; i > 0; i = g.next[i] {
+			v := g.to[i]
+			if p == v || v == bst {
+				continue
+			}
+
+			add := last - 1
+			for _, w := range vs[v] {
+				ans[w].first += add
+				ans[w].second += add
+				vs[u] = append(vs[u], w)
+			}
+			last = ans[v].second
+			sum -= 2 * int32(len(vs[v]))
+			ans[v].second += sum
+			clear(vs[v])
+		}
+
+		vs[u] = append(vs[u], int32(u))
+		ans[u] = pair{last, ans[bst].second + 1}
+	}
+
+	for len(que) > 0 {
+		v := que[0]
+		que = que[1:]
+		if v == 0 {
+			continue
+		}
+		u := fa[v]
+		deg[u]--
+		if deg[u] == 0 {
+			doIt(u)
+			que = append(que, u)
+		}
+	}
+
+	return ans
+}
+
+func solve1(n int, edges [][]int) []pair {
+	g := NewGraph(n, 2*n)
+
+	for _, edge := range edges {
+		u, v := edge[0]-1, edge[1]-1
+		g.AddEdge(int32(u), int32(v))
+		g.AddEdge(int32(v), int32(u))
 	}
 
 	vs := make([][]int32, n)
 
 	ans := make([]pair, n)
 
-	var dfs func(p int, u int)
+	var dfs func(p int32, u int32)
 
-	dfs = func(p int, u int) {
+	dfs = func(p int32, u int32) {
 		var sum int32
-		bst := -1
+		var bst int32 = -1
 		for i := g.nodes[u]; i > 0; i = g.next[i] {
 			v := g.to[i]
 			if p != v {
@@ -159,18 +256,18 @@ func solve(n int, edges [][]int) []pair {
 type Graph struct {
 	nodes []int32
 	next  []int32
-	to    []int
+	to    []int32
 	cur   int32
 }
 
 func NewGraph(n int, e int) *Graph {
 	nodes := make([]int32, n)
 	next := make([]int32, e)
-	to := make([]int, e)
+	to := make([]int32, e)
 	return &Graph{nodes, next, to, 0}
 }
 
-func (g *Graph) AddEdge(u, v int) {
+func (g *Graph) AddEdge(u, v int32) {
 	g.cur++
 	g.next[g.cur] = g.nodes[u]
 	g.nodes[u] = g.cur
