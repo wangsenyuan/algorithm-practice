@@ -1,5 +1,9 @@
 {
   "files.watcherExclude": {
     "**/target": true
+  },
+  "files.associations": {
+    "*.js": "javascriptreact",
+    "vector": "cpp"
   }
 }
