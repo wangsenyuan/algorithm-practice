@@ -1,0 +1,79 @@
+# Problem B: Merge Sort Sequences
+
+## Problem Statement
+
+Ivan has an array consisting of n different integers. He decided to reorder all elements in increasing order. Ivan loves merge sort so he decided to represent his array with one or several increasing sequences which he then plans to merge into one sorted array.
+
+Ivan represents his array with increasing sequences with help of the following algorithm.
+
+While there is at least one unused number in array Ivan repeats the following procedure:
+
+1. Iterate through array from the left to the right
+2. Ivan only looks at unused numbers on current iteration
+3. If current number is the first unused number on this iteration or this number is greater than previous unused number on current iteration, then Ivan marks the number as used and writes it down
+
+For example, if Ivan's array looks like `[1, 3, 2, 5, 4]` then he will perform two iterations. On first iteration Ivan will use and write numbers `[1, 3, 5]`, and on second one — `[2, 4]`.
+
+Write a program which helps Ivan and finds representation of the given array with one or several increasing sequences in accordance with algorithm described above.
+
+## Input
+
+The first line contains a single integer n (1 ≤ n ≤ 2·10⁵) — the number of elements in Ivan's array.
+
+The second line contains a sequence consisting of distinct integers a₁, a₂, ..., aₙ (1 ≤ aᵢ ≤ 10⁹) — Ivan's array.
+
+## Output
+
+Print representation of the given array in the form of one or more increasing sequences in accordance with the algorithm described above. Each sequence must be printed on a new line.
+
+## Test Cases
+
+### Example 1
+**Input:**
+```
+5
+1 3 2 5 4
+```
+
+**Output:**
+```
+1 3 5 
+2 4 
+```
+
+### Example 2
+**Input:**
+```
+4
+4 3 2 1
+```
+
+**Output:**
+```
+4 
+3 
+2 
+1 
+```
+
+### Example 3
+**Input:**
+```
+4
+10 30 50 101
+```
+
+**Output:**
+```
+10 30 50 101 
+```
+
+## Algorithm Explanation
+
+The algorithm works by repeatedly scanning the array from left to right, selecting elements that form an increasing sequence:
+
+1. **First pass:** Select the first unused element and any subsequent unused elements that are greater than the previously selected element in this pass
+2. **Subsequent passes:** Repeat the process with remaining unused elements
+3. **Continue** until all elements are used
+
+This creates multiple increasing sequences that can be merged together to form the final sorted array.
