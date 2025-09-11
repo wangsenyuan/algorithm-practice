@@ -4,17 +4,17 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"sort"
 	"strings"
 )
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-
-	n, s := readTwoNums(reader)
-	a := readNNums(reader, n)
-	cnt, res := solve(a, s)
-	fmt.Println(cnt, res)
+	res := drive(reader)
+	if res {
+		fmt.Println("YES")
+	} else {
+		fmt.Println("NO")
+	}
 }
 
 func readString(reader *bufio.Reader) string {
@@ -69,35 +69,74 @@ func readNNums(reader *bufio.Reader, n int) []int {
 	return res
 }
 
-func solve(a []int, S int) (int, int) {
+func drive(reader *bufio.Reader) bool {
+	n, _ := readTwoNums(reader)
+	a := make([]string, n)
+	for i := 0; i < n; i++ {
+		a[i] = readString(reader)
+	}
+	return solve(a)
+}
+
+func solve(a []string) bool {
+	ok := true
+	for j := 1; j < len(a[0]); j++ {
+		if a[0][j] != a[0][0] {
+			ok = false
+			break
+		}
+	}
+
+	if !ok {
+		a = rotate(a)
+	}
+
+	return check(a)
+}
+
+func rotate(a []string) []string {
+	n, m := len(a), len(a[0])
+	res := make([][]byte, m)
+	for i := range m {
+		res[i] = make([]byte, n)
+	}
+	for i := range n {
+		for j := range m {
+			res[j][i] = a[i][j]
+		}
+	}
+	ans := make([]string, m)
+	for i := range m {
+		ans[i] = string(res[i])
+	}
+	return ans
+}
+
+func check(a []string) bool {
+	id := map[byte]int{
+		'R': 0, 'G': 1, 'B': 2,
+	}
+
 	n := len(a)
-	b := make([]int, n)
-
-	f := func(k int) int {
-		for i, x := range a {
-			b[i] = x + (i+1)*k
-		}
-		sort.Ints(b)
-		var res int
-		for i := 0; i < k; i++ {
-			res += b[i]
-		}
-		return res
+	if n%3 != 0 {
+		return false
 	}
-
-	res := f(n)
-	if res <= S {
-		return n, res
-	}
-
-	l, r := 0, n
-	for l < r {
-		mid := (l + r) / 2
-		if f(mid) > S {
-			r = mid
-		} else {
-			l = mid + 1
+	m := len(a[0])
+	sz := n / 3
+	var flag int
+	for i := range 3 {
+		first := a[i*sz]
+		for j := 1; j < m; j++ {
+			if first[j] != first[0] {
+				return false
+			}
+		}
+		flag |= 1 << id[first[0]]
+		for j := i * sz; j < (i+1)*sz; j++ {
+			if a[j] != first {
+				return false
+			}
 		}
 	}
-	return r - 1, f(r - 1)
+	return flag == 7
 }
