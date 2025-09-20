@@ -48,60 +48,19 @@ func solve(p []int, foe [][]int) int {
 		pair[b] = max(pair[b], a)
 	}
 
-	tr := NewSegTree(n)
+	// tr := NewSegTree(n)
+
+	var l int
 
 	var res int
-	for l, r := 0, 0; r < n; r++ {
+
+	for r := 0; r < n; r++ {
 		if pair[r] >= 0 {
-			tr.Update(r, pair[r])
-		}
-		for l < r && tr.Get(l, r+1) >= l {
-			l++
+			l = max(l, pair[r]+1)
 		}
 		res += r - l + 1
 	}
 
-	return res
-}
-
-type SegTree struct {
-	arr []int
-	sz  int
-}
-
-func NewSegTree(n int) *SegTree {
-	arr := make([]int, 2*n)
-	for i := range arr {
-		arr[i] = -1
-	}
-	return &SegTree{arr, n}
-}
-
-func (t *SegTree) Update(p int, v int) {
-	p += t.sz
-	t.arr[p] = v
-	for p > 1 {
-		t.arr[p>>1] = max(t.arr[p], t.arr[p^1])
-		p >>= 1
-	}
-}
-
-func (t *SegTree) Get(l int, r int) int {
-	res := -1
-	l += t.sz
-	r += t.sz
-
-	for l < r {
-		if l&1 == 1 {
-			res = max(res, t.arr[l])
-			l++
-		}
-		if r&1 == 1 {
-			r--
-			res = max(res, t.arr[r])
-		}
-		l >>= 1
-		r >>= 1
-	}
+	
 	return res
 }
