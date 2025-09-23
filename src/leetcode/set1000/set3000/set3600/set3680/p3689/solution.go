@@ -1,73 +1,59 @@
 package p3689
 
+import (
+	"slices"
+	"sort"
+)
+
 type pair struct {
 	first  int
 	second int
 }
 
+func encode(nums, sorted []int) (res int) {
+	for i, x := range nums {
+		res |= sort.SearchInts(sorted, x) << (i * 3)
+	}
+	return
+}
+
 func minSplitMerge(nums1 []int, nums2 []int) int {
+	if slices.Equal(nums1, nums2) {
+		return 0
+	}
+
 	n := len(nums1)
+	sorted := slices.Clone(nums1) // 用于离散化
+	slices.Sort(sorted)
 
-	vis := make(map[string]bool)
-	dp := make(map[string]int)
+	val1 := encode(nums1, sorted)
+	val2 := encode(nums2, sorted)
 
-	var dfs func(state string) int
-
-	dfs = func(state string) int {
-		// state表示的状态和nums2是否一致
-		if v, ok := dp[state]; ok {
-			return v
-		}
-		var diff int
-		buf := make([]int, n)
-		for i := 0; i < n; i++ {
-			buf[i] = int(state[i] - '0')
-			if nums1[buf[i]] != nums2[i] {
-				diff++
-			}
-		}
-		if diff == 0 {
-			return 0
-		}
-		vis[state] = true
-		res := inf
-		// 选择一段区间
-		for l := 0; l < n; l++ {
-			for r := l; r < n; r++ {
-				s1 := state[0:l]
-				s3 := state[r+1:]
-				s2 := state[l : r+1]
-				for i := 0; i <= len(s1); i++ {
-					next := s1[:i]
-					next += s2
-					next += s1[i:]
-					next += s3
-					if !vis[next] {
-						res = min(res, dfs(next)+1)
-					}
-				}
-				for i := 0; i <= len(s3); i++ {
-					next := s1 + s3[:i]
-					next += s2
-					next += s3[i:]
-					if !vis[next] {
-						res = min(res, dfs(next)+1)
+	vis := map[int]bool{val1: true}
+	q := []int{val1}
+	for ans := 1; ; ans++ {
+		tmp := q
+		q = nil
+		for _, a := range tmp {
+			for r := 1; r <= n; r++ { // 为方便实现，先枚举 r，再枚举 l
+				t := a & (1<<(r*3) - 1)
+				for l := range r {
+					sub := t >> (l * 3)
+					b := a&(1<<(l*3)-1) | a>>(r*3)<<(l*3) // 从 a 中移除 sub
+					for i := range n - r + l + 1 {
+						c := b&(1<<(i*3)-1) | sub<<(i*3) | b>>(i*3)<<((i+r-l)*3)
+						if c == val2 {
+							return ans
+						}
+						if !vis[c] {
+							vis[c] = true
+							q = append(q, c)
+						}
 					}
 				}
 			}
 		}
-		vis[state] = false
-
-		dp[state] = res
-		return res
 	}
-
-	state := make([]byte, n)
-	for i := 0; i < n; i++ {
-		state[i] = byte(i + '0')
-	}
-
-	return dfs(string(state))
 }
 
 const inf = 1 << 30
