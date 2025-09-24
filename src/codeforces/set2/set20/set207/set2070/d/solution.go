@@ -85,7 +85,38 @@ func sub(a, b int) int {
 	return add(a, mod-b)
 }
 
+func mul(a, b int) int {
+	return a * b % mod
+}
+
 func solve(n int, p []int) int {
+	g := NewGraph(n, n)
+	for i := 1; i < n; i++ {
+		g.AddEdge(p[i-1]-1, i)
+	}
+
+	cnt := make([]int, n)
+
+	var dfs func(u int, d int)
+	dfs = func(u int, d int) {
+		cnt[d]++
+		for i := g.nodes[u]; i > 0; i = g.next[i] {
+			v := g.to[i]
+			dfs(v, d+1)
+		}
+	}
+	dfs(0, 0)
+	// 只有根节点的时候
+	res := 1
+	prod := 1
+	for i := 1; i < n && cnt[i] > 0; i++ {
+		res = add(res, mul(prod, cnt[i]))
+		prod = mul(prod, cnt[i]-1)
+	}
+	return res
+}
+
+func solve1(n int, p []int) int {
 	g := NewGraph(n, n)
 	for i := 1; i < n; i++ {
 		g.AddEdge(p[i-1]-1, i)
