@@ -1,5 +1,7 @@
 package p3701
 
+import "slices"
+
 func longestSubsequence(nums []int) int {
 	var res int
 	for _, v := range nums {
@@ -10,18 +12,9 @@ func longestSubsequence(nums []int) int {
 	}
 	// res = 0
 	n := len(nums)
-	var first int
-	for first < n && nums[first] == 0 {
-		first++
-	}
-	if first == n {
+	x := slices.Max(nums)
+	if x == 0 {
 		return 0
 	}
-	ans := n - first - 1
-
-	last := n - 1
-	for nums[last] == 0 {
-		last--
-	}
-	return max(ans, last)
+	return n - 1
 }
