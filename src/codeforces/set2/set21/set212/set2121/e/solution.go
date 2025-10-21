@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"slices"
 	"strings"
 )
 
@@ -53,45 +52,21 @@ func readString(reader *bufio.Reader) string {
 const inf = 1 << 60
 
 func solve(l string, r string) int {
-	n := len(l)
-	dp := make([][]int, n+1)
-	dp[0] = []int{inf, inf, inf, 0}
-
-	for i := 0; i < n; i++ {
-		dp[i+1] = []int{inf, inf, inf, inf}
-		for state := range 4 {
-			if dp[i][state] == inf {
-				continue
-			}
-			sl := state / 2
-			sr := state % 2
-			u := 0
-			if sl == 1 {
-				u = int(l[i] - '0')
-			}
-			v := 9
-			if sr == 1 {
-				v = int(r[i] - '0')
-			}
-			for w := u; w <= v; w++ {
-				nl := sl
-				if sl == 0 || w > u {
-					nl = 0
-				}
-				nr := sr
-				if sr == 0 || w < v {
-					nr = 0
-				}
-				dp[i+1][nl*2+nr] = min(dp[i+1][nl*2+nr], dp[i][state]+check(w == int(l[i]-'0'))+check(w == int(r[i]-'0')))
-			}
+	if len(l) < len(r) {
+		l = strings.Repeat("0", len(r)-len(l)) + l
+	}
+	var res int
+	var a, b int
+	for i := 0; i < len(r); i++ {
+		a = a*10 + int(l[i]-'0')
+		b = b*10 + int(r[i]-'0')
+		if a+1 < b {
+			break
+		}
+		res++
+		if a == b {
+			res++
 		}
 	}
-	return slices.Min(dp[n])
-}
-
-func check(b bool) int {
-	if b {
-		return 1
-	}
-	return 0
+	return res
 }
