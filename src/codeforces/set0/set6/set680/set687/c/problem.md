@@ -1,0 +1,62 @@
+### Problem
+
+Pari wants to buy an expensive chocolate from Arya. She has n coins, the value of the i-th coin is $c_i$. The price of the
+chocolate is k, so Pari will take a subset of her coins with sum equal to k and give it to Arya.
+
+Looking at her coins, a question came to her mind: after giving the coins to Arya, what values does Arya can make with
+them? She is jealous and she doesn't want Arya to make a lot of values. So she wants to know all the values x, such that
+Arya will be able to make x using some subset of coins with the sum k.
+
+Formally, Pari wants to know the values x such that there exists a subset of coins with the sum k such that some subset of
+this subset has the sum x, i.e. there is exists some way to pay for the chocolate, such that Arya will be able to make
+the sum x using these coins.
+
+### Input
+
+The first line contains two integers n and k $(1 \le n, k \le 500)$ — the number of coins and the price of the chocolate,
+respectively.
+
+Next line will contain n integers $c_1, c_2, ..., c_n$ $(1 \le c_i \le 500)$ — the values of Pari's coins.
+
+It's guaranteed that one can make value k using these coins.
+
+### Output
+
+First line of the output must contain a single integer q— the number of suitable values x. Then print q integers in
+ascending order — the values that Arya can make for some subset of coins of Pari that pays for the chocolate.
+
+### Examples
+
+#### Example 1
+
+Input:
+```
+6 18
+5 6 1 10 12 2
+```
+
+Output:
+```
+16
+0 1 2 3 5 6 7 8 10 11 12 13 15 16 17 18
+```
+
+#### Example 2
+
+Input:
+```
+3 50
+25 25 50
+```
+
+Output:
+```
+3
+0 25 50
+```
+
+
+### ideas
+1. 找到一个sum = k的集合，这个集合中，子集的sum = ？
+2. dp[k][x] = true, 如果可以在一个集合中，得到子集x
+3. dp[k][x] +  c => dp[k+c][x] or dp[k+c][x + c] or keep
