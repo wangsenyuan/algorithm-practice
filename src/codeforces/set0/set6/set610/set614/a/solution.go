@@ -27,6 +27,9 @@ func solve(l int, r int, k int) []int {
 		if x >= l {
 			res = append(res, x)
 		}
+		if x > r/k || x == r/k && x*k > r {
+			break
+		}
 	}
 	return res
 }
