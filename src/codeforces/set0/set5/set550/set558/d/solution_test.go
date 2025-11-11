@@ -1,0 +1,93 @@
+package main
+
+import (
+	"bufio"
+	"strings"
+	"testing"
+)
+
+func runSample(t *testing.T, s string, expect string) {
+	reader := bufio.NewReader(strings.NewReader(s))
+	res := drive(reader)
+	if res != expect {
+		t.Errorf("Sample expect %s, but got %s", expect, res)
+	}
+}
+
+func TestSample1(t *testing.T) {
+	s := `3 1
+3 4 6 0
+`
+	expect := "7"
+	runSample(t, s, expect)
+}
+
+func TestSample2(t *testing.T) {
+	s := `4 3
+4 10 14 1
+3 6 6 0
+2 3 3 1
+`
+	expect := "14"
+	runSample(t, s, expect)
+}
+
+func TestSample3(t *testing.T) {
+	s := `4 2
+3 4 6 1
+4 12 15 1
+`
+	expect := "Data not sufficient!"
+	runSample(t, s, expect)
+}
+
+func TestSample4(t *testing.T) {
+	s := `4 2
+3 4 5 1
+2 3 3 1
+`
+	expect := "Game cheated!"
+	runSample(t, s, expect)
+}
+
+func TestSample5(t *testing.T) {
+	s := `16 35
+9 314 485 1
+13 7649 7787 0
+8 243 243 0
+3 5 6 1
+5 29 30 0
+6 47 60 1
+14 9837 14130 1
+5 16 21 0
+5 31 31 0
+10 1009 1020 0
+4 8 10 0
+10 974 1008 0
+10 752 1017 1
+5 19 24 1
+15 26053 26590 0
+12 2415 3320 1
+6 43 57 1
+16 51175 57617 0
+13 6288 6912 1
+16 50661 50662 0
+15 21940 31655 1
+6 51 52 0
+8 239 240 0
+15 20157 24242 0
+14 14547 14926 0
+14 8386 10117 0
+13 5632 7979 1
+12 3638 4071 0
+7 100 103 0
+14 13032 13274 0
+16 45520 47193 0
+14 13493 15161 0
+2 3 3 1
+4 12 13 1
+6 54 55 0
+`
+	expect := "Data not sufficient!"
+	runSample(t, s, expect)
+}
