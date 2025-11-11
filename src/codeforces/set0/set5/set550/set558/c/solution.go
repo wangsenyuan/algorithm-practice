@@ -14,6 +14,7 @@ func main() {
 	fmt.Println(res)
 }
 
+
 func drive(reader *bufio.Reader) int {
 	var n int
 	fmt.Fscan(reader, &n)

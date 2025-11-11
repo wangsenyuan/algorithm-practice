@@ -4,6 +4,7 @@
   },
   "files.associations": {
     "*.js": "javascriptreact",
-    "vector": "cpp"
+    "vector": "cpp",
+    "iostream": "cpp"
   }
 }
