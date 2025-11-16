@@ -74,12 +74,7 @@ func solve(n int, rects [][]int) int {
 
 	tr := NewTree(n)
 
-	todo := make([][]int, m)
-
 	update := func(w int, h int, j int) {
-		if w <= h {
-			return
-		}
 		delta := -w + h
 		k := sort.Search(n, func(k int) bool {
 			return arr[k].first > delta || arr[k].first == delta && arr[k].second >= j
@@ -91,19 +86,11 @@ func solve(n int, rects [][]int) int {
 		for _, j := range at[i] {
 			w, h := rects[j][0], rects[j][1]
 			k := sort.SearchInts(nums, h)
-			cnt.Update(k, 1)
-			sum.Update(k, -w+h)
 			if k < i {
 				update(w, h, j)
 			} else {
-				todo[k] = append(todo[k], j)
-			}
-		}
-
-		for _, j := range todo[i] {
-			w, h := rects[j][0], rects[j][1]
-			if w > h {
-				update(w, h, j)
+				cnt.Update(k, 1)
+				sum.Update(k, -w+h)
 			}
 		}
 
