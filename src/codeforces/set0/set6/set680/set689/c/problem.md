@@ -1,0 +1,77 @@
+Bad news came to Mike's village, some thieves stole a bunch of chocolates from the local factory! Horrible!
+
+Aside from loving sweet things, thieves from this area are known to be very greedy. So after a thief takes his number of chocolates for himself, the next thief will take exactly k times more than the previous one. The value of k (k > 1) is a secret integer known only to them. It is also known that each thief's bag can carry at most n chocolates (if they intend to take more, the deal is cancelled) and that there were exactly four thieves involved.
+
+Sadly, only the thieves know the value of n, but rumours say that the numbers of ways they could have taken the chocolates (for a fixed n, but not fixed k) is m. Two ways are considered different if one of the thieves (they should be numbered in the order they take chocolates) took different number of chocolates in them.
+
+Mike want to track the thieves down, so he wants to know what their bags are and value of n will help him in that. Please find the smallest possible value of n or tell him that the rumors are false and there is no such n.
+
+## Input
+
+The single line of input contains the integer m (1 ≤ m ≤ 10^15) — the number of ways the thieves might steal the chocolates, as rumours say.
+
+## Output
+
+Print the only integer n — the maximum amount of chocolates that thieves' bags can carry. If there are more than one n satisfying the rumors, print the smallest one.
+
+If there is no such n for a false-rumoured m, print -1.
+
+## Examples
+
+### Example 1
+
+**Input:**
+```
+1
+```
+
+**Output:**
+```
+8
+```
+
+### Example 2
+
+**Input:**
+```
+8
+```
+
+**Output:**
+```
+54
+```
+
+### Example 3
+
+**Input:**
+```
+10
+```
+
+**Output:**
+```
+-1
+```
+
+## Note
+
+In the first sample case the smallest n that leads to exactly one way of stealing chocolates is n = 8, whereas the amounts of stealed chocolates are (1, 2, 4, 8) (the number of chocolates stolen by each of the thieves).
+
+In the second sample case the smallest n that leads to exactly 8 ways is n = 54 with the possibilities: (1, 2, 4, 8), (1, 3, 9, 27), (2, 4, 8, 16), (2, 6, 18, 54), (3, 6, 12, 24), (4, 8, 16, 32), (5, 10, 20, 40), (6, 12, 24, 48).
+
+There is no n leading to exactly 10 ways of stealing chocolates in the third sample case.
+
+
+### ideas
+1. 像谜语一样
+2. 当袋子的大小为n时， 那么 必须有 a < n, a * k < n, a * k * k < n, a * k * k * k <= n
+3. 对于不同的a, a * k * k * k <= n, 就可以计算出k的数量
+4. 然后 sum(k) for different a >= m
+5. 但是这个迭代肯定是太慢了
+6. 除非这个n的上限比较低。
+7. 对于给定的n来说，k的上限是可以算出来的（假设a = 1)
+8. k = sqrt_3(n)
+9. 当k减少的时候， k * k * k => let k1 = (k - 1) * (k - 1) * (k - 1）， a = n / k1
+10. 即使这个n很大， k可能也就是 1e6
+11. 
