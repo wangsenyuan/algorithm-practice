@@ -1,0 +1,52 @@
+# Problem Description
+
+Given a positive integer $x$, let $f(x)$ be the positive integer formed by reversing the binary representation of $x$ without leading zeroes. For example, if $x=12=1100_2$, then $f(x)=0011_2=3$.
+
+You are given an integer $n$. Please determine if there exists a positive integer $x$ such that $x \oplus f(x) = n$*.
+
+*Here, $\oplus$ denotes the bitwise XOR operation.
+
+## Input
+
+Each test contains multiple test cases. The first line contains the number of test cases $t$ ($1 \leq t \leq 10^4$). The description of the test cases follows.
+
+The first line of each test case contains an integer $n$ ($0 \leq n < 2^{30}$).
+
+## Output
+
+For each test case, output YES if there exists a positive integer $x$ such that $x \oplus f(x) = n$, and NO otherwise.
+
+You can output the answer in any case. For example, the strings "yEs", "yes", and "Yes" are also recognized as positive responses.
+
+## Example
+
+**Input:**
+
+```text
+6
+0
+3
+6
+8
+10
+11
+```
+
+**Output:**
+
+```text
+YES
+YES
+YES
+NO
+YES
+NO
+```
+
+## Note
+
+In the first case, when $x=1$, $f(x)=1$, and $x \oplus f(x) = 0$. Thus, the answer is YES.
+
+In the second case, when $x=2$, $f(x)=1$, and $x \oplus f(x) = 3$. Thus, the answer is YES.
+
+In the fourth test case, we can show there is no $x$ that satisfies $x \oplus f(x) = 8$, so the answer is NO.
