@@ -37,3 +37,11 @@ func TestSample3(t *testing.T) {
 	expect := true
 	runSample(t, s, expect)
 }
+
+func TestSample4(t *testing.T) {
+	s := `6
+5 4 1 2 2 2
+`
+	expect := true
+	runSample(t, s, expect)
+}

@@ -71,5 +71,12 @@ func solve(a []int) bool {
 		}
 	}
 
+	for i := pos + 1; i < n && s1 < half; i++ {
+		s1 += a[i]
+		if s1 == half {
+			return true
+		}
+	}
+
 	return false
 }
