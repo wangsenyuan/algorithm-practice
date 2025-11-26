@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"math/bits"
 	"os"
 )
 
@@ -82,7 +83,60 @@ func readNNums(reader *bufio.Reader, n int) []int {
 
 const inf = 1 << 60
 
+type pair struct {
+	first  int
+	second int
+}
+
 func solve(a []int, k int) int {
+	n := len(a)
+
+	S := 2 * n
+
+	// dp[s] = (i, j) where s contains a[i] and a[j]
+	dp := make([]pair, S+1)
+
+	for i, v := range a {
+		i++
+		dp[v].second = dp[v].first
+		dp[v].first = i
+	}
+
+	merge := func(a pair, b pair) pair {
+		if b.first > a.first {
+			a.second = a.first
+			a.first = b.first
+		} else if b.first > a.second && b.first < a.first {
+			a.second = b.first
+		}
+
+		if b.second > a.second && b.second < a.first {
+			a.second = b.second
+		}
+
+		return a
+	}
+
+	H := bits.Len(uint(S))
+
+	best := -inf
+
+	for s := 1; s <= S; s++ {
+		for i := range H {
+			if (s>>i)&1 == 1 {
+				dp[s] = merge(dp[s], dp[s^(1<<i)])
+			}
+		}
+		if dp[s].first > 0 && dp[s].second > 0 {
+			i, j := dp[s].first, dp[s].second
+			tmp := i*j - k*(a[i-1]|a[j-1])
+			best = max(best, tmp)
+		}
+	}
+	return best
+}
+
+func solve1(a []int, k int) int {
 	n := len(a)
 
 	s := max(0, n-2*k)
