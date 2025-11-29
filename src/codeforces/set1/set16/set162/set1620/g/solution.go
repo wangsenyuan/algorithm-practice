@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math/bits"
 	"os"
 )
 
@@ -25,43 +26,6 @@ func readString(reader *bufio.Reader) string {
 		}
 	}
 	return s
-}
-
-func readInt64(bytes []byte, from int, val *int64) int {
-	i := from
-	var sign int64 = 1
-	if bytes[i] == '-' {
-		sign = -1
-		i++
-	}
-	var tmp int64
-	for i < len(bytes) && bytes[i] >= '0' && bytes[i] <= '9' {
-		tmp = tmp*10 + int64(bytes[i]-'0')
-		i++
-	}
-	*val = tmp * sign
-	return i
-}
-
-func readLenNums(r *bufio.Reader) []int {
-	s, _ := r.ReadBytes('\n')
-	var n int
-	pos := readInt(s, 0, &n) + 1
-	arr := make([]int, n)
-	for i := 0; i < n; i++ {
-		pos = readInt(s, pos, &arr[i]) + 1
-	}
-	return arr
-}
-
-func normalize(s string) string {
-
-	for i := len(s); i > 0; i-- {
-		if s[i-1] >= 'a' && s[i-1] <= 'z' {
-			return s[:i]
-		}
-	}
-	return ""
 }
 
 func readInt(bytes []byte, from int, val *int) int {
@@ -111,19 +75,6 @@ func readNNums(reader *bufio.Reader, n int) []int {
 	return res
 }
 
-func readUint64(bytes []byte, from int, val *uint64) int {
-	i := from
-
-	var tmp uint64
-	for i < len(bytes) && bytes[i] >= '0' && bytes[i] <= '9' {
-		tmp = tmp*10 + uint64(bytes[i]-'0')
-		i++
-	}
-	*val = tmp
-
-	return i
-}
-
 const MOD = 998244353
 
 func modMul(a, b int) int {
@@ -154,11 +105,57 @@ func pow(a, b int) int {
 	return r
 }
 
-func inverse(a int) int {
-	return pow(a, MOD-2)
+func solve(S []string) int64 {
+	n := len(S)
+	cnt := make([][26]int, n)
+	for i, s := range S {
+		for j := range len(s) {
+			cnt[i][int(s[j]-'a')]++
+		}
+	}
+
+	f := make([]int, 1<<n)
+	mn := [26]int{}
+
+	for mask := 1; mask < 1<<n; mask++ {
+		for i := range 26 {
+			mn[i] = INF
+		}
+		for m := uint(mask); m > 0; m &= m - 1 {
+			t := bits.TrailingZeros(m)
+			for i, c := range cnt[t][:] {
+				mn[i] = min(mn[i], c)
+			}
+		}
+
+		res := bits.OnesCount(uint(mask))%2*2 - 1 + MOD
+		for i := range 26 {
+			res = modMul(res, mn[i]+1)
+		}
+		f[mask] = res
+	}
+
+	for i := range n {
+		for s := 0; s < 1<<n; s++ {
+			s |= 1 << i
+			f[s] = modAdd(f[s], f[s^(1<<i)])
+		}
+	}
+	var ans int
+
+	for mask, v := range f {
+		var sum int
+		for m := uint(mask); m > 0; m &= m - 1 {
+			sum += bits.TrailingZeros(m)
+		}
+		k := bits.OnesCount(uint(mask))
+		ans ^= v * k * (sum + k)
+	}
+
+	return int64(ans)
 }
 
-func solve(S []string) int64 {
+func solve1(S []string) int64 {
 	n := len(S)
 	// n <= 23
 	// f([t1....tm]) = number of strings, being sub-seq of at least one of ti

@@ -6,50 +6,42 @@ import (
 	"testing"
 )
 
-func runSample(t *testing.T, s string, expect bool) {
+func runSample(t *testing.T, s string, expect int) {
 	reader := bufio.NewReader(strings.NewReader(s))
 	res := drive(reader)
 	if res != expect {
-		t.Errorf("Sample expect %t, but got %t", expect, res)
+		t.Errorf("Sample expect %d, but got %d", expect, res)
 	}
 }
 
 func TestSample1(t *testing.T) {
-	s := `3
-1 3 2
+	s := `3 3 2 4 4
+2 5 4 10
 `
-	expect := true
+	expect := 1
 	runSample(t, s, expect)
 }
 
 func TestSample2(t *testing.T) {
-	s := `5
-1 2 3 4 5
+	s := `3 3 3 3 5
+2 3 5 4 2
 `
-	expect := false
+	expect := 0
 	runSample(t, s, expect)
 }
 
 func TestSample3(t *testing.T) {
-	s := `5
-2 2 3 4 5
+	s := `5 5 1 2 3
+2 2 3
 `
-	expect := true
+	expect := -1
 	runSample(t, s, expect)
 }
 
 func TestSample4(t *testing.T) {
-	s := `6
-5 4 1 2 2 2
+	s := `3 4 1 1 3
+2 3 2
 `
-	expect := true
-	runSample(t, s, expect)
-}
-
-func TestSample5(t *testing.T) {
-	s := `5
-5 2 2 3 4
-`
-	expect := true
+	expect := 3
 	runSample(t, s, expect)
 }

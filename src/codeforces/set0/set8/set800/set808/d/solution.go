@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 )
 
 func main() {
@@ -27,55 +28,43 @@ func drive(reader *bufio.Reader) bool {
 }
 
 func solve(a []int) bool {
-	// n := len(a)
-	var sum int
+	n := len(a)
+	var sum []int
+	sum = append(sum, 0)
 	for _, v := range a {
-		sum += v
+		sum = append(sum, sum[len(sum)-1]+v)
 	}
-	if sum%2 == 1 {
+	if sum[n]%2 == 1 {
 		return false
 	}
-	half := sum / 2
+	half := sum[n] / 2
 
-	s1, s2 := 0, sum
-	var pos int
-	n := len(a)
-	for pos < n {
-		s1 += a[pos]
-		s2 -= a[pos]
-		if s1 == s2 {
-			return true
-		}
-		if s1 > half {
-			s1 -= a[pos]
-			s2 += a[pos]
+	pos := make(map[int]int)
+
+	for i, v := range a {
+		pos[v] = i
+	}
+
+	var pref int
+	for i := range n {
+		if pref > half {
 			break
 		}
-		pos++
-	}
-	// a[:pos]是前半部分，且s1 < half, s2 > half
-	// 如果将某个pos前面的数移动到后面
-	// s1 - x + a[pos] = half
-	x := s1 + a[pos] - half
-	for i := range pos {
-		if a[i] == x {
-			return true
-		}
-	}
 
-	// 或者将后面的某个数，移动到第一位
-	// s1 + x = half
-	for i := pos; i < n; i++ {
-		if a[i] == half-s1 {
+		if j, ok := pos[half-pref]; ok && i <= j {
 			return true
 		}
-	}
+		// half + a[i]
 
-	for i := pos + 1; i < n && s1 < half; i++ {
-		s1 += a[i]
-		if s1 == half {
+		j := sort.Search(len(sum), func(j int) bool {
+			return sum[j] >= half+a[i]
+		})
+
+		if j <= n && sum[j] == half+a[i] {
 			return true
 		}
+
+		pref += a[i]
 	}
 
 	return false
