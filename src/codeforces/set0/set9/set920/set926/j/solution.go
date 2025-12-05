@@ -4,11 +4,13 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"runtime/debug"
 	"slices"
 	"sort"
 )
 
 func main() {
+	debug.SetGCPercent(-1)
 	reader := bufio.NewReader(os.Stdin)
 	res := drive(reader)
 	s := fmt.Sprintf("%v", res)

@@ -32,16 +32,6 @@ func main() {
 	fmt.Print(buf.String())
 }
 
-func readString(reader *bufio.Reader) string {
-	s, _ := reader.ReadString('\n')
-	for i := 0; i < len(s); i++ {
-		if s[i] == '\n' || s[i] == '\r' {
-			return s[:i]
-		}
-	}
-	return s
-}
-
 func readInt(bytes []byte, from int, val *int) int {
 	i := from
 	sign := 1
