@@ -5,6 +5,7 @@ import (
 	"container/heap"
 	"fmt"
 	"os"
+	"slices"
 )
 
 func main() {
@@ -26,7 +27,7 @@ func drive(reader *bufio.Reader) int {
 
 const inf = 1 << 60
 
-func solve(n int, m int, envelopes [][]int) int {
+func solve1(n int, m int, envelopes [][]int) int {
 	k := len(envelopes)
 
 	items := make([]*Item, k)
@@ -86,6 +87,69 @@ func solve(n int, m int, envelopes [][]int) int {
 	}
 
 	return ans
+}
+
+func solve(n int, m int, envelopes [][]int) int {
+	dp := make([][]int, n+2)
+
+	// k := len(envelopes)
+	for i := range n + 2 {
+		dp[i] = make([]int, m+1)
+		for j := range m + 1 {
+			dp[i][j] = inf
+		}
+	}
+
+	k := len(envelopes)
+
+	items := make([]*Item, k)
+
+	begin := make([][]int, n+1)
+	end := make([][]int, n+1)
+
+	for i := range k {
+		it := new(Item)
+		it.id = i
+		s, t, d, w := envelopes[i][0], envelopes[i][1], envelopes[i][2], envelopes[i][3]
+		it.w = w
+		it.d = d
+		items[i] = it
+		begin[s] = append(begin[s], i)
+		end[t] = append(end[t], i)
+	}
+
+	dp[0][0] = 0
+
+	var pq PriorityQueue
+
+	for i := 0; i <= n; i++ {
+		for _, j := range begin[i] {
+			heap.Push(&pq, items[j])
+		}
+
+		if len(pq) > 0 {
+			j := pq[0].id
+			d, w := envelopes[j][2], envelopes[j][3]
+			// 如果要干扰，就需要干扰这么久
+			for j := 1; j <= m; j++ {
+				dp[i+1][j] = min(dp[i+1][j], dp[i][j-1])
+			}
+
+			// 如果不干扰
+			for j := range m + 1 {
+				dp[d+1][j] = min(dp[d+1][j], dp[i][j]+w)
+			}
+		} else {
+			for j := range m + 1 {
+				dp[i+1][j] = min(dp[i+1][j], dp[i][j])
+			}
+		}
+		for _, j := range end[i] {
+			pq.remove(items[j])
+		}
+	}
+
+	return slices.Min(dp[n+1])
 }
 
 // An Item is something we manage in a priority queue.
