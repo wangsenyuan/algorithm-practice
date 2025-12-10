@@ -64,28 +64,53 @@ func init() {
 }
 
 func solve(a []int) int {
-	// 假设这样一个序列b, 满足条件
-	// 如果b的长度正好 = 3， 那么其中必须有奇数个偶数
-	// 如果长度 = 4, 1, 0，1, 1 (或者全部是偶数）
-	// 如果长度 > 4, 0, 1, 1, 0, 1, 1, 0 （或者全部是偶数)
-	//              1, 0, 1, 1, 0, 1, 1, 0
-	// 很明显就是存在一个pattern
-	// dp[x][j] 表示第x%3个位置为0/1时的总计数
-	// 如果a[i]是偶数，要怎么添加进去呢？
-	// 如果最后两个数的sum是偶数，那么a[i]就可以加进去
-	// dp[3][0] = dp[2][0]
-	// res += dp[3][0]
-	// 增加一个新的偶数进来时，前面两个数必须是偶数/奇数，
-	// 增加一个新的奇数进来时，前面必须一个奇数，一个偶数
-	// 00, 11, 01, 10
-	// 0表示没有数字的状态
-	// 1表示有一个0的状态
-	// 2表示有一个1的状态
-	// 3表示00
-	// 4表示01
-	// 5表示10
-	// 6表示11
-	// dp[x] = 前面两个数是这些状态时的奇数
+
+	f := func(state int) int {
+		// 000, 101, 011, 110
+		dp := make([][]int, 4)
+		ndp := make([][]int, 4)
+		for i := range 4 {
+			dp[i] = make([]int, 3)
+			ndp[i] = make([]int, 3)
+		}
+		// 长度为0，且当前数字所在的位置为i是的状态
+		dp[0][2] = 1
+
+		for _, v := range a {
+			for l := range 4 {
+				for j := range 3 {
+					nl := min(l+1, 3)
+					nj := (j + 1) % 3
+					if v&1 == (state>>nj)&1 {
+						ndp[nl][nj] = add(ndp[nl][nj], dp[l][j])
+					}
+				}
+			}
+			for l := range 4 {
+				for j := range 3 {
+					dp[l][j] = add(dp[l][j], ndp[l][j])
+					ndp[l][j] = 0
+				}
+			}
+		}
+
+		var res int
+		for j := range 3 {
+			res = add(res, dp[3][j])
+		}
+
+		return res
+	}
+
+	res := f(0)
+	res = add(res, f(3))
+	res = add(res, f(5))
+	res = add(res, f(6))
+	return res
+}
+
+func solve1(a []int) int {
+
 	dp := make([]int, 7)
 	dp[0] = 1
 	var cnt0 int
