@@ -1,0 +1,81 @@
+# Problem B
+
+You are given a directed weighted graph with n nodes and 2n - 2 edges. The nodes are labeled from 1 to n, while the edges are labeled from 1 to 2n - 2. The graph's edges can be split into two parts.
+
+- The first n - 1 edges will form a rooted spanning tree, with node 1 as the root. All these edges will point away from the root.
+- The last n - 1 edges will be from node i to node 1, for all 2 ≤ i ≤ n.
+
+You are given q queries. There are two types of queries:
+
+1. `1 i w`: Change the weight of the i-th edge to w
+2. `2 u v`: Print the length of the shortest path between nodes u to v
+
+Given these queries, print the shortest path lengths.
+
+## Input
+
+The first line of input will contain two integers n, q (2 ≤ n, q ≤ 200 000), the number of nodes, and the number of queries, respectively.
+
+The next 2n - 2 integers will contain 3 integers ai, bi, ci, denoting a directed edge from node ai to node bi with weight ci.
+
+The first n - 1 of these lines will describe a rooted spanning tree pointing away from node 1, while the last n - 1 of these lines will have bi = 1.
+
+More specifically:
+
+- The edges (a1, b1), (a2, b2), ... (an - 1, bn - 1) will describe a rooted spanning tree pointing away from node 1.
+- bj = 1 for n ≤ j ≤ 2n - 2.
+- an, an + 1, ..., a2n - 2 will be distinct and between 2 and n.
+
+The next q lines will contain 3 integers, describing a query in the format described in the statement.
+
+All edge weights will be between 1 and 10^6.
+
+## Output
+
+For each type 2 query, print the length of the shortest path in its own line.
+
+## Example
+
+### Input
+
+```
+5 9
+1 3 1
+3 2 2
+1 4 3
+3 5 4
+5 1 5
+3 1 6
+2 1 7
+4 1 8
+2 1 1
+2 1 3
+2 3 5
+2 5 2
+1 1 100
+2 1 3
+1 8 30
+2 4 2
+2 2 4
+```
+
+### Output
+
+```
+0
+1
+4
+8
+100
+132
+10
+```
+
+
+### ideas
+1. (u, v)之间的最短距离
+2. 如果 anc(u, v) = true, 那么就是 dep[v] - dep[u]
+3. else let p = lca(u, v), 然后从u -> 1 -> p -> v
+4. 然后就是修改的问题，可以用inorder给所有的节点进行编号，然后修改某条边的时候
+5. 如果它是树中的边，就一个区间修改（整个子树都需要修改）
+6. 如果是反向边，就单独记录就可以了
