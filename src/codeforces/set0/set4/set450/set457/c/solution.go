@@ -26,12 +26,14 @@ func drive(reader *bufio.Reader) int {
 	return solve(voters)
 }
 
-func solve(people [][]int) int {
+func prepare(people [][]int) [][]int {
 	slices.SortFunc(people, func(a, b []int) int {
 		return b[1] - a[1]
 	})
 
 	var ids []int
+	ids = append(ids, 0)
+
 	for _, cur := range people {
 		ids = append(ids, cur[0])
 	}
@@ -45,6 +47,69 @@ func solve(people [][]int) int {
 		j := sort.SearchInts(ids, cur[0])
 		arr[j] = append(arr[j], cur[1])
 	}
+	return arr
+}
+
+func solve(people [][]int) int {
+	arr := prepare(people)
+
+	cnt0 := len(arr[0])
+	n := len(people)
+	k := n - cnt0
+	todo := make([][]int, k)
+	m := len(arr)
+
+	var cost int
+	var cnt int
+
+	var nums []int
+
+	for i := 1; i < m; i++ {
+		for j := 0; j < len(arr[i]); j++ {
+			todo[j] = append(todo[j], arr[i][j])
+			cost += arr[i][j]
+			cnt++
+			nums = append(nums, arr[i][j])
+		}
+	}
+	slices.Sort(nums)
+	nums = slices.Compact(nums)
+	w := len(nums)
+	tr := NewTree(w)
+
+	// buy every one
+	best := cost
+
+	for d := range k {
+		// 这些人做为候选
+		for _, v := range todo[d] {
+			i := sort.SearchInts(nums, v)
+			tr.Update(i, v)
+			cost -= v
+			cnt--
+		}
+
+		if cnt0+cnt > d+1 {
+			// 其他人最多d+1张票
+			best = min(best, cost)
+		} else {
+			// cnt0 + cnt <= d + 1
+			need := d + 2 - (cnt0 + cnt)
+			// 还需要这么多张票
+			if tr.cnt[0] >= need {
+				tmp := tr.GetFirstKSum(need)
+				best = min(best, cost+tmp)
+			}
+		}
+	}
+
+	return best
+}
+
+func solve1(people [][]int) int {
+
+	arr := prepare(people)
+	m := len(arr)
 
 	check := func(k int) int {
 		cnt := len(arr[0])
@@ -98,4 +163,54 @@ func (h *IntHeap) Pop() any {
 	x := old[n-1]
 	*h = old[0 : n-1]
 	return x
+}
+
+type Tree struct {
+	val []int
+	cnt []int
+	sz  int
+}
+
+func NewTree(n int) *Tree {
+	return &Tree{
+		val: make([]int, 4*n),
+		cnt: make([]int, 4*n),
+		sz:  n,
+	}
+}
+
+func (tr *Tree) Update(p int, v int) {
+	var f func(i int, l int, r int)
+	f = func(i int, l int, r int) {
+		if l == r {
+			tr.val[i] += v
+			tr.cnt[i]++
+			return
+		}
+		mid := (l + r) / 2
+		if p <= mid {
+			f(i*2+1, l, mid)
+		} else {
+			f(i*2+2, mid+1, r)
+		}
+		tr.val[i] = tr.val[i*2+1] + tr.val[i*2+2]
+		tr.cnt[i] = tr.cnt[i*2+1] + tr.cnt[i*2+2]
+	}
+	f(0, 0, tr.sz-1)
+}
+
+func (tr *Tree) GetFirstKSum(k int) int {
+	var f func(i int, l int, r int, k int) int
+	f = func(i int, l int, r int, k int) int {
+		if l == r {
+			return tr.val[i] / tr.cnt[i] * k
+		}
+		mid := (l + r) / 2
+		if tr.cnt[i*2+1] >= k {
+			return f(i*2+1, l, mid, k)
+		}
+		return tr.val[i*2+1] + f(i*2+2, mid+1, r, k-tr.cnt[i*2+1])
+	}
+
+	return f(0, 0, tr.sz-1, k)
 }
