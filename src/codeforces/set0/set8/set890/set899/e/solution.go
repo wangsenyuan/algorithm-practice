@@ -110,6 +110,70 @@ const inf = 1 << 60
 func solve(nums []int) int {
 	n := len(nums)
 
+	next := make([]int, n)
+	prev := make([]int, n)
+	id := make([]int, n)
+
+	for i := range n {
+		prev[i] = i - 1
+		id[i] = i
+		if i > 0 && nums[i] == nums[i-1] {
+			prev[i] = prev[i-1]
+			id[i] = id[i-1]
+		}
+	}
+	for i := n - 1; i >= 0; i-- {
+		next[i] = i + 1
+		if i+1 < n && nums[i] == nums[i+1] {
+			next[i] = next[i+1]
+		}
+	}
+
+	items := make([]*Item, n)
+	var pq PriorityQueue
+	for i := range n {
+		if prev[i] == i-1 {
+			it := new(Item)
+			it.id = i
+			it.val = next[i] - i
+			items[i] = it
+			heap.Push(&pq, it)
+		}
+	}
+
+	var ans int
+	for pq.Len() > 0 {
+		ans++
+		it := heap.Pop(&pq).(*Item)
+		i := it.id
+		l := prev[i]
+		r := next[i]
+		if l >= 0 && r < n && nums[l] == nums[r] {
+			l = id[l]
+			heap.Remove(&pq, items[r].index)
+			items[l].val += items[r].val
+			heap.Fix(&pq, items[l].index)
+
+			next[l] = next[r]
+			if next[r] < n {
+				prev[next[r]] = l
+			}
+		} else {
+			if l >= 0 {
+				next[id[l]] = r
+			}
+			if r < n {
+				prev[r] = l
+			}
+		}
+	}
+
+	return ans
+}
+
+func solve1(nums []int) int {
+	n := len(nums)
+
 	tr1 := NewSegTree(n, -1, max)
 	tr2 := NewSegTree(n, n, min)
 
