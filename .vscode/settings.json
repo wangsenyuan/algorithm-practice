@@ -5,6 +5,7 @@
   "files.associations": {
     "*.js": "javascriptreact",
     "vector": "cpp",
-    "iostream": "cpp"
+    "iostream": "cpp",
+    "queue": "cpp"
   }
 }
