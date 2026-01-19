@@ -44,5 +44,5 @@ func solve(rects [][]int) bool {
 		sum += dx * dy
 	}
 
-	return sum == (x2-x1)*(y2-y1)
+	return sum == (x2-x1)*(y2-y1) && (x2-x1) == (y2-y1)
 }
