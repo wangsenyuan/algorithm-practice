@@ -50,18 +50,14 @@ func solve(a []int) []int {
 		return cmp.Or(y.score-x.score, x.id-y.id)
 	})
 
-	dp := make([]SegmentTree, n)
+	dp := NewSegTree(n)
 
 	for i := n - 1; i >= 0; i-- {
-		dp[i] = NewSegTree(n)
-		for j := i; j < n; j++ {
-			// 如果i..j rank 3
-			v := students[j].score
-			if j+1 < n {
-				v -= students[j+1].score
-			}
-			dp[i].Update(j-i, v)
+		v := students[i].score
+		if i+1 < n {
+			v -= students[i+1].score
 		}
+		dp.Update(i, v)
 	}
 
 	// d1 is fixed
@@ -88,12 +84,12 @@ func solve(a []int) []int {
 					// reset
 					d[2] = -inf
 				}
-				d2 := dp[i+1].Get(l-1, r)
+				d2 := dp.Get(i+1+l-1, i+1+r)
 				if d[2] <= d2.first {
 					d[1] = students[i].score - students[i+1].score
 					d[2] = d2.first
 					arr[1] = i - f + 1
-					arr[2] = d2.second + 1
+					arr[2] = d2.second - i
 					found = true
 					// 还必须知道位置
 				}
