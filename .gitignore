@@ -15,3 +15,5 @@ src/honnef.co/
 src/k8s.io/
 src/sourcegraph.com/
 .metals/
+.cursor/
+.vscode/
