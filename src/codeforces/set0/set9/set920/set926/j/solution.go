@@ -18,13 +18,36 @@ func main() {
 }
 
 func drive(reader *bufio.Reader) []int {
-	var n int
-	fmt.Fscan(reader, &n)
+	buf := make([]byte, 4096)
+	var _i, _n int
+	rc := func() byte {
+		if _i == _n {
+			_n, _ = reader.Read(buf)
+			if _n == 0 {
+				return 0
+			}
+			_i = 0
+		}
+		b := buf[_i]
+		_i++
+		return b
+	}
+	rd := func() (x int) {
+		b := rc()
+		for ; '0' > b; b = rc() {
+		}
+		for ; '0' <= b; b = rc() {
+			x = x*10 + int(b&15)
+		}
+		return
+	}
+
+	n := rd()
 	segments := make([][]int, n)
 	for i := 0; i < n; i++ {
-		segments[i] = make([]int, 2)
-		fmt.Fscan(reader, &segments[i][0], &segments[i][1])
+		segments[i] = []int{rd(), rd()}
 	}
+
 	return solve(segments)
 }
 

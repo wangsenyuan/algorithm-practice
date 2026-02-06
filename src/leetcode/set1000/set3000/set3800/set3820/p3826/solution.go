@@ -41,8 +41,6 @@ func minPartitionScore(nums []int, k int) int64 {
 			v := vec{s, f[i] + s*s - s}
 			f[i] = p.dot(q[0]) + s*s + s
 
-			// 读者可以把 detCmp 改成 det 感受下这个算法的效率
-			// 目前 det 也能过，可以试试 hack 一下
 			for len(q) > 1 && q[len(q)-1].sub(q[len(q)-2]).detCmp(v.sub(q[len(q)-1])) <= 0 {
 				q = q[:len(q)-1]
 			}
