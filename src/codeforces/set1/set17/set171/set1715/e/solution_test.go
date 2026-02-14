@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func runSample(t *testing.T, n int, k int, E [][]int, expect []int64) {
+func runSample(t *testing.T, n int, k int, E [][]int, expect []int) {
 	res := solve(n, k, E)
 
 	if !reflect.DeepEqual(res, expect) {
@@ -18,7 +18,7 @@ func TestSample1(t *testing.T) {
 	E := [][]int{
 		{1, 3, 1},
 	}
-	expect := []int64{0, 1, 1}
+	expect := []int{0, 1, 1}
 	runSample(t, n, k, E, expect)
 }
 
@@ -29,7 +29,7 @@ func TestSample2(t *testing.T) {
 		{2, 4, 5},
 		{3, 4, 7},
 	}
-	expect := []int64{0, 1, 4, 6}
+	expect := []int{0, 1, 4, 6}
 	runSample(t, n, k, E, expect)
 }
 
@@ -42,6 +42,6 @@ func TestSample3(t *testing.T) {
 		{2, 3, 21},
 		{4, 2, 1},
 	}
-	expect := []int64{0, 1, 2, 2, 3}
+	expect := []int{0, 1, 2, 2, 3}
 	runSample(t, n, k, E, expect)
 }
