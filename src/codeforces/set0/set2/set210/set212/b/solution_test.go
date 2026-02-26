@@ -75,3 +75,31 @@ zasdx
 `
 	runSample(t, s, expect)
 }
+
+func TestSample4(t *testing.T) {
+	s := `ygkpypcmqcdyobghazieayxxaoiukrmqrbjepkhswwqhrybvdwwysisnaxjqcuqbqdnmbimwsvgactidnhogjfpfbgsawmynbjgw
+10
+pf
+swy
+pcy
+ws
+awm
+cyp
+ydo
+imw
+rhy
+wqh
+`
+	expect := `1
+1
+1
+2
+1
+1
+1
+1
+1
+1
+`
+	runSample(t, s, expect)
+}

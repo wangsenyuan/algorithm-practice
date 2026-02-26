@@ -27,52 +27,64 @@ func drive(reader *bufio.Reader, writer *bufio.Writer) {
 
 func solve(reader *bufio.Reader, writer *bufio.Writer) {
 	s := readString(reader)
+	buf := []byte(s)
+	buf = slices.Compact(buf)
+	s = string(buf)
 	n := len(s)
-
-	wp := make(map[int32]int32)
-	var last [26]int32
-	for i := range 26 {
-		last[i] = -1
-	}
-
-	var order [26]struct{ d, last int }
-
-	cmp := func(a, b struct{ d, last int }) int {
-		return b.last - a.last
-	}
-	for r := range n {
-		last[s[r]-'a'] = int32(r)
-
-		size := 0
-		for d := range 26 {
-			if last[d] >= 0 {
-				order[size].d = d
-				order[size].last = int(last[d])
-				size++
-			}
-		}
-
-		slices.SortFunc(order[:size], cmp)
-
-		var C int32
-		for i := 0; i < size; i++ {
-			C |= 1 << order[i].d
-			if r < n-1 && (C>>(s[r+1]-'a'))&1 == 1 {
-				break
-			}
-			wp[C]++
-		}
-	}
 
 	t := readString(reader)
 	m, _ := strconv.Atoi(t)
 
-	for range m {
-		cur := readString(reader)
-		var C int32
-		for _, ch := range cur {
-			C |= 1 << (ch - 'a')
+	set := NewBitSet(1 << 26)
+
+	a := make([]int, m)
+	for i := range m {
+		w := readString(reader)
+		for _, ch := range w {
+			a[i] |= 1 << (ch - 'a')
 		}
-		fmt.Fprintln(writer, wp[C])
+		set.Set(a[i])
 	}
+
+	res := make(map[int]int)
+
+	for i := range n {
+		var mask int
+		for j := i; j < n && (i == 0 || s[i-1] != s[j]); j++ {
+			x := int(s[j] - 'a')
+			if mask&(1<<x) == 0 {
+				mask |= 1 << x
+				if set.IsSet(mask | (1 << x)) {
+					res[mask]++
+				}
+			}
+		}
+	}
+
+	for _, v := range a {
+		fmt.Fprintln(writer, res[v])
+	}
+}
+
+type BitSet struct {
+	sz  int
+	arr []uint64
+}
+
+func NewBitSet(n int) *BitSet {
+	sz := (n + 63) / 64
+	arr := make([]uint64, sz)
+	return &BitSet{sz, arr}
+}
+
+func (bs *BitSet) Set(p int) {
+	i, j := p/64, p%64
+	i = bs.sz - 1 - i
+	bs.arr[i] |= 1 << uint64(j)
+}
+
+func (bs *BitSet) IsSet(p int) bool {
+	i, j := p/64, p%64
+	i = bs.sz - 1 - i
+	return (bs.arr[i]>>uint64(j))&1 == 1
 }
