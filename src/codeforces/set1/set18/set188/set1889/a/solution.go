@@ -126,43 +126,29 @@ func solve(s string) (ok bool, res []int) {
 	}
 
 	cnt := make([]int, 2)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		cnt[int(s[i]-'0')]++
 	}
 	if cnt[0] != cnt[1] {
 		return
 	}
 
-	ln := 300 + n + 10
-
-	buf := make([]byte, 2*ln)
-	copy(buf[ln:], s)
-	front := ln
-	l, r := ln, ln+n-1
-
-	for l < r {
-		if buf[l] != buf[r] {
-			l++
-			r--
-			continue
-		}
-		if buf[l] == '0' {
-			for buf[l] == '0' {
-				res = append(res, r-front+1)
-				buf[r+1] = '0'
-				r++
-				l++
-			}
-
+	i, j := 0, n-1
+	for s != "" {
+		if s[0] != s[len(s)-1] {
+			s = s[1 : len(s)-1]
+			j--
+		} else if s[0] == '0' {
+			s = s[1:] + "0"
+			j++
+			res = append(res, j)
 		} else {
-			for buf[r] == '1' {
-				res = append(res, l-front)
-				l--
-				buf[l] = '1'
-				front -= 2
-				r--
-			}
+			s = "1" + s[:len(s)-1]
+			j++
+			res = append(res, i)
 		}
+		i++
 	}
+
 	return true, res
 }
