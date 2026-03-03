@@ -22,9 +22,9 @@ func main() {
 		if len(res) == 0 {
 			buf.WriteString("-1\n")
 		} else {
-			buf.WriteString(fmt.Sprintf("%d\n", len(res)))
+			fmt.Fprintf(&buf, "%d\n", len(res))
 			for _, x := range res {
-				buf.WriteString(fmt.Sprintf("%d %d\n", x[0], x[1]))
+				fmt.Fprintf(&buf, "%d %d\n", x[0], x[1])
 			}
 		}
 	}
@@ -106,55 +106,41 @@ func solve(a []int) [][]int {
 		sum += a[i]
 	}
 
-	if sum%2 != 0 {
-		return nil
+	tar := 1
+	if sum < 0 {
+		tar = -1
 	}
-	var res [][]int
 
-	for i := 0; i < n; {
-		first := -1
-		second := -1
-		var x int
+	flip := make([]bool, n)
+
+	for i := 1; i < n; {
+		if a[i] != tar || sum == 0 {
+			i++
+			continue
+		}
+		// a[i] = tar (1 or -1)
 		j := i
-		for i < n && second < 0 {
-			if a[i] != 0 {
-				if first < 0 {
-					first = i
-				} else {
-					second = i
-				}
-			}
-			if (i-j)&1 == 0 {
-				x += a[i]
-			} else {
-				x -= a[i]
+		for i < n && a[i] == tar {
+			if sum != 0 && (i-j)%2 == 0 {
+				flip[i] = true
+				sum -= 2 * a[i]
 			}
 			i++
 		}
-		if x == 0 {
-			// i == n
-			res = append(res, []int{j + 1, i})
-			continue
-		}
-		// x = 2 or x = -2
-		ln := i - j
-		if ln%2 == 0 {
-			// flip last one
-			res = append(res, []int{j + 1, i - 1})
-			res = append(res, []int{i, i})
-			continue
+	}
+
+	if sum != 0 {
+		return nil
+	}
+
+	var res [][]int
+
+	for i := 0; i < n; i++ {
+		if i+1 < n && flip[i+1] {
+			res = append(res, []int{i + 1, i + 2})
+			i++
 		} else {
-			// last one is in the positive position
-			if first == j {
-				res = append(res, []int{j + 1, j + 1})
-				res = append(res, []int{j + 2, i})
-			} else {
-				// a[j] == 0
-				res = append(res, []int{j + 1, j + 1})
-				j++
-				res = append(res, []int{j + 1, i - 1})
-				res = append(res, []int{i, i})
-			}
+			res = append(res, []int{i + 1, i + 1})
 		}
 	}
 
