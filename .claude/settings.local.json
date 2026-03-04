@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(go test ./... -v)",
-      "Bash(xxd /Users/wangsenyuan/git/github/learn-go/src/codeforces/set0/set5/set570/set571/c/problem.md)",
-      "Bash(go test -run TestSample4 -v)"
-    ]
-  }
-}
