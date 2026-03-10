@@ -28,30 +28,6 @@ func main() {
 	fmt.Print(buf.String())
 }
 
-func readInt64(bytes []byte, from int, val *int64) int {
-	i := from
-	var tmp int64
-	for i < len(bytes) && bytes[i] >= '0' && bytes[i] <= '9' {
-		tmp = tmp*10 + int64(bytes[i]-'0')
-		i++
-	}
-	*val = tmp
-	return i
-}
-
-func readUint64(bytes []byte, from int, val *uint64) int {
-	i := from
-
-	var tmp uint64
-	for i < len(bytes) && bytes[i] >= '0' && bytes[i] <= '9' {
-		tmp = tmp*10 + uint64(bytes[i]-'0')
-		i++
-	}
-	*val = tmp
-
-	return i
-}
-
 func readInt(bytes []byte, from int, val *int) int {
 	i := from
 	sign := 1
@@ -66,16 +42,6 @@ func readInt(bytes []byte, from int, val *int) int {
 	}
 	*val = tmp * sign
 	return i
-}
-
-func readString(reader *bufio.Reader) string {
-	s, _ := reader.ReadString('\n')
-	for i := 0; i < len(s); i++ {
-		if s[i] == '\n' || s[i] == '\r' {
-			return s[:i]
-		}
-	}
-	return s
 }
 
 func readNum(reader *bufio.Reader) (a int) {
@@ -108,33 +74,31 @@ func readNNums(reader *bufio.Reader, n int) []int {
 	}
 	return res
 }
-func solve(A []int) [][]int {
-	// A[l] + A[r] is odd, change A[r]
-	// else change A[l]
-	// at most n operations
-	// 利用操作二，将偶数变成不大于后面偶数的值
-	var res [][]int
-
+func solve(A []int) (res [][]int) {
 	n := len(A)
-	x := A[0] & 1
-	// 从后之前把和A[0]同奇偶性的数字进行降序排列
-	for i, j := n-1, -1; i >= 0; i-- {
-		if A[i]&1 == x {
-			if j > i && A[i] > A[j] {
-				res = append(res, []int{i + 1, j + 1})
-				A[i] = A[j]
+	if n == 1 {
+		return
+	}
+
+	if A[0] != A[n-1] {
+		res = append(res, []int{1, n})
+		if (A[0]+A[n-1])&1 == 1 {
+			A[n-1] = A[0]
+		} else {
+			A[0] = A[n-1]
+		}
+	}
+	// A[0] = A[n-1]
+
+	for i := 1; i < n-1; i++ {
+		if A[i] != A[0] {
+			if (A[i]+A[0])&1 == 1 {
+				res = append(res, []int{1, i + 1})
+			} else {
+				res = append(res, []int{i + 1, n})
 			}
-			j = i
 		}
 	}
 
-	// 从前往后，把和A[0]不同奇偶性的数，设置为左边的数
-	for i := 1; i < n; i++ {
-		if A[i]&1 == 1-x {
-			res = append(res, []int{i, i + 1})
-			A[i] = A[i-1]
-		}
-	}
-
-	return res
+	return
 }
