@@ -15,7 +15,7 @@ go test ./src/codeforces/set1/set18/set185/set1857/g/
 # Run a single test case
 go test ./src/codeforces/set1/set18/set185/set1857/g/ -run TestSample1
 
-# Run all tests (slow — tens of thousands of packages)
+# Run all tests (slow — tens of thousands of packages) must ask permission before execution
 go test ./...
 
 # Update Go version
