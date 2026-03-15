@@ -67,4 +67,30 @@ In the third test case, one valid pair is `p = 3` and `q = 8`, because:
 
 This is optimal. Note that `(p, q) = (3, 4)` is also a valid answer.
 
+### Key Insights
+
+1. The condition `p & q = 0` means that for every bit position, we may choose only one of three patterns:
+   - `(0, 0)`
+   - `(1, 0)`
+   - `(0, 1)`
+
+2. The objective `|x - p| + |y - q|` is separable by bits only if we also know whether the already chosen higher bits make:
+   - `p < x`, `p = x`, or `p > x`
+   - `q < y`, `q = y`, or `q > y`
+
+3. That suggests a digit-DP from the highest bit to the lowest bit.
+   For each bit, try the three valid `(p_bit, q_bit)` choices and update the relation states for `p` vs `x` and `q` vs `y`.
+
+4. Once a prefix is already smaller or larger, the contribution of each later bit to the absolute difference is fixed.
+   This makes the DP transition straightforward.
+
+5. The full state space is tiny:
+   - 31 bit positions
+   - 3 states for `p` relative to `x`
+   - 3 states for `q` relative to `y`
+
+   So the solution runs in constant time per test case.
+
+6. After computing the minimum value, store parent transitions to reconstruct one optimal pair `(p, q)`.
+
 
