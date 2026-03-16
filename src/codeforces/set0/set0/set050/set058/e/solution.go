@@ -138,13 +138,7 @@ func solve(expr string) string {
 					continue
 				}
 
-				sum := s.carry
-				if dx >= 0 {
-					sum += dx
-				}
-				if dy >= 0 {
-					sum += dy
-				}
+				sum := s.carry + max(dx, 0) + max(dy, 0)
 				dz := sum % 10
 
 				ns := state{
