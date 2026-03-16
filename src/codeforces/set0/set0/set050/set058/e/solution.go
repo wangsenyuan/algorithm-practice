@@ -11,268 +11,223 @@ import (
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-	expr := readString(reader)
-	res := solve(expr)
+	res := drive(reader)
 	fmt.Println(res)
 }
 
-func readString(reader *bufio.Reader) string {
+func drive(reader *bufio.Reader) string {
 	s, _ := reader.ReadString('\n')
-	return strings.TrimSpace(s)
+	return solve(strings.TrimSpace(s))
 }
 
-type data struct {
-	i, j, k, carry      int
-	stopX, stopY        int
-	topX, topY          int
-	u, v, w             int
+// parseExpr splits "a+b=c" and returns reversed a, b, c (LSB first).
+func parseExpr(expr string) (string, string, string) {
+	plus := strings.IndexByte(expr, '+')
+	eq := strings.IndexByte(expr, '=')
+	return rev(expr[:plus]), rev(expr[plus+1 : eq]), rev(expr[eq+1:])
 }
 
-type item struct {
-	i, j, k              int
-	carry                int
-	stopX, stopY         int
-	topX, topY           int
-	priority             int
-	index                int
+func rev(s string) string {
+	b := []byte(s)
+	slices.Reverse(b)
+	return string(b)
 }
 
-type PriorityQueue []*item
+const (
+	inf     = 1 << 60
+	noDigit = 10 // sentinel: no digit emitted yet for this operand
+)
 
-func (pq PriorityQueue) Len() int {
-	return len(pq)
+// Dijkstra state for digit-by-digit construction of x+y=z from LSB to MSB.
+type state struct {
+	ia, ib, ic   int // positions matched in reversed a, b, c
+	carry        int // addition carry (0 or 1)
+	doneX, doneY int // 1 if operand x/y has finished emitting digits
+	msdX, msdY   int // most recent (most significant so far) digit of x/y; noDigit if none
 }
 
-func (pq PriorityQueue) Less(i, j int) bool {
-	return pq[i].priority < pq[j].priority
+// transition records parent state and chosen digits for backtracking.
+type transition struct {
+	from       state
+	dx, dy, dz int // digits appended to x, y, z (-1 = operand stopped)
 }
 
-func (pq PriorityQueue) Swap(i, j int) {
-	pq[i], pq[j] = pq[j], pq[i]
-	pq[i].index = i
-	pq[j].index = j
-}
-
-func (pq *PriorityQueue) Push(x any) {
-	item := x.(*item)
-	item.index = len(*pq)
-	*pq = append(*pq, item)
-}
-
-func (pq *PriorityQueue) Pop() any {
-	old := *pq
-	n := len(old)
-	item := old[n-1]
-	old[n-1] = nil
-	item.index = -1
-	*pq = old[:n-1]
-	return item
-}
-
-func parseExpr(expr string) (a string, b string, c string) {
-	l := strings.Index(expr, "+")
-	r := strings.Index(expr, "=")
-	a = reverse(expr[:l])
-	b = reverse(expr[l+1 : r])
-	c = reverse(expr[r+1:])
-	return
-}
 func solve(expr string) string {
 	a, b, c := parseExpr(expr)
+	n, m, w := len(a), len(b), len(c)
 
-	n := len(a)
-	m := len(b)
-	w := len(c)
-
-	total := (n + 1) * (m + 1) * (w + 1) * 2 * 2 * 2 * 11 * 11
-	dp := make([]int, total)
-	fp := make([]data, total)
-	for i := range total {
-		dp[i] = inf
-		fp[i].i = -1
+	dims := [8]int{n + 1, m + 1, w + 1, 2, 2, 2, 11, 11}
+	total := 1
+	for _, d := range dims {
+		total *= d
 	}
 
-	getID := func(i, j, k, carry, stopX, stopY, topX, topY int) int {
-		res := i
-		res = res*(m+1) + j
-		res = res*(w+1) + k
-		res = res*2 + carry
-		res = res*2 + stopX
-		res = res*2 + stopY
-		res = res*11 + topX
-		res = res*11 + topY
-		return res
+	encode := func(s state) int {
+		id := s.ia
+		id = id*dims[1] + s.ib
+		id = id*dims[2] + s.ic
+		id = id*dims[3] + s.carry
+		id = id*dims[4] + s.doneX
+		id = id*dims[5] + s.doneY
+		id = id*dims[6] + s.msdX
+		id = id*dims[7] + s.msdY
+		return id
 	}
 
-	var pq PriorityQueue
+	dist := make([]int, total)
+	parent := make([]transition, total)
+	for i := range dist {
+		dist[i] = inf
+	}
 
-	update := func(i int, j int, k int, carry int, stopX int, stopY int, topX int, topY int, val int) bool {
-		id := getID(i, j, k, carry, stopX, stopY, topX, topY)
-		if dp[id] <= val {
+	var pq priQueue
+	relax := func(s state, cost int) bool {
+		id := encode(s)
+		if dist[id] <= cost {
 			return false
 		}
-		dp[id] = val
-		heap.Push(&pq, &item{i, j, k, carry, stopX, stopY, topX, topY, val, 0})
+		dist[id] = cost
+		heap.Push(&pq, &pqItem{s: s, cost: cost})
 		return true
 	}
 
-	update(0, 0, 0, 0, 0, 0, 10, 10, 0)
+	start := state{msdX: noDigit, msdY: noDigit}
+	relax(start, 0)
 
-	isGoal := func(i int, j int, k int, carry int, stopX int, stopY int, topX int, topY int) bool {
-		if i != n || j != m || k != w || carry != 0 {
+	isGoal := func(s state) bool {
+		if s.ia != n || s.ib != m || s.ic != w || s.carry != 0 {
 			return false
 		}
-		okX := stopX == 1 || topX > 0
-		okY := stopY == 1 || topY > 0
+		// No leading zeros: top digit must be >0, or the operand was stopped (length determined by the other).
+		okX := s.doneX == 1 || s.msdX > 0
+		okY := s.doneY == 1 || s.msdY > 0
 		return okX && okY
 	}
 
+	// digitChoices returns possible digits for an operand.
+	// -1 means "stop emitting digits for this operand".
+	digitChoices := func(done int, allMatched bool, msd int) []int {
+		if done == 1 {
+			return []int{-1}
+		}
+		var ds []int
+		if allMatched && msd > 0 {
+			ds = append(ds, -1)
+		}
+		for d := 0; d <= 9; d++ {
+			ds = append(ds, d)
+		}
+		return ds
+	}
+
+	var goal state
 	for pq.Len() > 0 {
-		it := heap.Pop(&pq).(*item)
-		id := getID(it.i, it.j, it.k, it.carry, it.stopX, it.stopY, it.topX, it.topY)
-		if it.priority > dp[id] {
+		cur := heap.Pop(&pq).(*pqItem)
+		s := cur.s
+		if cur.cost > dist[encode(s)] {
 			continue
 		}
-
-		if isGoal(it.i, it.j, it.k, it.carry, it.stopX, it.stopY, it.topX, it.topY) {
+		if isGoal(s) {
+			goal = s
 			break
 		}
 
-		var digitsX []int
-		if it.stopX == 1 {
-			digitsX = []int{-1}
-		} else {
-			if it.i == n && it.topX > 0 {
-				digitsX = append(digitsX, -1)
-			}
-			for u := 0; u < 10; u++ {
-				digitsX = append(digitsX, u)
-			}
-		}
-		var digitsY []int
-		if it.stopY == 1 {
-			digitsY = []int{-1}
-		} else {
-			if it.j == m && it.topY > 0 {
-				digitsY = append(digitsY, -1)
-			}
-			for v := 0; v < 10; v++ {
-				digitsY = append(digitsY, v)
-			}
-		}
-
-		for _, u := range digitsX {
-			for _, v := range digitsY {
-				if u == -1 && v == -1 && it.carry == 0 {
+		for _, dx := range digitChoices(s.doneX, s.ia == n, s.msdX) {
+			for _, dy := range digitChoices(s.doneY, s.ib == m, s.msdY) {
+				if dx == -1 && dy == -1 && s.carry == 0 {
 					continue
 				}
 
-				sum := it.carry
-				if u >= 0 {
-					sum += u
+				sum := s.carry
+				if dx >= 0 {
+					sum += dx
 				}
-				if v >= 0 {
-					sum += v
+				if dy >= 0 {
+					sum += dy
 				}
-				c1 := sum / 10
-				z := sum % 10
-				var add int
-				i, j, k := it.i, it.j, it.k
-				stopX, stopY := it.stopX, it.stopY
-				topX, topY := it.topX, it.topY
+				dz := sum % 10
 
-				if u == -1 {
-					stopX = 1
+				ns := state{
+					ia: s.ia, ib: s.ib, ic: s.ic,
+					carry: sum / 10,
+					doneX: s.doneX, doneY: s.doneY,
+					msdX: s.msdX, msdY: s.msdY,
+				}
+				extra := 0
+
+				if dx == -1 {
+					ns.doneX = 1
 				} else {
-					topX = u
-					if i < n && u == int(a[i]-'0') {
-						i++
+					ns.msdX = dx
+					if s.ia < n && dx == int(a[s.ia]-'0') {
+						ns.ia++
 					} else {
-						add++
+						extra++
 					}
 				}
-				if v == -1 {
-					stopY = 1
+				if dy == -1 {
+					ns.doneY = 1
 				} else {
-					topY = v
-					if j < m && v == int(b[j]-'0') {
-						j++
+					ns.msdY = dy
+					if s.ib < m && dy == int(b[s.ib]-'0') {
+						ns.ib++
 					} else {
-						add++
+						extra++
 					}
 				}
-				if k < w && z == int(c[k]-'0') {
-					k++
+				if s.ic < w && dz == int(c[s.ic]-'0') {
+					ns.ic++
 				} else {
-					add++
+					extra++
 				}
-				if update(i, j, k, c1, stopX, stopY, topX, topY, it.priority+add) {
-					fp[getID(i, j, k, c1, stopX, stopY, topX, topY)] = data{
-						it.i, it.j, it.k, it.carry, it.stopX, it.stopY, it.topX, it.topY,
-						u, v, z,
-					}
+
+				if relax(ns, cur.cost+extra) {
+					parent[encode(ns)] = transition{from: s, dx: dx, dy: dy, dz: dz}
 				}
 			}
 		}
 	}
 
-	// 回溯构造答案
-	i, j, k, carry := n, m, w, 0
-	stopX, stopY, topX, topY := 0, 0, 10, 10
-	best := inf
-	for sx := 0; sx < 2; sx++ {
-		for sy := 0; sy < 2; sy++ {
-			for tx := 0; tx < 11; tx++ {
-				for ty := 0; ty < 11; ty++ {
-					if !isGoal(n, m, w, 0, sx, sy, tx, ty) {
-						continue
-					}
-					id := getID(n, m, w, 0, sx, sy, tx, ty)
-					if dp[id] < best {
-						best = dp[id]
-						stopX, stopY = sx, sy
-						topX, topY = tx, ty
-					}
-				}
-			}
+	// Backtrack from goal to start to reconstruct x, y, z (digits collected MSB-first).
+	var xb, yb, zb []byte
+	for s := goal; s != start; {
+		tr := parent[encode(s)]
+		if tr.dx >= 0 {
+			xb = append(xb, byte(tr.dx+'0'))
 		}
+		if tr.dy >= 0 {
+			yb = append(yb, byte(tr.dy+'0'))
+		}
+		zb = append(zb, byte(tr.dz+'0'))
+		s = tr.from
 	}
-
-	var x []byte
-	var y []byte
-	var z []byte
-
-	for {
-		tmp := fp[getID(i, j, k, carry, stopX, stopY, topX, topY)]
-		if tmp.u >= 0 {
-			x = append(x, byte(tmp.u+'0'))
-		}
-		if tmp.v >= 0 {
-			y = append(y, byte(tmp.v+'0'))
-		}
-		if tmp.w >= 0 {
-			z = append(z, byte(tmp.w+'0'))
-		}
-		i, j, k = tmp.i, tmp.j, tmp.k
-		carry = tmp.carry
-		stopX, stopY = tmp.stopX, tmp.stopY
-		topX, topY = tmp.topX, tmp.topY
-		if i == 0 && j == 0 && k == 0 && carry == 0 && stopX == 0 && stopY == 0 && topX == 10 && topY == 10 {
-			break
-		}
-	}
-
-	a = string(x)
-	b = string(y)
-	c = string(z)
-
-	return fmt.Sprintf("%s+%s=%s", a, b, c)
+	return fmt.Sprintf("%s+%s=%s", string(xb), string(yb), string(zb))
 }
 
-const inf = 1 << 60
+// --- min-heap priority queue ---
 
-func reverse(s string) string {
-	buf := []byte(s)
-	slices.Reverse(buf)
-	return string(buf)
+type pqItem struct {
+	s    state
+	cost int
+	idx  int
+}
+
+type priQueue []*pqItem
+
+func (q priQueue) Len() int           { return len(q) }
+func (q priQueue) Less(i, j int) bool { return q[i].cost < q[j].cost }
+func (q priQueue) Swap(i, j int)      { q[i], q[j] = q[j], q[i]; q[i].idx = i; q[j].idx = j }
+
+func (q *priQueue) Push(x any) {
+	it := x.(*pqItem)
+	it.idx = len(*q)
+	*q = append(*q, it)
+}
+
+func (q *priQueue) Pop() any {
+	old := *q
+	it := old[len(old)-1]
+	old[len(old)-1] = nil
+	*q = old[:len(old)-1]
+	return it
 }

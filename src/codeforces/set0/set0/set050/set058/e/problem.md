@@ -60,3 +60,19 @@ Print a **correct** expression `x+y=z`, where:
 ### ideas
 1. dp[i][j][k][c] 表示在处理为a[:i] + b[:j] = c[:k] 且a+b carry 了c时的最短长度
 2. 最后的结果 = dp[n][m][l][0]
+
+### Key Insights
+
+1. **Shortest-path on a digit DP graph.** Reverse all three strings so digits are processed LSB→MSB (matching how addition works). At each step, choose a digit for x and y; the z digit is forced by `dx + dy + carry`. Edges that don't match the next character of a/b/c cost 1 (an "extra" digit); matching edges cost 0. Dijkstra finds the minimum total extras, i.e. minimum total length.
+
+2. **State design.** `(ia, ib, ic, carry, doneX, doneY, msdX, msdY)` where:
+   - `ia/ib/ic` — how many characters of reversed a, b, c have been matched as subsequences of x, y, z.
+   - `carry` — the addition carry (0 or 1).
+   - `doneX/doneY` — whether x/y has finished emitting digits (allows different lengths).
+   - `msdX/msdY` — the most-significant digit emitted so far for x/y, used to prevent leading zeros at termination.
+
+3. **State space is small.** Since a, b, c ≤ 10^6, each has ≤ 7 digits. Total states ≤ 8³ × 2 × 4 × 11² ≈ 500K — easily fits in memory and runs fast with Dijkstra.
+
+4. **Stopping an operand.** An operand x (or y) can stop only when all of a (or b) has been matched *and* its top digit is non-zero (no leading zero). Once stopped, it contributes 0 to every subsequent column. Both operands stopped + carry = 0 is the termination condition.
+
+5. **Backtracking.** Store the parent state and chosen digits for each relaxation. Walk from the goal back to the start to collect x, y, z digit-by-digit (already in the right order since the last digit processed is the MSB).
