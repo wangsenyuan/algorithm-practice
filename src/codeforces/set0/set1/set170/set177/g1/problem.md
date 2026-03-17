@@ -53,6 +53,38 @@ aba
 1
 ```
 
+### Key Insights
+
+1. Let `cnt[n]` be the number of occurrences of a query string `s` inside the Fibonacci string `f_n`.
+
+2. Since `f_n = f_{n-1} + f_{n-2}`, every occurrence of `s` in `f_n` belongs to exactly one of three groups:
+   - entirely inside `f_{n-1}`
+   - entirely inside `f_{n-2}`
+   - crossing the boundary between `f_{n-1}` and `f_{n-2}`
+
+   So:
+
+   `cnt[n] = cnt[n-1] + cnt[n-2] + cross[n]`
+
+3. To compute `cross[n]`, you do **not** need the full strings.
+   An occurrence crossing the boundary can only use:
+   - a suffix of `f_{n-1}`
+   - and a prefix of `f_{n-2}`
+
+   Therefore, it is enough to store only:
+   - the first `|s|-1` characters of each Fibonacci string
+   - the last `|s|-1` characters of each Fibonacci string
+
+4. Once the Fibonacci strings become long enough, these stored prefixes and suffixes stabilize up to parity.
+   That means `cross[n]` eventually depends only on whether `n` is even or odd.
+
+5. After that point, `cnt[n]` becomes a linear recurrence with a parity-dependent constant term, so it can be advanced efficiently using matrix exponentiation.
+
+6. For each query:
+   - build a KMP matcher for the pattern,
+   - compute `cnt[n]` and the short prefixes/suffixes for small `n`,
+   - then jump to very large `k` using the recurrence modulo `10^9 + 7`.
+
 
 ### ideas
 1. a, b, ba, bab, babba, babbabab
