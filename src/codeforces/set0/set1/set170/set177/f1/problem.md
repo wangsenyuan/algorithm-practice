@@ -84,3 +84,18 @@ Print a single integer — the value of the `t`‑th acceptable set (the sum of 
 3. 按照r升序排列进行处理，假设目前是第w个，现在要找第w+1个
 4. dp[x] 表示能够达到x分数的个数（x最多是20000）
 5.  dp[x] ? 怎么算？
+
+### key insights
+
+**Min-heap enumeration (priority queue approach)**
+
+- Sort edges by `r` (optional but keeps low-value edges at low indices).
+- Represent each matching as a state `(value, lastI, menMask, womenMask)`:
+  - `lastI`: index of the last edge included (edges sorted by index).
+  - `menMask` / `womenMask`: bitmasks of used men/women (fits in int for n ≤ 20).
+- Seed the heap with the empty matching `(0, -1, 0, 0)`.
+- Each pop yields the next matching in non-decreasing order; extend it by pushing all compatible edges with index `> lastI`.
+
+**Uniqueness**: Every matching `{e_{i1} < e_{i2} < ... < e_{im}}` is generated exactly once — it can only be produced by extending `{e_{i1}, ..., e_{i(m-1)}}` with `e_{im}`. The "only add edges with higher index" rule enforces this canonical form.
+
+**Complexity**: O(t × k × log(t×k)).  With t ≤ 2×10⁵ and k ≤ 100, total heap pushes ≤ 2×10⁷.
