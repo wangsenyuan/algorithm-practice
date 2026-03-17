@@ -17,11 +17,6 @@ func main() {
 	fmt.Print(buf.String())
 }
 
-func readString(reader *bufio.Reader) string {
-	s, _ := reader.ReadString('\n')
-	return strings.TrimSpace(s)
-}
-
 func drive(reader *bufio.Reader) []int {
 	var k int64
 	var m int
@@ -58,11 +53,22 @@ func solve(k int64, queries []string) []int {
 	return ans
 }
 
+// solveOne counts occurrences of pattern s in the k-th Fibonacci string, mod 1e9+7.
+//
+// Recurrence:  cnt[n] = cnt[n-1] + cnt[n-2] + cross[n]
+//
+// cross[n] = occurrences of s that straddle the join in f_{n-1}·f_{n-2}.
+// A straddling occurrence can only touch the last (|s|-1) chars of f_{n-1}
+// and the first (|s|-1) chars of f_{n-2}, so we only track those windows.
+//
+// Once the Fibonacci strings are long enough, pref[n] becomes constant and
+// suff[n] becomes period-2.  Therefore cross[n] is also period-2, and the
+// recurrence can be advanced to large k with 3×3 matrix exponentiation.
 func solveOne(k int64, s string) int {
 	pi := kmp(s)
-	l := len(s)
-	keep := max(0, l-1)
+	keep := len(s) - 1 // width of the boundary window on each side
 
+	// length[n], pref[n], suff[n], cross[n], cnt[n] indexed from n=0.
 	length := []int64{0, 1, 1}
 	pref := []string{"", "a", "b"}
 	suff := []string{"", "a", "b"}
@@ -70,47 +76,57 @@ func solveOne(k int64, s string) int {
 	cnt := []int{0, countOcc(pi, s, "a"), countOcc(pi, s, "b")}
 
 	buildNext := func() {
-		i := len(length)
-		length = append(length, satAdd(length[i-1], length[i-2]))
+		n := len(length) // index being appended
 
-		curPref := pref[i-1]
+		length = append(length, satAdd(length[n-1], length[n-2]))
+
+		// pref[n] = first `keep` chars of f_n = f_{n-1}·f_{n-2}.
+		// Once |f_{n-1}| >= keep, pref[n] == pref[n-1] (constant).
+		curPref := pref[n-1]
 		if len(curPref) < keep {
-			need := keep - len(curPref)
-			part := pref[i-2]
-			if len(part) > need {
-				part = part[:need]
+			extra := pref[n-2]
+			if need := keep - len(curPref); len(extra) > need {
+				extra = extra[:need]
 			}
-			curPref += part
+			curPref += extra
 		}
 		if len(curPref) > keep {
 			curPref = curPref[:keep]
 		}
 		pref = append(pref, curPref)
 
-		curSuff := suff[i-1] + suff[i-2]
+		// suff[n] = last `keep` chars of f_n = f_{n-1}·f_{n-2}.
+		// Once |f_{n-2}| >= keep, suff[n] == suff[n-2] (period-2).
+		curSuff := suff[n-1] + suff[n-2]
 		if len(curSuff) > keep {
 			curSuff = curSuff[len(curSuff)-keep:]
 		}
 		suff = append(suff, curSuff)
 
+		// cross[n]: run KMP over the join window (length ≤ 2*keep).
 		curCross := 0
-		if l > 1 {
-			curCross = countOcc(pi, s, suff[i-1]+pref[i-2])
+		if keep > 0 {
+			curCross = countOcc(pi, s, suff[n-1]+pref[n-2])
 		}
 		cross = append(cross, curCross)
-		cnt = append(cnt, add(add(cnt[i-1], cnt[i-2]), curCross))
+		cnt = append(cnt, add(add(cnt[n-1], cnt[n-2]), curCross))
 	}
 
-	p := 1
+	// Phase 1: advance until length[stableAt] >= keep.
+	// At that point pref has reached its full width and suff will become
+	// period-2 two steps later.
+	stableAt := 1
 	if keep > 0 {
-		for length[p] < int64(keep) {
+		for length[stableAt] < int64(keep) {
 			buildNext()
-			p++
+			stableAt++
 		}
 	}
 
-	need := p + 4
-	for len(length)-1 < need {
+	// Phase 2: build 4 more steps so that cross[stableAt+3] and
+	// cross[stableAt+4] are the two stable period-2 values.
+	base := stableAt + 4
+	for len(length)-1 < base {
 		buildNext()
 	}
 
@@ -118,20 +134,26 @@ func solveOne(k int64, s string) int {
 		return cnt[int(k)]
 	}
 
-	base := p + 4
-	v := [3]int{cnt[base], cnt[base-1], 1}
-	g := [2]int{}
-	g[(p+3)&1] = cross[p+3]
-	g[(p+4)&1] = cross[p+4]
+	// Phase 3: matrix exponentiation.
+	// cross[n] == stableCross[n&1] for all n >= stableAt+3.
+	var stableCross [2]int
+	stableCross[(stableAt+3)&1] = cross[stableAt+3]
+	stableCross[(stableAt+4)&1] = cross[stableAt+4]
 
+	// State vector v = [cnt[n], cnt[n-1], 1].
+	// One step n → n+1: v = stepMat(stableCross[(n+1)&1]) · v
+	// Two consecutive steps share the same parity pattern, giving a fixed
+	// 2-step matrix we can raise to a power.
+	v := [3]int{cnt[base], cnt[base-1], 1}
 	cur := int64(base)
+
 	if cur < k {
-		pair := matMul(stepMat(g[(cur+2)&1]), stepMat(g[(cur+1)&1]))
-		v = matVecMul(matPow(pair, (k-cur)/2), v)
+		twoStep := matMul(stepMat(stableCross[(cur+2)&1]), stepMat(stableCross[(cur+1)&1]))
+		v = matVecMul(matPow(twoStep, (k-cur)/2), v)
 		cur += ((k - cur) / 2) * 2
 	}
 	if cur < k {
-		v = matVecMul(stepMat(g[(cur+1)&1]), v)
+		v = matVecMul(stepMat(stableCross[(cur+1)&1]), v)
 	}
 
 	return v[0]
@@ -145,9 +167,9 @@ func satAdd(a, b int64) int64 {
 	return a + b
 }
 
-func countOcc(pi []int, pat string, text string) int {
-	var cnt int
-	var j int
+// countOcc counts non-overlapping occurrences of pat (given its KMP table pi) in text.
+func countOcc(pi []int, pat, text string) int {
+	var cnt, j int
 	for i := 0; i < len(text); i++ {
 		for j > 0 && text[i] != pat[j] {
 			j = pi[j-1]
@@ -157,32 +179,35 @@ func countOcc(pi []int, pat string, text string) int {
 		}
 		if j == len(pat) {
 			cnt++
-			if cnt >= mod {
-				cnt -= mod
-			}
 			j = pi[j-1]
 		}
 	}
 	return cnt
 }
 
+// kmp builds the KMP failure (prefix) function for s.
 func kmp(s string) []int {
-	res := make([]int, len(s))
+	pi := make([]int, len(s))
 	for i := 1; i < len(s); i++ {
-		j := res[i-1]
+		j := pi[i-1]
 		for j > 0 && s[i] != s[j] {
-			j = res[j-1]
+			j = pi[j-1]
 		}
 		if s[i] == s[j] {
 			j++
 		}
-		res[i] = j
+		pi[i] = j
 	}
-	return res
+	return pi
 }
 
 type mat [3][3]int
 
+// stepMat returns the transition matrix for one recurrence step with cross-count g:
+//
+//	[cnt[n+1]]   [1 1 g] [cnt[n]  ]
+//	[cnt[n]  ] = [1 0 0] [cnt[n-1]]
+//	[   1    ]   [0 0 1] [   1    ]
 func stepMat(g int) mat {
 	return mat{
 		{1, 1, g},
@@ -207,11 +232,7 @@ func matMul(a, b mat) mat {
 }
 
 func matPow(a mat, e int64) mat {
-	res := mat{
-		{1, 0, 0},
-		{0, 1, 0},
-		{0, 0, 1},
-	}
+	res := mat{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}
 	for e > 0 {
 		if e&1 == 1 {
 			res = matMul(a, res)
