@@ -1,63 +1,85 @@
 package main
 
-import "slices"
+import (
+	"bufio"
+	"container/heap"
+	"fmt"
+	"os"
+	"sort"
+)
 
 func main() {
-
+	reader := bufio.NewReader(os.Stdin)
+	res := drive(reader)
+	fmt.Println(res)
 }
 
-func solve(n int, t int, relations [][]int) int {
-	slices.SortFunc(relations, func(a, b []int) int {
-		return a[2] - b[2]
+type edge struct{ h, w, r int }
+
+func drive(reader *bufio.Reader) int {
+	var n, k, t int
+	fmt.Fscan(reader, &n, &k, &t)
+	_ = n
+	edges := make([]edge, k)
+	for i := range edges {
+		fmt.Fscan(reader, &edges[i].h, &edges[i].w, &edges[i].r)
+		edges[i].h--
+		edges[i].w--
+	}
+	sort.Slice(edges, func(i, j int) bool {
+		return edges[i].r < edges[j].r
 	})
+	return solve(t, edges)
+}
 
-	adj := make([][]int, n)
-	for i, relation := range relations {
-		h := relation[0] - 1
-		adj[h] = append(adj[h], i)
-	}
+// state represents a completed matching:
+//   value    = total weight
+//   lastI    = index of the last edge added (edges are sorted by r)
+//   menMask  = bitmask of men used
+//   womenMask= bitmask of women used
+type state struct {
+	value, lastI, menMask, womenMask int
+}
 
-	// 找出最大的n个边
-	var tot int
-	k := len(relations)
-	for i := max(0, k-n); i < k; i++ {
-		tot += relations[i][2]
-	}
+type minHeap []state
 
-	dp := make([]int, tot+1)
-	dp[0] = 1
+func (h minHeap) Len() int            { return len(h) }
+func (h minHeap) Less(i, j int) bool  { return h[i].value < h[j].value }
+func (h minHeap) Swap(i, j int)       { h[i], h[j] = h[j], h[i] }
+func (h *minHeap) Push(x any)         { *h = append(*h, x.(state)) }
+func (h *minHeap) Pop() any {
+	old := *h
+	n := len(old)
+	x := old[n-1]
+	*h = old[:n-1]
+	return x
+}
 
-	var path []int
+// solve enumerates matchings in non-decreasing order of value using a min-heap.
+// Each matching {e_{i1} < e_{i2} < ... < e_{im}} is generated exactly once
+// from the matching {e_{i1}, ..., e_{i(m-1)}} by extension with e_{im}.
+// The empty matching (value=0, lastI=-1) is the seed.
+func solve(t int, edges []edge) int {
+	k := len(edges)
+	h := &minHeap{{value: 0, lastI: -1, menMask: 0, womenMask: 0}}
+	heap.Init(h)
 
-	vis := make([]bool, n)
-	pair := make([]int, n)
-	for i := range n {
-		pair[i] = -1
-	}
-
-	var dfs func(u int) bool
-	dfs = func(u int) bool {
-		if vis[u] {
-			return false
+	for count := 1; ; count++ {
+		s := heap.Pop(h).(state)
+		if count == t {
+			return s.value
 		}
-		vis[u] = true
-		for _, i := range adj[u] {
-			v := (relations[i][0] - 1) ^ (relations[i][1] - 1) ^ u
-			if pair[v] == -1 || dfs(pair[v]) {
-				path = append(path, relations[i][2])
-				pair[v] = u
-				return true
+		// Extend by adding any compatible edge with index > lastI.
+		for j := s.lastI + 1; j < k; j++ {
+			e := edges[j]
+			if (s.menMask>>e.h)&1 == 0 && (s.womenMask>>e.w)&1 == 0 {
+				heap.Push(h, state{
+					value:     s.value + e.r,
+					lastI:     j,
+					menMask:   s.menMask | (1 << e.h),
+					womenMask: s.womenMask | (1 << e.w),
+				})
 			}
 		}
-		return false
-	}
-
-	for _, cur := range relations {
-		h, w, r := cur[0]-1, cur[1]-1, cur[2]
-
-		path = path[:0]
-		clear(vis)
-		// 这里要怎么强制使用这条边呢？
-
 	}
 }
