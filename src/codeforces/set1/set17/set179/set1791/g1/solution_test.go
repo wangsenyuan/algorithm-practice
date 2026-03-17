@@ -6,7 +6,7 @@ func runSample(t *testing.T, a []int, coins int, expect int) {
 	res := solve(len(a), a, coins)
 
 	if res != expect {
-
+		t.Errorf("expect %v, but got %v", expect, res)
 	}
 }
 
