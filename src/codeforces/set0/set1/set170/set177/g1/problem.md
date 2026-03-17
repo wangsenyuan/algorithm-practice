@@ -55,41 +55,50 @@ aba
 
 ### Key Insights
 
-1. Let `cnt[n]` be the number of occurrences of a query string `s` inside the Fibonacci string `f_n`.
+**Step 1 — Recurrence for occurrence count**
 
-2. Since `f_n = f_{n-1} + f_{n-2}`, every occurrence of `s` in `f_n` belongs to exactly one of three groups:
-   - entirely inside `f_{n-1}`
-   - entirely inside `f_{n-2}`
-   - crossing the boundary between `f_{n-1}` and `f_{n-2}`
+Let `cnt[n]` = number of times pattern `s` appears in `f_n`. Because `f_n = f_{n-1} · f_{n-2}`, every occurrence falls into exactly one of three buckets:
 
-   So:
+- wholly inside `f_{n-1}` → contributes `cnt[n-1]`
+- wholly inside `f_{n-2}` → contributes `cnt[n-2]`
+- straddles the join point → contributes `cross[n]`
 
-   `cnt[n] = cnt[n-1] + cnt[n-2] + cross[n]`
+So: `cnt[n] = cnt[n-1] + cnt[n-2] + cross[n]`
 
-3. To compute `cross[n]`, you do **not** need the full strings.
-   An occurrence crossing the boundary can only use:
-   - a suffix of `f_{n-1}`
-   - and a prefix of `f_{n-2}`
+**Step 2 — Computing `cross[n]` cheaply**
 
-   Therefore, it is enough to store only:
-   - the first `|s|-1` characters of each Fibonacci string
-   - the last `|s|-1` characters of each Fibonacci string
+An occurrence that crosses the boundary uses some suffix of `f_{n-1}` followed by some prefix of `f_{n-2}`. The straddling window is at most `|s|-1` characters on each side, so we only need to keep:
 
-4. Once the Fibonacci strings become long enough, these stored prefixes and suffixes stabilize up to parity.
-   That means `cross[n]` eventually depends only on whether `n` is even or odd.
+- `suff[n]` = last `|s|-1` characters of `f_n`
+- `pref[n]` = first `|s|-1` characters of `f_n`
 
-5. After that point, `cnt[n]` becomes a linear recurrence with a parity-dependent constant term, so it can be advanced efficiently using matrix exponentiation.
+`cross[n]` = KMP count of `s` in `suff[n-1] + pref[n-2]` (a string of length ≤ `2(|s|-1)`)
 
-6. For each query:
-   - build a KMP matcher for the pattern,
-   - compute `cnt[n]` and the short prefixes/suffixes for small `n`,
-   - then jump to very large `k` using the recurrence modulo `10^9 + 7`.
+These short prefixes and suffixes are updated cheaply each step by appending/trimming.
 
+**Step 3 — Stabilisation of `cross[n]`**
 
-### ideas
-1. a, b, ba, bab, babba, babbabab
-2. len(s) <= 1e5
-3. 可以先找出来s[i] 被包含在f[i]中， 如果找不到 = 0
-4. 这个i, 不会很大（为了加快）可以使用pattern match？
-5. 找到i以后呢？看看它出现了几次，然后计算下一个位置，出现了几次。
-6. 然后是一个新的fib序列
+Once `|f_n| ≥ |s|-1`, both `pref[n]` and `suff[n]` are fully determined by just the first/last `|s|-1` characters, which no longer grow. Since `f_n = f_{n-1} · f_{n-2}`, the parity of `n` determines which prior pair of (suff, pref) is used at the join. Therefore, after a small bootstrap phase (roughly `O(log |s|)` steps), `cross[n]` is periodic with period 2:
+
+```
+cross[n] = g[n & 1]   for all sufficiently large n
+```
+
+**Step 4 — Matrix exponentiation for large `k`**
+
+Once `cross[n]` is constant per parity, `cnt[n]` satisfies:
+
+```
+[cnt[n]  ]   [1 1 g[n&1]] [cnt[n-1]  ]
+[cnt[n-1]] = [1 0    0  ] [cnt[n-2]  ]
+[   1    ]   [0 0    1  ] [    1     ]
+```
+
+Two consecutive steps (even then odd, or vice versa) can be combined into a single 3×3 matrix. Raising that matrix to a power via fast exponentiation handles `k` up to `10^18` in `O(log k)` multiplications.
+
+**Step 5 — Per-query algorithm**
+
+1. Build KMP failure function for `s`.
+2. Simulate the recurrence for small `n` (until `cross` stabilises), tracking `cnt`, `pref`, `suff`.
+3. If `k` is already reached, return `cnt[k]`.
+4. Otherwise apply matrix exponentiation to jump from the stable base to `k`, all arithmetic mod `10^9+7`.
