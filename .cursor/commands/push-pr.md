@@ -25,7 +25,6 @@ Then follow these steps:
 
      ## Test plan
      <bulleted checklist of what to verify>
-
      EOF
      )"
      ```
