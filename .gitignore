@@ -18,3 +18,4 @@ src/sourcegraph.com/
 .cursor/
 .vscode/
 .claude/
+!.claude/commands/
