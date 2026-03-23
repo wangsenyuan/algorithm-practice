@@ -185,10 +185,10 @@ func feasible(days int, books int) bool {
 }
 
 func maxBooks(days int) int {
-	switch {
-	case days == 0:
+	switch days {
+	case 0:
 		return 0
-	case days == 1:
+	case 1:
 		return -1
 	default:
 		return days / 2
