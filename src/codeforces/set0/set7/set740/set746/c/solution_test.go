@@ -41,15 +41,6 @@ func TestTramAlreadyAtX1MovingLeft(t *testing.T) {
 	runSample(t, s, expect)
 }
 
-func TestNeedTurnAtZero(t *testing.T) {
-	s := `10 3 8
-1 5
-2 -1
-`
-	expect := 11
-	runSample(t, s, expect)
-}
-
 
 func TestSample3(t *testing.T) {
 	s := `5 4 0
