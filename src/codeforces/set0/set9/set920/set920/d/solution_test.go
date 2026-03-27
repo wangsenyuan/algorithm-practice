@@ -64,7 +64,6 @@ func TestSample3(t *testing.T) {
 	runSample(t, s, expect)
 }
 
-
 func TestSample4(t *testing.T) {
 	s := `8 4 20
 3 3 3 3 3 3 3 3
@@ -77,6 +76,20 @@ func TestSample5(t *testing.T) {
 	s := `8 6 32
 3 6 4 4 4 4 4 4
 `
+	expect := true
+	runSample(t, s, expect)
+}
+
+func TestSample6(t *testing.T) {
+	s := `2 4 4
+2 3
+`
+	// correct operation
+	/*
+	   YES
+	   1 2 1
+	   1 1 2
+	*/
 	expect := true
 	runSample(t, s, expect)
 }
