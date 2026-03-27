@@ -61,3 +61,13 @@ YES
 4 4 1
 5 5 1
 ```
+
+## Editorial
+
+Eliminate the obvious corner case when we don't have enough water (the total amount of water in all tanks is less than `V`). We do not consider it below.
+
+Fix some set of tanks `S`, and let `d` be the total amount of water in `S`. If `d ≡ V (mod K)` (i.e. `d` and `V` have the same remainder modulo `K`), then we can transfer all water from `S` to one tank `x`, transfer all water from the remaining tanks to another tank `y`, and then, using some number of operations, transfer the required amount of water from `x` to `y` (or from `y` to `x`). So we have a solution when there exists a set `S` such that `d ≡ V (mod K)`.
+
+If we don't have such a set, the problem is impossible: we cannot obtain a tank with amount `d` such that `d ≡ V (mod K)` (and therefore we cannot obtain a tank with exactly `V`).
+
+To find such a set `S`, we may use knapsack-style dynamic programming.
