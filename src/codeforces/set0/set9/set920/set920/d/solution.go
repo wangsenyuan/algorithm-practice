@@ -56,7 +56,6 @@ func solve(a []int, K int, V int) (bool, [][]int) {
 	for i, v := range a {
 		sum += v
 		dp[i] = big.NewInt(0)
-		dp[i].SetBit(dp[i], v%K, 1)
 		if i > 0 {
 			cloneBits(dp[i], dp[i-1])
 			for x := range K {
@@ -65,6 +64,7 @@ func solve(a []int, K int, V int) (bool, [][]int) {
 				}
 			}
 		}
+		dp[i].SetBit(dp[i], v%K, 1)
 	}
 
 	if sum < V || dp[n-1].Bit(V%K) == 0 {
@@ -105,25 +105,34 @@ func solve(a []int, K int, V int) (bool, [][]int) {
 		}
 	}
 
+	// pick extra: first unmarked non-pos tank (or any non-pos if all are marked)
+	extra := -1
+	for i := 0; i < n; i++ {
+		if i != pos && !marked[i] {
+			extra = i
+			break
+		}
+	}
+	if extra == -1 {
+		extra = 0
+		if pos == 0 {
+			extra = 1
+		}
+	}
+	// consolidate all non-S tanks (except extra) into extra
+	for i := 0; i < n; i++ {
+		if !marked[i] && i != extra && a[i] > 0 {
+			cnt := (a[i] + K - 1) / K
+			res = append(res, []int{cnt, i + 1, extra + 1})
+		}
+	}
+	// one bulk adjustment between pos and extra
 	if current < V {
-		// sum % K == V % K,
-		for i := 0; i < n && current < V; i++ {
-			if !marked[i] {
-				cnt := min(a[i], V-current) / K
-				if cnt > 0 {
-					res = append(res, []int{cnt, i + 1, pos + 1})
-				}
-				current += cnt * K
-			}
-		}
+		cnt := (V - current) / K
+		res = append(res, []int{cnt, extra + 1, pos + 1})
 	} else if current > V {
-		// remove from pos
 		cnt := (current - V) / K
-		var dst int
-		if pos == dst {
-			dst = 1
-		}
-		res = append(res, []int{cnt, pos + 1, dst + 1})
+		res = append(res, []int{cnt, pos + 1, extra + 1})
 	}
 
 	return true, res
