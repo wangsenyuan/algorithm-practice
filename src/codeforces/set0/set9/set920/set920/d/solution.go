@@ -106,7 +106,7 @@ func solve(a []int, K int, V int) (bool, [][]int) {
 		}
 	}
 
-	// pick extra: first unmarked non-pos tank (or any non-pos if all are marked)
+	// pick extra: first unmarked non-pos tank
 	extra := -1
 	for i := 0; i < n; i++ {
 		if i != pos && !marked[i] {
@@ -115,10 +115,16 @@ func solve(a []int, K int, V int) (bool, [][]int) {
 		}
 	}
 	if extra == -1 {
-		extra = 0
-		if pos == 0 {
-			extra = 1
+		// all non-pos tanks are in S (marked/emptied into pos), so current >= V
+		if current > V {
+			dst := 0
+			if pos == 0 {
+				dst = 1
+			}
+			cnt := (current - V) / K
+			res = append(res, []int{cnt, pos + 1, dst + 1})
 		}
+		return true, res
 	}
 	// consolidate all non-S tanks (except extra) into extra
 	for i := 0; i < n; i++ {
