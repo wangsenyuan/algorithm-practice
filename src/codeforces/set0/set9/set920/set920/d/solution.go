@@ -108,7 +108,7 @@ func solve(a []int, K int, V int) (bool, [][]int) {
 
 	// pick extra: first unmarked non-pos tank
 	extra := -1
-	for i := 0; i < n; i++ {
+	for i := range n {
 		if i != pos && !marked[i] {
 			extra = i
 			break
@@ -127,7 +127,7 @@ func solve(a []int, K int, V int) (bool, [][]int) {
 		return true, res
 	}
 	// consolidate all non-S tanks (except extra) into extra
-	for i := 0; i < n; i++ {
+	for i := range n {
 		if !marked[i] && i != extra && a[i] > 0 {
 			cnt := (a[i] + K - 1) / K
 			res = append(res, []int{cnt, i + 1, extra + 1})
