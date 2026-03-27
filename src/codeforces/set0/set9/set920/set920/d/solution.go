@@ -56,6 +56,7 @@ func solve(a []int, K int, V int) (bool, [][]int) {
 	for i, v := range a {
 		sum += v
 		dp[i] = big.NewInt(0)
+		dp[i].SetBit(dp[i], 0, 1) // empty set has sum 0
 		if i > 0 {
 			cloneBits(dp[i], dp[i-1])
 			for x := range K {
