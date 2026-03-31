@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"slices"
 )
 
 func main() {
@@ -46,154 +47,86 @@ func solve(n int, edges [][]int) [][]int {
 		adj[v] = append(adj[v], u)
 	}
 
-	parent, levels, k := buildLevels(adj)
-	color := make([]int, n)
-	for i := range color {
-		color[i] = -1
+	fa := make([]int, n)
+	for i := range n {
+		fa[i] = -1
 	}
-	color[0] = 0
+	assign := make([]int, n)
 
-	groups := make([][]int, k)
-	inUsed := make([]bool, k)
-	pos := make([]int, k)
-	forbidden := make([]int, n)
+	que := make([]int, n)
+	var head, tail int
 
-	for depth := 1; depth < len(levels); depth++ {
-		assignLevel(levels[depth], parent, color, k, groups, inUsed, pos, forbidden)
+	fa[0] = 0
+	que[head] = 0
+	head++
+
+	marked := make([]bool, n)
+
+	for tail < head {
+		mark := head
+		var bad []int
+		var rest []int
+
+		for i := tail; i < mark; i++ {
+			u := que[i]
+			if u > 0 {
+				if !marked[assign[fa[u]]] {
+					assign[u] = assign[fa[u]]
+					marked[assign[u]] = true
+					bad = append(bad, u)
+				} else {
+					rest = append(rest, u)
+				}
+			}
+			for _, v := range adj[u] {
+				if fa[v] == -1 {
+					fa[v] = u
+					que[head] = v
+					head++
+				}
+			}
+		}
+		var cur int
+		for _, v := range rest {
+			for marked[cur] {
+				cur++
+			}
+			assign[v] = cur
+			marked[cur] = true
+		}
+
+		if len(bad) > 1 {
+			// 循环替换
+			first := assign[bad[0]]
+			for i := 0; i+1 < len(bad); i++ {
+				assign[bad[i]] = assign[bad[i+1]]
+			}
+			assign[bad[len(bad)-1]] = first
+		} else if len(bad) == 1 {
+			// 分配一个新的颜色
+			old := assign[bad[0]]
+			marked[old] = false
+			var cur int
+			for marked[cur] || cur == old {
+				cur++
+			}
+			assign[bad[0]] = cur
+			marked[cur] = true
+		}
+
+		for i := tail; i < mark; i++ {
+			u := que[i]
+			marked[assign[u]] = false
+		}
+
+		tail = mark
 	}
 
-	res := make([][]int, k)
-	for i := 0; i < n; i++ {
-		res[color[i]] = append(res[color[i]], i+1)
+	k := slices.Max(assign)
+	res := make([][]int, k+1)
+	for i := range n {
+		res[assign[i]] = append(res[assign[i]], i+1)
 	}
 
 	return res
-}
-
-func buildLevels(adj [][]int) ([]int, [][]int, int) {
-	n := len(adj)
-	parent := make([]int, n)
-	for i := range parent {
-		parent[i] = -1
-	}
-
-	que := make([]int, n)
-	head, tail := 1, 0
-	que[0] = 0
-
-	var levels [][]int
-	k := 1
-
-	for tail < head {
-		end := head
-		level := make([]int, 0, end-tail)
-		for tail < end {
-			u := que[tail]
-			tail++
-			level = append(level, u)
-
-			children := 0
-			for _, v := range adj[u] {
-				if v == parent[u] {
-					continue
-				}
-				parent[v] = u
-				que[head] = v
-				head++
-				children++
-			}
-			k = max(k, children+1)
-		}
-		k = max(k, len(level))
-		levels = append(levels, level)
-	}
-
-	return parent, levels, k
-}
-
-func assignLevel(nodes []int, parent []int, color []int, k int, groups [][]int, inUsed []bool, pos []int, forbidden []int) {
-	used := make([]int, 0, len(nodes))
-	for _, u := range nodes {
-		ban := color[parent[u]]
-		if !inUsed[ban] {
-			inUsed[ban] = true
-			used = append(used, ban)
-			groups[ban] = groups[ban][:0]
-		}
-		groups[ban] = append(groups[ban], u)
-	}
-
-	need := len(nodes)
-	if need < k {
-		need++
-	}
-
-	free := make([]int, 0, need)
-	for _, c := range used {
-		free = append(free, c)
-	}
-	for c := 0; len(free) < need && c < k; c++ {
-		if !inUsed[c] {
-			free = append(free, c)
-		}
-	}
-
-	for i, c := range free {
-		pos[c] = i
-	}
-
-	assigned := make([]int, 0, len(nodes))
-	popColor := func(c int) {
-		i := pos[c]
-		last := len(free) - 1
-		x := free[last]
-		free[i] = x
-		pos[x] = i
-		free = free[:last]
-	}
-	takeColor := func(ban int) int {
-		last := len(free) - 1
-		if last < 0 {
-			return -1
-		}
-		if free[last] != ban {
-			c := free[last]
-			popColor(c)
-			return c
-		}
-		if last == 0 {
-			return -1
-		}
-		c := free[last-1]
-		popColor(c)
-		return c
-	}
-
-	for _, ban := range used {
-		for _, u := range groups[ban] {
-			c := takeColor(ban)
-			if c >= 0 {
-				color[u] = c
-				forbidden[u] = ban
-				assigned = append(assigned, u)
-				continue
-			}
-
-			popColor(ban)
-			for _, v := range assigned {
-				if forbidden[v] == ban {
-					continue
-				}
-				color[u] = color[v]
-				color[v] = ban
-				forbidden[u] = ban
-				assigned = append(assigned, u)
-				break
-			}
-		}
-	}
-
-	for _, ban := range used {
-		inUsed[ban] = false
-	}
 }

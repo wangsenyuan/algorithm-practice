@@ -39,6 +39,7 @@ func runSample(t *testing.T, s string, expect int) {
 	var head, tail int
 	que[head] = 0
 	head++
+	var d int
 	for tail < head {
 		var arr []int
 		mark := head
@@ -54,12 +55,16 @@ func runSample(t *testing.T, s string, expect int) {
 			}
 		}
 
+		keep := slices.Clone(arr)
 		slices.Sort(arr)
-		arr = slices.Compact(arr)
-		if len(arr) != mark-tail {
-			t.Fatalf("Sample result %v is invalid", res)
-		}
+		// arr = slices.Compact(arr)
 
+		for i := 1; i < len(arr); i++ {
+			if arr[i] == arr[i-1] {
+				t.Fatalf("Sample has invalid assignment at %d level of %v", d, keep)
+			}
+		}
+		d++
 		tail = mark
 	}
 

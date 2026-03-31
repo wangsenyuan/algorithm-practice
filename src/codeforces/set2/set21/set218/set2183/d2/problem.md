@@ -229,3 +229,36 @@ In the second test case, the minimum number of operations needed to color the fu
    - Such a vertex always exists because the current forbidden group size is at most `k - 1`, so not all previous vertices belong to the same group.
 
 7. This gives an `O(n)` construction after BFS.
+
+## simpler bfs construction
+
+Another clean way to view the construction is to process one BFS level at a time and start from the most natural choice:
+
+1. Give a vertex the same color as its parent whenever possible.
+   - While scanning one level, if the parent's color has not been used on this level yet, assign it directly.
+   - Put such vertices into `bad`, because they currently conflict with their own parent.
+
+2. All other vertices go into `rest`.
+   - For them, greedily assign the smallest unused color on this level.
+   - These vertices are already valid, because they do not use the parent's color.
+
+3. Now only the vertices in `bad` need to be fixed.
+   - If `|bad| >= 2`, all of them currently hold pairwise distinct colors, and each color comes from another parent on the same level.
+   - So we can cyclically shift the colors inside `bad`.
+   - After the shift, every vertex in `bad` still has a unique color on this level, but no one keeps its own parent's color anymore.
+
+4. If `|bad| = 1`, call that vertex `u`.
+   - Then every other color already used on this level is different from `color(parent(u))`.
+   - We simply give `u` the smallest unused color different from its current one.
+   - This is exactly the situation where we need one extra color for this level, matching the bound `children(parent(u)) + 1`.
+
+5. Why is this optimal?
+   - A level of width `w` needs at least `w` colors.
+   - If some vertex has `c` children, then that parent together with its children needs at least `c + 1` colors.
+   - The BFS construction above never uses more than `max(max level width, 1 + max children count)`, so it is optimal.
+
+6. The implementation is very short:
+   - BFS to get levels.
+   - For each level, split nodes into `bad` and `rest`.
+   - Fill `rest` greedily with unused colors.
+   - Fix `bad` by one cyclic rotation, or by one new color if `|bad| = 1`.
