@@ -25,7 +25,7 @@ func solve(a []int, m int, k int) float64 {
 
 	slices.Sort(a)
 
-	best := float64(sum) / float64(n)
+	best := float64(sum+min(m, n*k)) / float64(n)
 
 	for rem := 0; rem < m && rem+1 < n; rem++ {
 		// 剩余 n - rem - 1 个人可以进行最多 (n - rem - 1) * k
