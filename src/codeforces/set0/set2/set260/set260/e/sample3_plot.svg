@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Codeforces 260E sample 3 / TestSample3: 10 cities, a = 2,1,1,1,1,1,1,1,1 (no solution). -->
+<!-- Plot uses math coords inside the scaled group (y increases upward). Labels are in screen px so text is not mirrored. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="560" viewBox="0 0 720 560">
+  <rect width="100%" height="100%" fill="#fafafa"/>
+  <text x="360" y="28" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" font-weight="600">
+    260E TestSample3: cities in the x-y plane
+  </text>
+  <text x="360" y="48" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" fill="#444">
+    n = 10; target counts for sons 1..9: 2, 1, 1, 1, 1, 1, 1, 1, 1; expected output: -1
+  </text>
+
+  <!-- tx,ty = origin in px; s = pixels per unit; screen: X = tx + s*px, Y = ty - s*py (math y up) -->
+  <g transform="translate(270,410) scale(12,-12)">
+    <g stroke="#e0e0e0" stroke-width="0.06">
+      <line x1="-20" y1="0" x2="22" y2="0"/>
+      <line x1="0" y1="-12" x2="0" y2="19"/>
+      <line x1="-10" y1="-12" x2="-10" y2="19" stroke-dasharray="0.2 0.15"/>
+      <line x1="10" y1="-12" x2="10" y2="19" stroke-dasharray="0.2 0.15"/>
+      <line x1="-20" y1="-5" x2="22" y2="-5" stroke-dasharray="0.2 0.15"/>
+      <line x1="-20" y1="5" x2="22" y2="5" stroke-dasharray="0.2 0.15"/>
+      <line x1="-20" y1="15" x2="22" y2="15" stroke-dasharray="0.2 0.15"/>
+    </g>
+    <line x1="-20" y1="0" x2="22" y2="0" stroke="#333" stroke-width="0.1"/>
+    <line x1="0" y1="-12" x2="0" y2="19" stroke="#333" stroke-width="0.1"/>
+    <polygon points="22,0 20.8,0.28 20.8,-0.28" fill="#333"/>
+    <polygon points="0,19 -0.28,17.9 0.28,17.9" fill="#333"/>
+    <!-- Example dividing lines: vertical x = -4.5, 6.5; horizontal y = -1.5, 10.5 -->
+    <g stroke="#1565c0" stroke-width="0.1" fill="none" stroke-linecap="square">
+      <line x1="-4.5" y1="-12" x2="-4.5" y2="19"/>
+      <line x1="6.5" y1="-12" x2="6.5" y2="19"/>
+      <line x1="-20" y1="-1.5" x2="22" y2="-1.5"/>
+      <line x1="-20" y1="10.5" x2="22" y2="10.5"/>
+    </g>
+    <g fill="#c62828" stroke="#fff" stroke-width="0.06">
+      <circle cx="-2" cy="10" r="0.35"/>
+      <circle cx="6" cy="0" r="0.35"/>
+      <circle cx="-16" cy="-6" r="0.35"/>
+      <circle cx="-4" cy="13" r="0.35"/>
+      <circle cx="-4" cy="-2" r="0.35"/>
+      <circle cx="-17" cy="-10" r="0.35"/>
+      <circle cx="9" cy="15" r="0.35"/>
+      <circle cx="18" cy="16" r="0.35"/>
+      <circle cx="-5" cy="2" r="0.35"/>
+      <circle cx="10" cy="-5" r="0.35"/>
+    </g>
+  </g>
+
+  <!-- Labels: index i = 0..9 in input order; screen (270+12*x, 410-12*y) minus nudge -->
+  <g font-family="system-ui,sans-serif" font-size="9" fill="#1a1a1a">
+    <text x="228" y="282"><tspan fill="#0d47a1" font-weight="700">0</tspan><tspan>: (-2, 10)</tspan></text>
+    <text x="324" y="402"><tspan fill="#0d47a1" font-weight="700">1</tspan><tspan>: (6, 0)</tspan></text>
+    <text x="60" y="474"><tspan fill="#0d47a1" font-weight="700">2</tspan><tspan>: (-16, -6)</tspan></text>
+    <text x="198" y="246"><tspan fill="#0d47a1" font-weight="700">3</tspan><tspan>: (-4, 13)</tspan></text>
+    <text x="198" y="434"><tspan fill="#0d47a1" font-weight="700">4</tspan><tspan>: (-4, -2)</tspan></text>
+    <text x="48" y="522"><tspan fill="#0d47a1" font-weight="700">5</tspan><tspan>: (-17, -10)</tspan></text>
+    <text x="360" y="222"><tspan fill="#0d47a1" font-weight="700">6</tspan><tspan>: (9, 15)</tspan></text>
+    <text x="468" y="210"><tspan fill="#0d47a1" font-weight="700">7</tspan><tspan>: (18, 16)</tspan></text>
+    <text x="192" y="378"><tspan fill="#0d47a1" font-weight="700">8</tspan><tspan>: (-5, 2)</tspan></text>
+    <text x="372" y="462"><tspan fill="#0d47a1" font-weight="700">9</tspan><tspan>: (10, -5)</tspan></text>
+  </g>
+
+  <text x="360" y="520" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#1565c0">
+    Dividing lines: x = -4.5, 6.5 (vertical); y = -1.5, 10.5 (horizontal)
+  </text>
+  <text x="360" y="538" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#666">
+    Math axes: x right, y up. Blue digit = city index 0..9 in input order.
+  </text>
+</svg>
