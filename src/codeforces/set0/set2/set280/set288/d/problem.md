@@ -112,23 +112,43 @@ The number of paths with LCA exactly `v` equals the number of pairs with both en
 
 So `Sum1 = Σ_v  f(n−sz[v]) × (f(sz[v]) − S(v))`.
 
-**Sum2** collects side-branch contributions. For each child `c` of a vertex `w`, we need the number of paths that pass through `w` but do **not** enter `c`'s subtree:
+**Sum2** collects side-branch contributions.
+
+For a fixed edge `w → c`, the `c`-subtree has `f(sz[c])` internal paths. Each of those can legally pair with any path that passes through `w` but skips the `w→c` edge, because the two paths live in completely separate parts of the tree. So the contribution of this edge is:
 
 ```
-#{paths through w, not into c} = f(n−sz[c]) − #{paths avoiding both w and c's subtree}
+f(sz[c])  ×  #{paths through w, not into c's subtree}
 ```
 
-Paths avoiding `w` entirely AND not in `c`'s subtree stay inside one of:
-- A sibling subtree of `c` under `w` → Σ_{cᵢ≠c} f(sz[cᵢ]) = S(w) − f(sz[c])
-- The above component of `w` → f(n − sz[w])
-
-Therefore:
+**Counting #{paths through w, not into c's subtree}** via complementary counting:
 
 ```
-#{through w, not into c} = f(n−sz[c]) + f(sz[c]) − S(w) − f(n−sz[w])
+= #{all paths not entering c's subtree}
+− #{paths not entering c's subtree AND also avoiding w}
 ```
 
-And the contribution of child `c` to Sum2 is:
+**Part 1** — paths not entering c's subtree: neither endpoint can be inside c's subtree, so both endpoints are among the `n − sz[c]` vertices outside it:
+
+```
+Part 1 = f(n − sz[c])
+```
+
+**Part 2** — paths that avoid both c's subtree and w: such a path must sit entirely inside one component of "tree minus w", excluding c's subtree. The components of "tree minus w" are each child's subtree and the above component. Dropping c's subtree leaves:
+
+```
+Part 2 = Σ_{cᵢ ≠ c} f(sz[cᵢ])  +  f(n − sz[w])
+       = S(w) − f(sz[c])  +  f(n − sz[w])
+```
+
+**Subtracting:**
+
+```
+Part 1 − Part 2
+= f(n−sz[c]) − [S(w) − f(sz[c]) + f(n−sz[w])]
+= f(n−sz[c]) + f(sz[c]) − S(w) − f(n−sz[w])
+```
+
+So the contribution of edge `w → c` to Sum2 is:
 
 ```
 f(sz[c]) × (f(n−sz[c]) + f(sz[c]) − S(w) − f(n−sz[w]))
