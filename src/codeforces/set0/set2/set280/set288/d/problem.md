@@ -70,3 +70,93 @@ Root the tree (e.g. at vertex **1**). After fixing the **first** path and removi
 That yields an **O(n²)** baseline: enumerate the first path and evaluate the formula for the second. The full solution speeds this up to **O(n)** with DFS: for a fixed vertex as the “last” vertex of the first path, aggregate contributions from inside the current subtree and from the complement; use subtree sizes and **partial sums** along adjacency lists to keep the recurrence linear.
 
 **Alternatives mentioned in the original note:** count **bad** pairs of paths and subtract from the total; or explore a divide-and-conquer approach.
+
+---
+
+## Detailed Explanation
+
+### Key Observation
+
+For any path `p`, when you remove all vertices on `p` from the tree, the remaining graph is a forest. Every path whose both endpoints lie entirely within one component of that forest is vertex-disjoint from `p`.
+
+If the component sizes are c₁, c₂, …, cₖ, the number of valid second paths is **Σᵢ C(cᵢ, 2)**.
+
+So:
+
+```
+answer = Σ_{path p}  Σ_{component C after removing p}  C(|C|, 2)
+```
+
+### Identifying the Components
+
+Root the tree at vertex 1. For path `p` from `a` to `b` with LCA = `l`, the components formed are:
+
+1. **The above-LCA component**: all vertices outside `l`'s subtree → size `n − sz[l]`. (Empty if `l` is the root.)
+2. **Side-branch components**: for each vertex `w` on path `p`, for each child `c` of `w` that is **not** on the path → component of size `sz[c]`.
+
+### Splitting into Sum1 and Sum2
+
+Let `f(x) = C(x, 2) = x*(x−1)/2`.
+
+**Sum1** collects the above-LCA component contribution, grouped by LCA:
+
+```
+Sum1 = Σ_v  f(n − sz[v])  ×  #{paths with LCA = v}
+```
+
+The number of paths with LCA exactly `v` equals the number of pairs with both endpoints in `v`'s subtree minus the pairs that fit entirely inside a single child's subtree:
+
+```
+#{LCA = v} = f(sz[v]) − S(v),   where S(v) = Σ_{c: child of v} f(sz[c])
+```
+
+So `Sum1 = Σ_v  f(n−sz[v]) × (f(sz[v]) − S(v))`.
+
+**Sum2** collects side-branch contributions. For each child `c` of a vertex `w`, we need the number of paths that pass through `w` but do **not** enter `c`'s subtree:
+
+```
+#{paths through w, not into c} = f(n−sz[c]) − #{paths avoiding both w and c's subtree}
+```
+
+Paths avoiding `w` entirely AND not in `c`'s subtree stay inside one of:
+- A sibling subtree of `c` under `w` → Σ_{cᵢ≠c} f(sz[cᵢ]) = S(w) − f(sz[c])
+- The above component of `w` → f(n − sz[w])
+
+Therefore:
+
+```
+#{through w, not into c} = f(n−sz[c]) + f(sz[c]) − S(w) − f(n−sz[w])
+```
+
+And the contribution of child `c` to Sum2 is:
+
+```
+f(sz[c]) × (f(n−sz[c]) + f(sz[c]) − S(w) − f(n−sz[w]))
+```
+
+Sum2 = Σ_v Σ_{c: child of v}  that expression.
+
+### Algorithm (O(n))
+
+1. Root the tree (BFS), compute `sz[v]` for every vertex (bottom-up).
+2. Compute `S(v) = Σ_{c: child} f(sz[c])` for every vertex (one more bottom-up pass).
+3. Walk every vertex `v` and accumulate:
+   - `ans += f(n−sz[v]) × (f(sz[v]) − S(v))`  ← Sum1 term
+   - For each child `c` of `v`: `ans += f(sz[c]) × (f(n−sz[c]) + f(sz[c]) − S(v) − f(n−sz[v]))`  ← Sum2 term
+
+Total time O(n), space O(n).
+
+### Worked Example (n=4, line 1−2−3−4)
+
+`sz = [4, 3, 2, 1]`, `f(0..4) = [0, 0, 1, 3, 6]`.
+
+| v | f(n−sz[v]) | f(sz[v])−S(v) | Sum1 term | child c | f(sz[c])×(…) | Sum2 term |
+|---|---|---|---|---|---|---|
+| 1 | f(0)=0 | f(4)−f(3)=3 | 0 | 2 | 3×(0+3−3−0)=0 | 0 |
+| 2 | f(1)=0 | f(3)−f(2)=2 | 0 | 3 | 1×(1+1−1−0)=1 | 1 |
+| 3 | f(2)=1 | f(2)−f(1)=1 | 1 | 4 | 0×(…)=0 | 0 |
+| 4 | f(3)=3 | f(1)−0=0   | 0 | — | — | 0 |
+
+**Total = 0+0+0+1+1+0 = 2** ✓
+
+The two valid quadruples are (1,2,3,4) and (3,4,1,2) — paths 1−2 and 3−4 in each ordering.
