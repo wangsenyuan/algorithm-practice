@@ -86,7 +86,6 @@ func solve(n int, k int, forbiden [][]int) bool {
 	}
 	clear(marked)
 	var todo []int
-	var d int
 	for i := 1; i < n; i++ {
 		unmarked = append(unmarked, i)
 		if firstLayer[i] {
@@ -94,12 +93,9 @@ func solve(n int, k int, forbiden [][]int) bool {
 			adj[i][0] = true
 			todo = append(todo, i)
 		}
-		if adj[0][i] {
-			d++
-		}
 	}
 
-	d = n - 1 - d
+	d := n - 1 - len(adj[0])
 
 	var c int
 	for len(unmarked) > 0 {

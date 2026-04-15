@@ -1,41 +1,31 @@
-# D — Nudist Beach operation
+Nudist Beach is planning a military operation to attack the Life Fibers. In this operation, they will attack and capture several cities which are currently under the control of the Life Fibers.
 
-## Problem description
+There are n cities, labeled from 1 to n, and m bidirectional roads between them. Currently, there are Life Fibers in every city. In addition, there are k cities that are fortresses of the Life Fibers that cannot be captured under any circumstances. So, the Nudist Beach can capture an arbitrary non-empty subset of cities with no fortresses.
 
-Nudist Beach is planning a military operation against the Life Fibers. They will attack and capture several cities that are currently under Life Fiber control.
+After the operation, Nudist Beach will have to defend the captured cities from counterattack. If they capture a city and it is connected to many Life Fiber controlled cities, it will be easily defeated. So, Nudist Beach would like to capture a set of cities such that for each captured city the ratio of Nudist Beach controlled neighbors among all neighbors of that city is as high as possible.
 
-There are **n** cities labeled **1 … n**, and **m** bidirectional roads. Life Fibers occupy every city. Among them, **k** cities are fortresses and **cannot** be captured. Nudist Beach may capture any **non-empty** subset of cities that **does not** include a fortress.
+More formally, they would like to capture a non-empty set of cities S with no fortresses of Life Fibers. The strength of a city  is defined as (number of neighbors of x in S) / (total number of neighbors of x). Here, two cities are called neighbors if they are connnected with a road. The goal is to maximize the strength of the weakest city in S.
 
-After the operation, captured cities must be defended. If a captured city has many neighbors still under Life Fiber control, it is vulnerable. So Nudist Beach wants a set **S** of captured cities such that, for every **x ∈ S**, the fraction of neighbors of **x** that also lie in **S** is as large as possible in the worst case.
+Given a description of the graph, and the cities with fortresses, find a non-empty subset that maximizes the strength of the weakest city.
 
-More formally: choose a non-empty set **S** with no fortresses. For each **x ∈ S**, define the **strength** of **x** as
+Input
+The first line of input contains three integers n, m, k (2  ≤  n  ≤ 100 000, 1 ≤ m ≤ 100 000, 1 ≤ k ≤ n - 1).
 
-**(number of neighbors of x in S) / (total number of neighbors of x)**
+The second line of input contains k integers, representing the cities with fortresses. These cities will all be distinct.
 
-(two cities are neighbors if they are connected by a road). Maximize the **minimum** strength over all **x ∈ S** (the “weakest” captured city).
+The next m lines contain the roads. The i-th of these lines will have 2 integers ai, bi (1 ≤ ai, bi ≤ n, ai ≠ bi). Every city will have at least one road adjacent to it.
 
-Given the graph and the fortress cities, find any non-empty **S** that achieves this optimum.
+There is no more than one road between each pair of the cities.
 
-## Input
+Output
+The first line should contain an integer r, denoting the size of an optimum set (1 ≤ r ≤ n - k).
 
-- The first line contains three integers **n**, **m**, **k** (2 ≤ n ≤ 10⁵, 1 ≤ m ≤ 10⁵, 1 ≤ k ≤ n − 1).
-- The second line contains **k** distinct integers — the fortress cities.
-- Each of the next **m** lines contains two integers **aᵢ**, **bᵢ** (1 ≤ aᵢ, bᵢ ≤ n, aᵢ ≠ bᵢ) — a road. There is at most one road between any pair of cities. Every city has at least one incident road.
+The second line should contain r integers, denoting the cities in the set. Cities may follow in an arbitrary order. This line should not contain any of the cities with fortresses.
 
-## Output
+If there are multiple possible answers, print any of them.
 
-- The first line: an integer **r** — the size of an optimal set (1 ≤ r ≤ n − k).
-- The second line: **r** distinct integers — the cities in **S**, in any order. None of them may be a fortress.
-
-If several answers exist, print any.
-
-## Examples
-
-### Example 1
-
-**Input:**
-
-```
+Examples
+InputCopy
 9 8 4
 3 9 6 8
 1 2
@@ -46,20 +36,10 @@ If several answers exist, print any.
 2 7
 2 8
 2 9
-```
-
-**Output:**
-
-```
+OutputCopy
 3
 1 4 5
-```
-
-### Example 2
-
-**Input:**
-
-```
+InputCopy
 10 8 2
 2 9
 1 3
@@ -70,28 +50,14 @@ If several answers exist, print any.
 7 8
 8 10
 10 4
-```
-
-**Output:**
-
-```
+OutputCopy
 8
 1 5 4 8 10 6 3 7
-```
+Note
+The first example case achieves a strength of 1/2. No other subset is strictly better.
 
-## Note
+The second example case achieves a strength of 1. Note that the subset doesn't necessarily have to be connected.
 
-In the first example, the achieved minimum strength is **1/2**; no other feasible subset is strictly better.
-
-In the second example, the minimum strength is **1**. The chosen set does **not** need to be connected.
-
-## Summary
-
-- **Model:** Undirected simple graph on **n** nodes, **m** edges; **k** forbidden nodes (fortresses) that cannot appear in the answer.
-- **Choice:** Pick any **non-empty** set **S** of nodes with no fortresses (**S** need not be connected).
-- **Score:** For each **x ∈ S**, strength(**x**) = (# neighbors of **x** in **S**) / (degree of **x**). The objective value is **min** over **x ∈ S** of strength(**x**).
-- **Goal:** Maximize that minimum (a max–min / “bottleneck ratio” problem on the graph).
-- **Output:** Print **|S|** and then the list of nodes in one optimal **S** (any optimal solution is allowed).
 
 ## Solution Summary
 
