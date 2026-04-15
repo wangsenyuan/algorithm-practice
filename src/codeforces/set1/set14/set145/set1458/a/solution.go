@@ -2,146 +2,49 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"os"
-	"sort"
 )
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 
-	n, m := readTwoNums(reader)
-	A := readNInt64s(reader, n)
-	B := readNInt64s(reader, m)
-	res := solve(A, B)
-
-	var buf bytes.Buffer
-
-	for i := 0; i < m; i++ {
-		buf.WriteString(fmt.Sprintf("%d ", res[i]))
+	var n, m int
+	fmt.Fscan(reader, &n, &m)
+	a := make([]int, n)
+	for i := range n {
+		fmt.Fscan(reader, &a[i])
 	}
-	buf.WriteByte('\n')
-
-	fmt.Print(buf.String())
-}
-
-func readNInt64s(reader *bufio.Reader, n int) []int64 {
-	res := make([]int64, n)
-	s, _ := reader.ReadBytes('\n')
-
-	var pos int
-
-	for i := 0; i < n; i++ {
-		pos = readInt64(s, pos, &res[i]) + 1
+	b := make([]int, m)
+	for i := range m {
+		fmt.Fscan(reader, &b[i])
 	}
-
-	return res
+	res := solve(a, b)
+	s := fmt.Sprintf("%v", res)
+	fmt.Println(s[1 : len(s)-1])
 }
 
-func readInt64(bytes []byte, from int, val *int64) int {
-	i := from
-	var sign int64 = 1
-	if bytes[i] == '-' {
-		sign = -1
-		i++
+func solve(a []int, b []int) []int {
+	var g int
+	n := len(a)
+	for i := range n - 1 {
+		g = gcd(g, abs(a[i+1]-a[i]))
 	}
-	var tmp int64
-	for i < len(bytes) && bytes[i] >= '0' && bytes[i] <= '9' {
-		tmp = tmp*10 + int64(bytes[i]-'0')
-		i++
-	}
-	*val = tmp * sign
-	return i
-}
-
-func readInt(bytes []byte, from int, val *int) int {
-	i := from
-	sign := 1
-	if bytes[i] == '-' {
-		sign = -1
-		i++
-	}
-	tmp := 0
-	for i < len(bytes) && bytes[i] >= '0' && bytes[i] <= '9' {
-		tmp = tmp*10 + int(bytes[i]-'0')
-		i++
-	}
-	*val = tmp * sign
-	return i
-}
-
-func readNum(reader *bufio.Reader) (a int) {
-	bs, _ := reader.ReadBytes('\n')
-	readInt(bs, 0, &a)
-	return
-}
-
-func readTwoNums(reader *bufio.Reader) (a int, b int) {
-	res := readNNums(reader, 2)
-	a, b = res[0], res[1]
-	return
-}
-
-func readThreeNums(reader *bufio.Reader) (a int, b int, c int) {
-	res := readNNums(reader, 3)
-	a, b, c = res[0], res[1], res[2]
-	return
-}
-
-func readNNums(reader *bufio.Reader, n int) []int {
-	res := make([]int, n)
-	x := 0
-	bs, _ := reader.ReadBytes('\n')
-	for i := 0; i < n; i++ {
-		for x < len(bs) && (bs[x] < '0' || bs[x] > '9') && bs[x] != '-' {
-			x++
-		}
-		x = readInt(bs, x, &res[i])
+	m := len(b)
+	res := make([]int, m)
+	for i, v := range b {
+		res[i] = gcd(g, v+a[0])
 	}
 	return res
 }
 
-func readUint64(bytes []byte, from int, val *uint64) int {
-	i := from
-
-	var tmp uint64
-	for i < len(bytes) && bytes[i] >= '0' && bytes[i] <= '9' {
-		tmp = tmp*10 + uint64(bytes[i]-'0')
-		i++
-	}
-	*val = tmp
-
-	return i
-}
-
-func solve(A []int64, B []int64) []int64 {
-	//  (a, b, c)
-	// gcd(a + d, b + d) = g
-	// a + d = g * n
-	// b + d = g * m
-	// a - b = g * (n - m)
-	// gcd(a, b, c) = x
-	// gcd(a + d, b + d, c + d)= ?
-	sort.Slice(A, func(i, j int) bool {
-		return A[i] < A[j]
-	})
-	var x int64
-	for i := 1; i < len(A); i++ {
-		x = int64(gcd(uint64(x), uint64(A[i]-A[i-1])))
-	}
-
-	res := make([]int64, len(B))
-
-	for i := 0; i < len(B); i++ {
-		res[i] = int64(gcd(uint64(x), uint64(B[i])+uint64(A[0])))
-	}
-	return res
-}
-
-func gcd(a, b uint64) uint64 {
-	for b != 0 {
+func gcd(a, b int) int {
+	for b > 0 {
 		a, b = b, a%b
 	}
 	return a
+}
+
+func abs(num int) int {
+	return max(num, -num)
 }
