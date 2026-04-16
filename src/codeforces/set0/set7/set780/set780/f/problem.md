@@ -1,82 +1,289 @@
-A couple of friends, Axel and Marston are travelling across the country of Bitland. There are n towns in Bitland, with some pairs of towns connected by one-directional roads. Each road in Bitland is either a pedestrian road or a bike road. There can be multiple roads between any pair of towns, and may even be a road from a town to itself. However, no pair of roads shares the starting and the destination towns along with their types simultaneously.
+# F — Axel and Marston
 
-The friends are now located in the town 1 and are planning the travel route. Axel enjoys walking, while Marston prefers biking. In order to choose a route diverse and equally interesting for both friends, they have agreed upon the following procedure for choosing the road types during the travel:
+## Problem
 
-The route starts with a pedestrian route.
-Suppose that a beginning of the route is written in a string s of letters P (pedestrain road) and B (biking road). Then, the string  is appended to s, where  stands for the string s with each character changed to opposite (that is, all pedestrian roads changed to bike roads, and vice versa).
-In the first few steps the route will look as follows: P, PB, PBBP, PBBPBPPB, PBBPBPPBBPPBPBBP, and so on.
+A couple of friends, Axel and Marston, are travelling across Bitland.
+There are `n` towns and `m` directed roads.
+Each road has a type:
 
-After that the friends start travelling from the town 1 via Bitlandian roads, choosing the next road according to the next character of their route type each time. If it is impossible to choose the next road, the friends terminate their travel and fly home instead.
+- `0`: pedestrian road
+- `1`: bike road
 
-Help the friends to find the longest possible route that can be travelled along roads of Bitland according to the road types choosing procedure described above. If there is such a route with more than 1018 roads in it, print -1 instead.
+There may be multiple roads between the same pair of towns, as long as their types differ.
+Self-loops are also allowed.
+
+The friends start in town `1`.
+They must choose road types according to an infinite binary word defined as follows:
+
+- start with `A0 = 0`
+- for each `k >= 0`, define `Ak+1 = Ak + invert(Ak)`
+
+where `invert` flips every bit `0 <-> 1`.
+
+So the first few strings are:
+
+- `A0 = 0`
+- `A1 = 01`
+- `A2 = 0110`
+- `A3 = 01101001`
+- ...
+
+The friends traverse roads one by one, always following the next bit of this infinite word.
+If at some step there is no outgoing road of the required type, the trip stops.
+
+We need the maximum possible trip length.
+If it can be made strictly larger than `10^18`, print `-1`.
+
+## Input
+
+- first line: `n m` (`1 <= n <= 500`, `0 <= m <= 2n^2`)
+- next `m` lines: `v u t`
+  - directed edge `v -> u`
+  - type `t` is `0` or `1`
+
+## Output
+
+- the maximum possible length
+- or `-1` if the length can be made strictly greater than `10^18`
+
+## Examples
+
+### Example 1
 
 Input
-The first line contains two integers n and m (1 ≤ n ≤ 500, 0 ≤ m ≤ 2n2) — the number of towns and roads in Bitland respectively.
 
-Next m lines describe the roads. i-th of these lines contains three integers vi, ui and ti (1 ≤ vi, ui ≤ n, 0 ≤ ti ≤ 1), where vi and ui denote start and destination towns indices of the i-th road, and ti decribes the type of i-th road (0 for a pedestrian road, 1 for a bike road). It is guaranteed that for each pair of distinct indices i, j such that 1 ≤ i, j ≤ m, either vi ≠ vj, or ui ≠ uj, or ti ≠ tj holds.
-
-Output
-If it is possible to find a route with length strictly greater than 1018, print -1. Otherwise, print the maximum length of a suitable path.
-
-Examples
-InputCopy
+```text
 2 2
 1 2 0
 2 2 1
-OutputCopy
+```
+
+Output
+
+```text
 3
-InputCopy
+```
+
+### Example 2
+
+Input
+
+```text
 2 3
 1 2 0
 2 2 1
 2 2 0
-OutputCopy
+```
+
+Output
+
+```text
 -1
-Note
-In the first sample we can obtain a route of length 3 by travelling along the road 1 from town 1 to town 2, and then following the road 2 twice from town 2 to itself.
+```
 
+## Detailed Explanation
 
-### ideas
-1. 考虑一个路径长度为w(它肯定是某个2倍数, 0, 1, 2, 4, 8, 16, ...)
-2. 对于固定的长度，路径上的类型是确定的 0110100110010110, ... 
-3. 不知道怎么考虑这个问题。
-4. 一个点会被访问多次，所以需要确定，什么情况下，能够判断出这是一次新的路径，什么时候会导致循环
-5. 假设长度为d的处理掉了，知道了某些信息,
-6. 目前要处理长度为2*d的路径
-7. 那么首先需要知道，有哪些点是d长度的终点，假设其中的某个点为u
-8. 然后从u出发，如果能找到一条翻转的路径，经过了 d / 2 长度后，到达了位置v
-9. 然后从v经过d/2的长度且翻转的路径，能够到达位置w
-10. 比如长度为 d = 4的路径处理过了，知道能够到达u，现在要处理d = 8的路径
-11. 已知到达u访问了 0110, 从u出发访问长度为2的翻转路径 10, 到达位置v, 然后从v出发访问长度为2的不翻转路径01到达w
-12. 那么拼接起来就是 0110 1001 从而找到了一条长度为8的路径，且到达了位置w
-13. dp[x][d][0/1] 表示从u出发，经过长度为 1 << d长度的路径，且是否翻转，能够到达的位置集合？
-14. dp[x][d + 1][0] = dp[x][d][0] && dp[u][d-1][1] && dp[v][d-1][0]
-15. dp[x][d+1][1] = dp[x][d][1] && dp[u][d-1][0] && dp[v][d-1][1]
-16. 至少表示了一些信息出来; u, v要怎么确定？
-17. dp[x][d+1][0] = dp[x][d][0] && dp[u][d][1] ?
-18. dp[x][d+1][1] = dp[x][d][1] && dp[u][d][0] 
-19. 似乎也是成立的，这样子，就只需要确定u了
-20. fp[x][d][0] 表示通过长度为 1 << d, 且不翻转的路径能够到达的节点集合
-21. fp[x][d][1] 表示通过长度为 1 << d, 且不翻转的路径能够到达的节点集合
-22. fp[x][d+1][0] = merge fp[u][d][1] for each u from fp[x][d][0]
-23. 这样子，甚至可以不用处理dp
-24. 但是这样子，潜在的似乎是 O(n  * n)的，不考虑d的影响；
-25. 因为 fp[x][d][0] 可能包含所有的节点， fp[u][d][1] 也包含所有的节点
-26. 但是有一个猜想是，如果能在出现循环路径的情况是，提前返回，这个复杂性不会到n * n
-27. 什么情况下，会出现循环呢？fp[x][d+1][0], x属于fp[x][d][0] && fp[x][d][1] => -1
-28. 这个似乎是成立的，但是只是一个猜想（但似乎是显然的）
+The main difficulty is that the route type sequence is not arbitrary.
+It is a very structured infinite word:
 
+- `0`
+- `01`
+- `0110`
+- `01101001`
+- ...
 
-### editorial
+This is the Thue-Morse sequence.
 
-Let us write Ai for the binary string obtained after i inverse-append steps, for example, A0 = 0, A1 = 01, and so on. Let us also write . By definition we must have , and .
+The solution works by precomputing which vertices can be connected by whole blocks of this sequence, then greedily extending the answer from large blocks to small blocks.
 
-Let us store matrices Pk and Qk, with entries Pk / Qk(v, u) equal to 1 for pairs of vertices v, u such that there is a Ak/Bk-path from v to u. Note that P0 and Q0 are exactly the adjacency matrices with 0- and 1-arcs respectively.
+### 1. Two families of blocks
 
-Next, note that Pk + 1(v, u) = 1 if and only if there is a vertex w such that Pk(v, w) = Qk(w, u) = 1, and a similar condition can be written for Qk + 1(v, u). It follows that Pk + 1 and Qk + 1 can be computed using Pk and Qk in O(n3) time (the method is basically boolean matrix multiplication: , ).
+Define:
 
-To use the matrices Pk and Qk to find the answer, let us store L — the largest answer found, and S — the set of vertices reachable from the vertex 1 in exactly L steps. Let's process k by decreasing from a certain value k0, and see if L can be increased by 2k. The next 2k characters after L-th position will form the string Ak or Bk depending on the popcount parity of L. Let's denote S' the set of vertices reachable from S following Ak / Bk. If S' is non-empty, we can increase L by 2k, and assign S = S', otherwise, we don't change anything. In the end, L will be the maximal path length as long as it at less than 2k0.
+- `A_k` = the string after `k` inverse-append steps
+- `B_k = invert(A_k)`
 
-Note that we can take k0 = 60 since we don't care about exact value of answer if it is greater than 260. This results in an O(k0n3) solution, which is too slow. However, optimizing boolean multiplication with bitsets cuts the working time  times, and the solution is now fast enough.
+Then:
 
-Complexity:  time, and  memory. Here , and w = 64 is the word length in bits.In the second sample we can obtain an arbitrarily long route by travelling the road 1 first, and then choosing road 2 or 3 depending on the necessary type.
+- `A_0 = 0`
+- `B_0 = 1`
+
+and the key recurrence is:
+
+- `A_{k+1} = A_k B_k`
+- `B_{k+1} = B_k A_k`
+
+Each block has length:
+
+- `|A_k| = |B_k| = 2^k`
+
+This recurrence is the whole reason the DP works.
+
+### 2. Reachability matrices
+
+For every `k`, define two boolean matrices:
+
+- `P_k[v][u] = 1` if there exists a path from `v` to `u` whose edge-type sequence is exactly `A_k`
+- `Q_k[v][u] = 1` if there exists a path from `v` to `u` whose edge-type sequence is exactly `B_k`
+
+Base case:
+
+- `P_0` is just the adjacency matrix of type-`0` edges
+- `Q_0` is just the adjacency matrix of type-`1` edges
+
+Now use the block recurrence:
+
+- to follow `A_{k+1}`, first follow `A_k`, then follow `B_k`
+- to follow `B_{k+1}`, first follow `B_k`, then follow `A_k`
+
+So:
+
+- `P_{k+1} = P_k * Q_k`
+- `Q_{k+1} = Q_k * P_k`
+
+where `*` is boolean matrix multiplication:
+
+- `(X * Y)[v][u] = 1` iff there exists `w` such that `X[v][w] = 1` and `Y[w][u] = 1`
+
+This gives all reachability information for blocks of lengths `1, 2, 4, 8, ...`.
+
+### 3. Why this is enough to build the answer
+
+Suppose we already know:
+
+- current traveled length is `L`
+- current reachable set is `S`
+
+meaning:
+
+- starting from town `1`, after exactly `L` required steps, we can end in any town from `S`
+
+Now ask whether we can extend the route by another block of length `2^k`.
+
+Which block comes next?
+
+That depends on the parity of the number of `1` bits in `L`.
+For the Thue-Morse sequence, the suffix starting at position `L` begins with:
+
+- `A_k` if `popcount(L)` is even
+- `B_k` if `popcount(L)` is odd
+
+So:
+
+- if `popcount(L)` is even, we advance `S` through `P_k`
+- if `popcount(L)` is odd, we advance `S` through `Q_k`
+
+Let the new reachable set be `S'`.
+
+If `S'` is non-empty, then we can safely increase:
+
+- `L += 2^k`
+- `S = S'`
+
+Otherwise, this block cannot be appended.
+
+### 4. Why greedy from large to small works
+
+This is exactly the same idea as binary lifting or greedy binary construction of a maximum number.
+
+We try `k` from large to small:
+
+- first try to add `2^59`
+- then `2^58`
+- ...
+- then `2^0`
+
+Whenever a block is feasible, we take it.
+
+Why is this correct?
+
+Because after all `P_k` and `Q_k` are precomputed, each choice answers:
+
+- “Can I extend the current prefix by exactly `2^k` more steps?”
+
+So processing powers of two from large to small is just greedily constructing the largest possible length in binary.
+
+At the end, `L` is the maximum achievable route length below `2^60`.
+
+Since `2^60 > 10^18`, this is enough:
+
+- if we can exceed `10^18`, print `-1`
+- otherwise the exact answer is `L`
+
+### 5. Why the previous solution failed on sample 4
+
+The buggy approach tried to recursively compute the answer from a single current node.
+That is not enough.
+
+At a given prefix length, we may be able to reach many towns.
+Some of them may fail on the next big block, while others may continue much farther.
+
+So the state must be:
+
+- a whole reachable set of towns
+
+not just one town.
+
+The fixed solution follows the editorial exactly:
+
+- precompute block reachability matrices
+- keep the whole reachable set
+- greedily extend it
+
+That is why sample 4 works now.
+
+### 6. Bitset optimization
+
+Naively, each boolean matrix multiplication is `O(n^3)`.
+Doing that for about `60` levels would be too slow.
+
+But `n <= 500`, so we can store each row as a bitset.
+
+Then:
+
+- a row union becomes fast bitwise OR
+- matrix multiplication becomes “for every set bit in row `i`, OR the corresponding row from the other matrix”
+
+This is fast enough in practice for `n = 500`.
+
+In the implementation:
+
+- each row is stored as `[]uint64`
+- `P[k]` and `Q[k]` are bitset matrices
+- `advance` takes a reachable-set bitset and applies one of these matrices
+
+### 7. Complexity
+
+Let `w = 64` be the machine word size.
+
+Using bitsets, the complexity is roughly:
+
+- `O(60 * n^3 / w)`
+
+which is fine for `n <= 500`.
+
+Memory usage is:
+
+- `O(60 * n^2 / w)`
+
+### 8. Summary
+
+The full solution is:
+
+1. Build `P_0` and `Q_0` from edges of type `0` and `1`
+2. Precompute `P_k` and `Q_k` using
+   - `P_{k+1} = P_k Q_k`
+   - `Q_{k+1} = Q_k P_k`
+3. Start with:
+   - current length `L = 0`
+   - reachable set `S = {1}`
+4. For `k` from `59` down to `0`:
+   - decide whether the next block is `A_k` or `B_k` from parity of `popcount(L)`
+   - compute the next reachable set
+   - if it is non-empty, accept this block
+5. If `L > 10^18`, print `-1`, otherwise print `L`
+
+The key insight is:
+
+- do DP on whole blocks `A_k / B_k`, not on individual characters
+- and keep the whole reachable set, not a single endpoint
