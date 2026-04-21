@@ -2,97 +2,79 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"os"
+	"slices"
+	"strconv"
+	"strings"
 )
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 
-	tc := readNum(reader)
+	writer := bufio.NewWriter(os.Stdout)
+	defer writer.Flush()
 
-	var buf bytes.Buffer
+	tc := readNums(reader)[0]
 
-	for tc > 0 {
-		tc--
+	for range tc {
 		s := readString(reader)
 		res := solve(s)
-		buf.WriteString(fmt.Sprintf("%d\n", res))
+		fmt.Fprintln(writer, res)
 	}
-	fmt.Print(buf.String())
 }
 func readString(reader *bufio.Reader) string {
 	s, _ := reader.ReadString('\n')
-	for i := 0; i < len(s); i++ {
-		if s[i] == '\n' || s[i] == '\r' {
-			return s[:i]
-		}
-	}
-	return s
+	return strings.TrimSpace(s)
 }
 
-func readInt(bytes []byte, from int, val *int) int {
-	i := from
-	sign := 1
-	if bytes[i] == '-' {
-		sign = -1
-		i++
-	}
-	tmp := 0
-	for i < len(bytes) && bytes[i] >= '0' && bytes[i] <= '9' {
-		tmp = tmp*10 + int(bytes[i]-'0')
-		i++
-	}
-	*val = tmp * sign
-	return i
-}
-
-func readNum(reader *bufio.Reader) (a int) {
-	bs, _ := reader.ReadBytes('\n')
-	readInt(bs, 0, &a)
-	return
-}
-
-func readTwoNums(reader *bufio.Reader) (a int, b int) {
-	res := readNNums(reader, 2)
-	a, b = res[0], res[1]
-	return
-}
-
-func readThreeNums(reader *bufio.Reader) (a int, b int, c int) {
-	res := readNNums(reader, 3)
-	a, b, c = res[0], res[1], res[2]
-	return
-}
-
-func readNNums(reader *bufio.Reader, n int) []int {
-	res := make([]int, n)
-	x := 0
-	bs, _ := reader.ReadBytes('\n')
-	for i := 0; i < n; i++ {
-		for x < len(bs) && (bs[x] < '0' || bs[x] > '9') && bs[x] != '-' {
-			x++
-		}
-		x = readInt(bs, x, &res[i])
+func readNums(reader *bufio.Reader) []int {
+	s := readString(reader)
+	ss := strings.Split(s, " ")
+	res := make([]int, len(ss))
+	for i, s := range ss {
+		res[i], _ = strconv.Atoi(s)
 	}
 	return res
 }
 
-func readUint64(bytes []byte, from int, val *uint64) int {
-	i := from
-
-	var tmp uint64
-	for i < len(bytes) && bytes[i] >= '0' && bytes[i] <= '9' {
-		tmp = tmp*10 + uint64(bytes[i]-'0')
-		i++
-	}
-	*val = tmp
-
-	return i
-}
+const inf = 1 << 60
 
 func solve(s string) int {
+	n := len(s)
+	if n == 1 {
+		return 0
+	}
+	dp := make([]int, 4)
+	if s[0] == s[1] {
+		dp[0] = inf
+	} else {
+		dp[0] = 0
+	}
+	dp[1] = 1
+	dp[2] = 1
+	dp[3] = 2
+
+	for i := 2; i < n; i++ {
+		ndp := []int{inf, inf, inf, inf}
+
+		for mask := range 4 {
+			newMask := (mask << 1) & 3
+			// 如果不修改当前字符，那么必须保证s[i] != s[i-1] 和 s[i] != s[i-2]
+			if (mask&1 == 1 || s[i] != s[i-1]) && (mask&2 == 2 || s[i] != s[i-2]) {
+				ndp[newMask] = min(ndp[newMask], dp[mask])
+			}
+			// 这个始终是成立的
+			ndp[newMask|1] = min(ndp[newMask|1], dp[mask]+1)
+		}
+
+		dp = ndp
+	}
+
+	return slices.Min(dp)
+}
+
+func solve1(s string) int {
 	n := len(s)
 	if n == 1 {
 		return 0
@@ -119,11 +101,4 @@ func solve(s string) int {
 	}
 
 	return res
-}
-
-func min(a, b int) int {
-	if a <= b {
-		return a
-	}
-	return b
 }
