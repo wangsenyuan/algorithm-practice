@@ -15,152 +15,185 @@ func process(reader *bufio.Reader) int {
 	var n, m int
 	fmt.Fscan(reader, &n, &m)
 
-	parent := make([]int, n)
-	children := make([][]int, n)
+	parent := make([]int, n-1)
 	for i := 1; i < n; i++ {
-		fmt.Fscan(reader, &parent[i])
-		parent[i]--
-		children[parent[i]] = append(children[parent[i]], i)
+		fmt.Fscan(reader, &parent[i-1])
 	}
 
 	edges := make([][]int, m)
 	for i := 0; i < m; i++ {
 		edges[i] = make([]int, 3)
 		fmt.Fscan(reader, &edges[i][0], &edges[i][1], &edges[i][2])
-		edges[i][0]--
-		edges[i][1]--
 	}
 
-	return solve(parent, children, edges)
+	return solve(parent, edges)
 }
 
-func solve(parent []int, children [][]int, edges [][]int) int {
-	n := len(parent)
-	depth := make([]int, n)
-	size := make([]int, n)
-	heavy := make([]int, n)
-	for i := range n {
-		size[i] = 1
-		heavy[i] = -1
+func solve(P []int, edges [][]int) int {
+	n := len(P) + 1
+	adj := make([][]int, n)
+	parent := make([]int, n)
+	for i := 1; i < n; i++ {
+		parent[i] = P[i-1] - 1
+		adj[parent[i]] = append(adj[parent[i]], i)
 	}
 
-	for u := 1; u < n; u++ {
-		depth[u] = depth[parent[u]] + 1
-	}
-	for u := n - 1; u > 0; u-- {
-		p := parent[u]
-		size[p] += size[u]
-		if heavy[p] < 0 || size[u] > size[heavy[p]] {
-			heavy[p] = u
+	sz := make([]int, n)
+	big := make([]int, n)
+	dep := make([]int, n)
+	var dfs1 func(u int)
+	dfs1 = func(u int) {
+		sz[u] = 1
+		big[u] = -1
+		for _, v := range adj[u] {
+			dep[v] = dep[u] + 1
+			dfs1(v)
+			sz[u] += sz[v]
+			if big[u] == -1 || sz[v] > sz[big[u]] {
+				big[u] = v
+			}
 		}
 	}
 
-	top := make([]int, n)
+	dfs1(0)
+
 	dfn := make([]int, n)
-	var timer int
-	stack := []int{0}
-	for len(stack) > 0 {
-		head := stack[len(stack)-1]
-		stack = stack[:len(stack)-1]
-		for u := head; u >= 0; u = heavy[u] {
-			top[u] = head
-			dfn[u] = timer
-			timer++
-			for _, v := range children[u] {
-				if v != heavy[u] {
-					stack = append(stack, v)
-				}
+	var ord int
+
+	rev := make([]int, n)
+
+	head := make([]int, n)
+
+	var dfs2 func(u int, x int)
+
+	dfs2 = func(u int, x int) {
+		head[u] = x
+		dfn[u] = ord
+		rev[ord] = u
+		ord++
+		if big[u] != -1 {
+			dfs2(big[u], x)
+		}
+		for _, v := range adj[u] {
+			if v != big[u] {
+				dfs2(v, v)
 			}
 		}
 	}
 
-	lca := func(u, v int) int {
-		for top[u] != top[v] {
-			if depth[top[u]] < depth[top[v]] {
-				v = parent[top[v]]
-			} else {
-				u = parent[top[u]]
-			}
-		}
-		if depth[u] < depth[v] {
-			return u
-		}
-		return v
-	}
+	dfs2(0, 0)
 
-	type path struct {
-		u int
-		v int
-		w int
-	}
-	byLca := make([][]path, n)
-	for _, e := range edges {
-		u, v, w := e[0], e[1], e[2]
-		x := lca(u, v)
-		byLca[x] = append(byLca[x], path{u, v, w})
-	}
-
-	tr := NewSegTree(n)
-	queryPath := func(u, v int) int {
-		var res int
-		for top[u] != top[v] {
-			if depth[top[u]] < depth[top[v]] {
+	lca := func(u int, v int) int {
+		for head[u] != head[v] {
+			// 移动head更深的那个
+			if dep[head[u]] < dep[head[v]] {
 				u, v = v, u
 			}
-			res += tr.Query(dfn[top[u]], dfn[u])
-			u = parent[top[u]]
+			u = parent[head[u]]
 		}
-		if depth[u] > depth[v] {
-			u, v = v, u
+		if dep[u] > dep[v] {
+			u = v
 		}
-		res += tr.Query(dfn[u], dfn[v])
+		return u
+	}
+
+	todo := make([][]int, n)
+	for i, cur := range edges {
+		u, v := cur[0]-1, cur[1]-1
+		p := lca(u, v)
+		todo[p] = append(todo[p], i)
+	}
+
+	// fp[u] 表示子树u的结果
+	fp := make([]int, n)
+	s := make([]int, n)
+
+	tr := make(SegTree, 2*n)
+
+	nextAncestor := func(u int, p int) int {
+		for head[u] != head[p] {
+			u = head[u]
+			if parent[u] == p {
+				return u
+			}
+			u = parent[u]
+		}
+		return rev[dfn[p]+1]
+	}
+
+	query := func(u int, p int) int {
+		// p 肯定是u得祖先节点
+		var res int
+		for head[u] != head[p] {
+			res += tr.Get(dfn[head[u]], dfn[u]+1)
+			u = parent[head[u]]
+		}
+		// head[u] == head[p]
+		res += tr.Get(dfn[p]+1, dfn[u]+1)
 		return res
 	}
 
-	dp := make([]int, n)
-	for u := n - 1; u >= 0; u-- {
-		var sum int
-		for _, v := range children[u] {
-			sum += dp[v]
+	var dfs3 func(u int)
+	dfs3 = func(u int) {
+		for _, v := range adj[u] {
+			dfs3(v)
+			s[u] += fp[v]
 		}
-		dp[u] = sum
-		for _, p := range byLca[u] {
-			dp[u] = max(dp[u], sum+p.w+queryPath(p.u, p.v))
+
+		// 要计算出fp[u]以后，才能计算
+		best := s[u]
+		for _, i := range todo[u] {
+			x, y, c := edges[i][0]-1, edges[i][1]-1, edges[i][2]
+			tmp := c + s[u]
+			if x != u {
+				tmp += s[x]
+				x1 := nextAncestor(x, u)
+				tmp += query(x, x1) - fp[x1]
+			}
+			if y != u {
+				tmp += s[y]
+				y1 := nextAncestor(y, u)
+				tmp += query(y, y1) - fp[y1]
+			}
+			best = max(best, tmp)
 		}
-		tr.Add(dfn[u], sum-dp[u])
+		fp[u] = best
+
+		for _, v := range adj[u] {
+			tr.Update(dfn[v], s[u]-fp[v])
+		}
 	}
 
-	return dp[0]
+	dfs3(0)
+
+	return fp[0]
 }
 
-type SegTree struct {
-	arr []int
-}
+type SegTree []int
 
-func NewSegTree(n int) *SegTree {
-	return &SegTree{make([]int, 2*n)}
-}
-
-func (tr *SegTree) Add(pos int, v int) {
-	pos += len(tr.arr) / 2
-	for pos > 0 {
-		tr.arr[pos] += v
-		pos >>= 1
+func (t SegTree) Update(p int, v int) {
+	n := len(t) / 2
+	p += n
+	t[p] = v
+	for p > 1 {
+		t[p>>1] = t[p] + t[p^1]
+		p >>= 1
 	}
 }
 
-func (tr *SegTree) Query(l int, r int) int {
-	l += len(tr.arr) / 2
-	r += len(tr.arr)/2 + 1
+func (t SegTree) Get(l int, r int) int {
+	n := len(t) / 2
+	l += n
+	r += n
 	var res int
 	for l < r {
 		if l&1 == 1 {
-			res += tr.arr[l]
+			res += t[l]
 			l++
 		}
 		if r&1 == 1 {
 			r--
-			res += tr.arr[r]
+			res += t[r]
 		}
 		l >>= 1
 		r >>= 1
