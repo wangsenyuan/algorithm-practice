@@ -67,11 +67,32 @@ func solve(a [][]int) int {
 		arr = append(arr, []int{lo, hi})
 	}
 
+	return solve2(n, arr)
+}
+
+func solve2(n int, arr [][]int) int {
+	todo := make([]int, 2*n+1)
+	for _, cur := range arr {
+		l, r := cur[0], cur[1]
+		todo[r] = max(todo[r], l)
+	}
+	var maxL int
+	var res int
+	for _, l := range todo {
+		maxL = max(maxL, l)
+		res += maxL
+	}
+	return res
+}
+
+func solve1(n int, arr [][]int) int {
+
 	close := make([][]int, 2*n+1)
 	for i, cur := range arr {
 		hi := cur[1]
 		close[hi] = append(close[hi], i)
 	}
+
 	var active IntHeap
 
 	marked := make([]bool, len(arr))
