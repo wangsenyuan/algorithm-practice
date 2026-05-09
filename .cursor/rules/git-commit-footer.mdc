@@ -1,0 +1,10 @@
+---
+description: Commit message footer preference
+globs:
+alwaysApply: true
+---
+
+When creating git commit messages in this workspace:
+
+- Use `Assisted-By:` footer lines when attribution is needed.
+- Do **not** use `Co-Authored-by:` in commit messages.
