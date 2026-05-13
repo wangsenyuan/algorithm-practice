@@ -11,10 +11,11 @@ import (
 )
 
 type Platform struct {
-	Key     string
-	Name    string
-	Prefix  string
-	OutFile string
+	Key        string
+	Name       string
+	Prefix     string
+	OutFile    string
+	ShardDepth int
 }
 
 type Entry struct {
@@ -34,7 +35,7 @@ type RepoIndex struct {
 }
 
 var (
-	platformCodeforces = Platform{Key: "codeforces", Name: "Codeforces", Prefix: "src/codeforces/", OutFile: "codeforces.md"}
+	platformCodeforces = Platform{Key: "codeforces", Name: "Codeforces", Prefix: "src/codeforces/", OutFile: "codeforces.md", ShardDepth: 2}
 	platformLeetcode   = Platform{Key: "leetcode", Name: "LeetCode", Prefix: "src/leetcode/", OutFile: "leetcode.md"}
 	platformCodechef   = Platform{Key: "codechef", Name: "CodeChef", Prefix: "src/codechef/", OutFile: "codechef.md"}
 	platformAtcoder    = Platform{Key: "atcoder", Name: "AtCoder", Prefix: "src/atcoders/", OutFile: "atcoder.md"}
@@ -159,26 +160,91 @@ func renderIndexHome(index RepoIndex) string {
 
 func renderPlatform(index RepoIndex, platform Platform) string {
 	platformIndex := index.Platforms[platform]
+	if platform.ShardDepth > 0 {
+		return renderPlatformLanding(platformIndex)
+	}
+
 	var buf bytes.Buffer
 	fmt.Fprintf(&buf, "# %s Index\n\n", platform.Name)
 	fmt.Fprintf(&buf, "%d packages with `solution.go` under `%s`.\n\n", len(platformIndex.Entries), strings.TrimSuffix(platform.Prefix, "/"))
 	buf.WriteString("| Package | Local docs |\n")
 	buf.WriteString("| --- | --- |\n")
 	for _, entry := range platformIndex.Entries {
-		fmt.Fprintf(&buf, "| [`%s`](../../%s) | %s |\n", entry.Path, entry.Path, renderDocLinks(entry.Docs))
+		fmt.Fprintf(&buf, "| [`%s`](../../%s) | %s |\n", entry.Path, entry.Path, renderDocLinks(entry.Docs, "../../"))
 	}
 	return buf.String()
 }
 
-func renderDocLinks(docs []string) string {
+func renderPlatformLanding(platformIndex PlatformIndex) string {
+	shards := shardEntries(platformIndex)
+	keys := sortedShardKeys(shards)
+
+	var buf bytes.Buffer
+	fmt.Fprintf(&buf, "# %s Index\n\n", platformIndex.Platform.Name)
+	fmt.Fprintf(&buf, "%d packages with `solution.go` under `%s`.\n\n", len(platformIndex.Entries), strings.TrimSuffix(platformIndex.Platform.Prefix, "/"))
+	buf.WriteString("This index is split into smaller pages so GitHub can render it quickly.\n\n")
+	buf.WriteString("| Range | Packages |\n")
+	buf.WriteString("| --- | ---: |\n")
+	for _, key := range keys {
+		fmt.Fprintf(&buf, "| [%s](%s/%s.md) | %d |\n", key, platformIndex.Platform.Key, shardFileBase(key), len(shards[key]))
+	}
+	return buf.String()
+}
+
+func renderPlatformShard(platformIndex PlatformIndex, shardKey, rootPrefix string) string {
+	var buf bytes.Buffer
+	fmt.Fprintf(&buf, "# %s %s\n\n", platformIndex.Platform.Name, shardKey)
+	buf.WriteString("[Back to platform index](../")
+	buf.WriteString(platformIndex.Platform.OutFile)
+	buf.WriteString(")\n\n")
+	buf.WriteString("| Package | Local docs |\n")
+	buf.WriteString("| --- | --- |\n")
+	for _, entry := range shardEntries(platformIndex)[shardKey] {
+		fmt.Fprintf(&buf, "| [`%s`](%s%s) | %s |\n", entry.Path, rootPrefix, entry.Path, renderDocLinks(entry.Docs, rootPrefix))
+	}
+	return buf.String()
+}
+
+func renderDocLinks(docs []string, rootPrefix string) string {
 	if len(docs) == 0 {
 		return ""
 	}
 	links := make([]string, 0, len(docs))
 	for _, doc := range docs {
-		links = append(links, fmt.Sprintf("[%s](../../%s)", filepath.Base(doc), doc))
+		links = append(links, fmt.Sprintf("[%s](%s%s)", filepath.Base(doc), rootPrefix, doc))
 	}
 	return strings.Join(links, ", ")
+}
+
+func shardEntries(platformIndex PlatformIndex) map[string][]Entry {
+	shards := make(map[string][]Entry)
+	for _, entry := range platformIndex.Entries {
+		key := shardKey(platformIndex.Platform, entry.Path)
+		shards[key] = append(shards[key], entry)
+	}
+	return shards
+}
+
+func shardKey(platform Platform, path string) string {
+	rest := strings.TrimPrefix(path, platform.Prefix)
+	parts := strings.Split(rest, "/")
+	if platform.ShardDepth <= 0 || len(parts) < platform.ShardDepth {
+		return strings.TrimSuffix(rest, "/")
+	}
+	return strings.Join(parts[:platform.ShardDepth], "/")
+}
+
+func sortedShardKeys(shards map[string][]Entry) []string {
+	keys := make([]string, 0, len(shards))
+	for key := range shards {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+func shardFileBase(key string) string {
+	return strings.ReplaceAll(key, "/", "-")
 }
 
 func writeIndexes(root string, index RepoIndex) error {
@@ -186,12 +252,24 @@ func writeIndexes(root string, index RepoIndex) error {
 	if err := os.MkdirAll(outDir, 0755); err != nil {
 		return err
 	}
+	for _, platform := range platforms {
+		if err := os.RemoveAll(filepath.Join(outDir, platform.Key)); err != nil {
+			return err
+		}
+	}
 
 	files := map[string]string{
 		"README.md": renderIndexHome(index),
 	}
 	for _, platform := range platforms {
 		files[platform.OutFile] = renderPlatform(index, platform)
+		if platform.ShardDepth > 0 {
+			platformIndex := index.Platforms[platform]
+			for _, key := range sortedShardKeys(shardEntries(platformIndex)) {
+				name := filepath.Join(platform.Key, shardFileBase(key)+".md")
+				files[name] = renderPlatformShard(platformIndex, key, "../../../")
+			}
+		}
 	}
 
 	names := make([]string, 0, len(files))
@@ -201,6 +279,9 @@ func writeIndexes(root string, index RepoIndex) error {
 	sort.Strings(names)
 	for _, name := range names {
 		path := filepath.Join(outDir, name)
+		if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+			return err
+		}
 		if err := os.WriteFile(path, []byte(files[name]), 0644); err != nil {
 			return err
 		}

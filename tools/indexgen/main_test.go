@@ -75,21 +75,21 @@ func TestRenderPlatformLinksPackageAndDocs(t *testing.T) {
 		t.Fatalf("collectRepo() error = %v", err)
 	}
 
-	out := renderPlatform(index, platformCodeforces)
+	out := renderPlatformShard(index.Platforms[platformCodeforces], "set1/set18", "../../../")
 
 	required := []string{
-		"# Codeforces Index",
-		"[`src/codeforces/set1/set18/set185/set1857/g`](../../src/codeforces/set1/set18/set185/set1857/g)",
-		"[problem.md](../../src/codeforces/set1/set18/set185/set1857/g/problem.md)",
+		"# Codeforces set1/set18",
+		"[`src/codeforces/set1/set18/set185/set1857/g`](../../../src/codeforces/set1/set18/set185/set1857/g)",
+		"[problem.md](../../../src/codeforces/set1/set18/set185/set1857/g/problem.md)",
 	}
 	for _, text := range required {
 		if !strings.Contains(out, text) {
-			t.Fatalf("renderPlatform() missing %q in:\n%s", text, out)
+			t.Fatalf("renderPlatformShard() missing %q in:\n%s", text, out)
 		}
 	}
 }
 
-func TestWriteIndexesCreatesDeterministicFiles(t *testing.T) {
+func TestWriteIndexesSplitsLargePlatformIndexesIntoShardFiles(t *testing.T) {
 	root := makeFixtureRepo(t)
 	index, err := collectRepo(root)
 	if err != nil {
@@ -99,17 +99,25 @@ func TestWriteIndexesCreatesDeterministicFiles(t *testing.T) {
 	if err := writeIndexes(root, index); err != nil {
 		t.Fatalf("writeIndexes() error = %v", err)
 	}
-	first, err := os.ReadFile(filepath.Join(root, "docs", "index", "codeforces.md"))
+	landing, err := os.ReadFile(filepath.Join(root, "docs", "index", "codeforces.md"))
 	if err != nil {
-		t.Fatalf("read first generated index: %v", err)
+		t.Fatalf("read Codeforces landing page: %v", err)
+	}
+	shardPath := filepath.Join(root, "docs", "index", "codeforces", "set1-set18.md")
+	first, err := os.ReadFile(shardPath)
+	if err != nil {
+		t.Fatalf("read Codeforces shard: %v", err)
+	}
+	if !strings.Contains(string(landing), "[set1/set18](codeforces/set1-set18.md)") {
+		t.Fatalf("Codeforces landing page does not link to shard:\n%s", landing)
 	}
 
 	if err := writeIndexes(root, index); err != nil {
 		t.Fatalf("second writeIndexes() error = %v", err)
 	}
-	second, err := os.ReadFile(filepath.Join(root, "docs", "index", "codeforces.md"))
+	second, err := os.ReadFile(shardPath)
 	if err != nil {
-		t.Fatalf("read second generated index: %v", err)
+		t.Fatalf("read second generated shard: %v", err)
 	}
 
 	if string(first) != string(second) {
