@@ -15,6 +15,7 @@ type Platform struct {
 	Name       string
 	Prefix     string
 	OutFile    string
+	GroupDepth int
 	ShardDepth int
 }
 
@@ -36,8 +37,8 @@ type RepoIndex struct {
 
 var (
 	platformCodeforces = Platform{Key: "codeforces", Name: "Codeforces", Prefix: "src/codeforces/", OutFile: "codeforces.md", ShardDepth: 2}
-	platformLeetcode   = Platform{Key: "leetcode", Name: "LeetCode", Prefix: "src/leetcode/", OutFile: "leetcode.md"}
-	platformCodechef   = Platform{Key: "codechef", Name: "CodeChef", Prefix: "src/codechef/", OutFile: "codechef.md"}
+	platformLeetcode   = Platform{Key: "leetcode", Name: "LeetCode", Prefix: "src/leetcode/", OutFile: "leetcode.md", GroupDepth: 2}
+	platformCodechef   = Platform{Key: "codechef", Name: "CodeChef", Prefix: "src/codechef/", OutFile: "codechef.md", ShardDepth: 2}
 	platformAtcoder    = Platform{Key: "atcoder", Name: "AtCoder", Prefix: "src/atcoders/", OutFile: "atcoder.md"}
 	platforms          = []Platform{platformCodeforces, platformLeetcode, platformCodechef, platformAtcoder}
 )
@@ -160,6 +161,9 @@ func renderIndexHome(index RepoIndex) string {
 
 func renderPlatform(index RepoIndex, platform Platform) string {
 	platformIndex := index.Platforms[platform]
+	if platform.GroupDepth > 0 {
+		return renderPlatformGroupLanding(platformIndex)
+	}
 	if platform.ShardDepth > 0 {
 		return renderPlatformLanding(platformIndex)
 	}
@@ -171,6 +175,22 @@ func renderPlatform(index RepoIndex, platform Platform) string {
 	buf.WriteString("| --- | --- |\n")
 	for _, entry := range platformIndex.Entries {
 		fmt.Fprintf(&buf, "| [`%s`](../../%s) | %s |\n", entry.Path, entry.Path, renderDocLinks(entry.Docs, "../../"))
+	}
+	return buf.String()
+}
+
+func renderPlatformGroupLanding(platformIndex PlatformIndex) string {
+	groups := groupEntries(platformIndex)
+	keys := sortedShardKeys(groups)
+
+	var buf bytes.Buffer
+	fmt.Fprintf(&buf, "# %s Index\n\n", platformIndex.Platform.Name)
+	fmt.Fprintf(&buf, "%d packages with `solution.go` under `%s`.\n\n", len(platformIndex.Entries), strings.TrimSuffix(platformIndex.Platform.Prefix, "/"))
+	buf.WriteString("This index is split into smaller pages so GitHub can render it quickly.\n\n")
+	buf.WriteString("| Range | Packages |\n")
+	buf.WriteString("| --- | ---: |\n")
+	for _, key := range keys {
+		fmt.Fprintf(&buf, "| [%s](%s/%s.md) | %d |\n", key, platformIndex.Platform.Key, shardFileBase(key), len(groups[key]))
 	}
 	return buf.String()
 }
@@ -191,12 +211,46 @@ func renderPlatformLanding(platformIndex PlatformIndex) string {
 	return buf.String()
 }
 
-func renderPlatformShard(platformIndex PlatformIndex, shardKey, rootPrefix string) string {
+func renderPlatformGroup(platformIndex PlatformIndex, groupKey string) string {
+	entries := groupEntries(platformIndex)[groupKey]
+
 	var buf bytes.Buffer
-	fmt.Fprintf(&buf, "# %s %s\n\n", platformIndex.Platform.Name, shardKey)
+	fmt.Fprintf(&buf, "# %s %s\n\n", platformIndex.Platform.Name, groupKey)
 	buf.WriteString("[Back to platform index](../")
 	buf.WriteString(platformIndex.Platform.OutFile)
 	buf.WriteString(")\n\n")
+	if platformIndex.Platform.ShardDepth <= platformIndex.Platform.GroupDepth {
+		buf.WriteString("| Package | Local docs |\n")
+		buf.WriteString("| --- | --- |\n")
+		for _, entry := range entries {
+			fmt.Fprintf(&buf, "| [`%s`](../../../%s) | %s |\n", entry.Path, entry.Path, renderDocLinks(entry.Docs, "../../../"))
+		}
+		return buf.String()
+	}
+
+	shards := shardEntries(PlatformIndex{Platform: platformIndex.Platform, Entries: entries})
+	keys := sortedShardKeys(shards)
+	buf.WriteString("| Range | Packages |\n")
+	buf.WriteString("| --- | ---: |\n")
+	for _, key := range keys {
+		fmt.Fprintf(&buf, "| [%s](%s.md) | %d |\n", key, shardFileBase(key), len(shards[key]))
+	}
+	return buf.String()
+}
+
+func renderPlatformShard(platformIndex PlatformIndex, shardKey, rootPrefix string) string {
+	var buf bytes.Buffer
+	fmt.Fprintf(&buf, "# %s %s\n\n", platformIndex.Platform.Name, shardKey)
+	if platformIndex.Platform.GroupDepth > 0 {
+		buf.WriteString("[Back to range index](")
+		buf.WriteString(shardFileBase(groupKey(platformIndex.Platform, shardKey)))
+		buf.WriteString(".md)")
+	} else {
+		buf.WriteString("[Back to platform index](../")
+		buf.WriteString(platformIndex.Platform.OutFile)
+		buf.WriteString(")")
+	}
+	buf.WriteString("\n\n")
 	buf.WriteString("| Package | Local docs |\n")
 	buf.WriteString("| --- | --- |\n")
 	for _, entry := range shardEntries(platformIndex)[shardKey] {
@@ -216,6 +270,15 @@ func renderDocLinks(docs []string, rootPrefix string) string {
 	return strings.Join(links, ", ")
 }
 
+func groupEntries(platformIndex PlatformIndex) map[string][]Entry {
+	groups := make(map[string][]Entry)
+	for _, entry := range platformIndex.Entries {
+		key := groupKey(platformIndex.Platform, entry.Path)
+		groups[key] = append(groups[key], entry)
+	}
+	return groups
+}
+
 func shardEntries(platformIndex PlatformIndex) map[string][]Entry {
 	shards := make(map[string][]Entry)
 	for _, entry := range platformIndex.Entries {
@@ -223,6 +286,15 @@ func shardEntries(platformIndex PlatformIndex) map[string][]Entry {
 		shards[key] = append(shards[key], entry)
 	}
 	return shards
+}
+
+func groupKey(platform Platform, path string) string {
+	rest := strings.TrimPrefix(path, platform.Prefix)
+	parts := strings.Split(rest, "/")
+	if platform.GroupDepth <= 0 || len(parts) < platform.GroupDepth {
+		return strings.TrimSuffix(rest, "/")
+	}
+	return strings.Join(parts[:platform.GroupDepth], "/")
 }
 
 func shardKey(platform Platform, path string) string {
@@ -263,6 +335,13 @@ func writeIndexes(root string, index RepoIndex) error {
 	}
 	for _, platform := range platforms {
 		files[platform.OutFile] = renderPlatform(index, platform)
+		if platform.GroupDepth > 0 {
+			platformIndex := index.Platforms[platform]
+			for _, key := range sortedShardKeys(groupEntries(platformIndex)) {
+				name := filepath.Join(platform.Key, shardFileBase(key)+".md")
+				files[name] = renderPlatformGroup(platformIndex, key)
+			}
+		}
 		if platform.ShardDepth > 0 {
 			platformIndex := index.Platforms[platform]
 			for _, key := range sortedShardKeys(shardEntries(platformIndex)) {
