@@ -5,18 +5,13 @@ on:
     branches: [main]
 
 env:
-  GO_VERSION: "1.26"
+  GO_VERSION: "1.26.x"
   CGO_ENABLED: 1
 
 jobs:
   test:
-    name: Test
+    name: Test changed Go packages
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    strategy:
-      matrix:
-        go-version: ["1.26.x"]
-        os: [ubuntu-latest]
 
     steps:
       - name: Checkout code
@@ -27,7 +22,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: ${{ env.GO_VERSION }}
           cache: true
 
       - name: Verify dependencies
@@ -36,111 +31,40 @@ jobs:
       - name: Download dependencies
         run: go mod download
 
-      - name: Get changed files
-        id: changed-files
+      - name: Find changed Go package directories
         run: |
-          echo "Event name: ${{ github.event_name }}"
-          echo "Base ref: ${{ github.base_ref }}"
-          echo "Current branch: ${{ github.head_ref }}"
-          echo "Available branches:"
-          git branch -a || echo "No branches found"
-          echo "Available remotes:"
-          git remote -v || echo "No remotes found"
-          
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            # For pull requests, get files changed compared to base branch
-            # Try different approaches to get the base branch
-            if git rev-parse ${{ github.base_ref }} >/dev/null 2>&1; then
-              # Base branch is available locally
-              echo "Using local base branch: ${{ github.base_ref }}"
-              git diff --name-only ${{ github.base_ref }} HEAD > changed_files.txt
-            elif git rev-parse origin/${{ github.base_ref }} >/dev/null 2>&1; then
-              # Base branch is available as remote reference
-              echo "Using remote base branch: origin/${{ github.base_ref }}"
-              git diff --name-only origin/${{ github.base_ref }} HEAD > changed_files.txt
-            else
-              # Fallback: try to fetch the base branch
-              echo "Attempting to fetch base branch: ${{ github.base_ref }}"
-              git fetch origin ${{ github.base_ref }}:${{ github.base_ref }} || true
-              if git rev-parse ${{ github.base_ref }} >/dev/null 2>&1; then
-                echo "Successfully fetched base branch: ${{ github.base_ref }}"
-                git diff --name-only ${{ github.base_ref }} HEAD > changed_files.txt
-              else
-                # Last resort: get all files
-                echo "Warning: Could not find base branch, getting all files"
-                git ls-files > changed_files.txt
-              fi
-            fi
-          else
-            # For pushes, try to get files changed in the last commit
-            # Handle case where there's only one commit (new branch)
-            if git rev-parse HEAD~1 >/dev/null 2>&1; then
-              git diff --name-only HEAD~1 HEAD > changed_files.txt
-            else
-              # If this is the first commit, get all files
-              git ls-files > changed_files.txt
-            fi
-          fi
-          echo "Changed files:"
-          cat changed_files.txt || echo "No files changed"
+          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}"
+          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > changed_files.txt
 
-      - name: Find test files to run
-        id: test-files
-        run: |
-          if [ -s changed_files.txt ]; then
-            # Find Go files that were changed
-            grep '\.go$' changed_files.txt > go_files.txt || echo "No .go files changed"
-            
-            if [ -s go_files.txt ]; then
-              # Get the directories containing changed Go files
-              while IFS= read -r file; do
-                dir=$(dirname "$file")
-                echo "$dir" >> test_dirs.txt
-              done < go_files.txt
-              
-              # Remove duplicates and sort
-              sort -u test_dirs.txt > unique_test_dirs.txt
-              
-              echo "Test directories:"
-              cat unique_test_dirs.txt || echo "No test directories found"
-            else
-              echo "No Go files changed, skipping tests"
-              touch unique_test_dirs.txt
-            fi
-          else
-            echo "No files changed, skipping tests"
-            touch unique_test_dirs.txt
-          fi
+          while IFS= read -r file; do
+            case "$file" in
+              *.go) dirname "$file" ;;
+            esac
+          done < changed_files.txt | sort -u > unique_test_dirs.txt
 
-      - name: Run tests for changed files
-        run: |
           if [ -s unique_test_dirs.txt ]; then
-            while IFS= read -r test_dir; do
-              echo "Testing directory: $test_dir"
-              
-              # Check if directory has test files
-              if find "$test_dir" -name "*_test.go" -type f | grep -q .; then
-                echo "Found test files in $test_dir, running tests..."
-                # Change to the directory and run tests from there
-                cd "$test_dir"
-                go test -v -race -coverprofile=coverage_$(basename "$test_dir").out . || true
-                cd - > /dev/null
-              else
-                echo "No test files found in $test_dir, skipping..."
-              fi
-            done < unique_test_dirs.txt
+            echo "Changed Go package directories:"
+            cat unique_test_dirs.txt
           else
-            echo "No test directories found, skipping all tests"
+            echo "No changed Go files found."
           fi
 
-      - name: Combine coverage reports
+      - name: Run tests for changed packages
         run: |
-          # Combine all coverage files if they exist
-          if ls coverage_*.out 1> /dev/null 2>&1; then
-            echo "mode: set" > coverage.out
-            for file in coverage_*.out; do
-              if [ -f "$file" ]; then
-                tail -n +2 "$file" >> coverage.out || true
-              fi
-            done
+          if [ ! -s unique_test_dirs.txt ]; then
+            echo "No changed Go packages to test."
+            exit 0
           fi
+
+          while IFS= read -r test_dir; do
+            if [ ! -d "$test_dir" ]; then
+              echo "Skipping $test_dir: directory does not exist in this revision."
+              continue
+            fi
+            if find "$test_dir" -maxdepth 1 -name "*_test.go" -type f | grep -q .; then
+              echo "Testing $test_dir"
+              go test -v -race "./$test_dir"
+            else
+              echo "Skipping $test_dir: no package-local test files."
+            fi
+          done < unique_test_dirs.txt
