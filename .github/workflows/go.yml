@@ -3,6 +3,8 @@ name: Go CI/CD
 on:
   pull_request:
     branches: [main]
+  push:
+    branches: [main]
 
 env:
   GO_VERSION: "1.26.x"
@@ -33,8 +35,12 @@ jobs:
 
       - name: Find changed Go package directories
         run: |
-          git fetch --no-tags --depth=1 origin "${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}"
-          git diff --name-only "origin/${{ github.base_ref }}...HEAD" > changed_files.txt
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch --no-tags --depth=1 origin "${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}"
+            git diff --name-only "origin/${{ github.base_ref }}...HEAD" > changed_files.txt
+          else
+            git diff --name-only "${{ github.event.before }}...${{ github.sha }}" > changed_files.txt
+          fi
 
           while IFS= read -r file; do
             case "$file" in
