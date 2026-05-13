@@ -31,3 +31,11 @@ func TestSample2(t *testing.T) {
 `
 	runSample(t, s, 2.0)
 }
+
+func TestZigzagBarrier(t *testing.T) {
+	s := `2 5
+...X.
+.X...
+`
+	runSample(t, s, 2.625)
+}

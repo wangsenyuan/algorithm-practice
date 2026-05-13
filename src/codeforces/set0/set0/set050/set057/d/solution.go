@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 )
 
 func main() {
@@ -27,6 +28,8 @@ func solve(universe []string) float64 {
 
 	row := make([]int64, n)
 	col := make([]int64, m)
+	var byRow []point
+	var byCol []point
 	var free int64
 
 	for i := range n {
@@ -35,6 +38,9 @@ func solve(universe []string) float64 {
 				row[i]++
 				col[j]++
 				free++
+			} else {
+				byRow = append(byRow, point{i, j})
+				byCol = append(byCol, point{j, i})
 			}
 		}
 	}
@@ -77,5 +83,51 @@ func solve(universe []string) float64 {
 		}
 	}
 
+	sort.Slice(byCol, func(i, j int) bool {
+		return byCol[i].x < byCol[j].x
+	})
+	tot += countChains(byRow, m)
+	tot += countChains(byCol, n)
+
 	return float64(tot*2) / float64(free*free)
+}
+
+type point struct {
+	x int
+	y int
+}
+
+func countChains(a []point, limit int) int64 {
+	var res int64
+
+	for l := 0; l < len(a); {
+		r := l + 1
+		for r < len(a) && a[r].x == a[r-1].x+1 {
+			r++
+		}
+
+		for i := l; i < r; i++ {
+			dir := 0
+			for j := i + 1; j < r; j++ {
+				cur := 1
+				if a[j].y < a[j-1].y {
+					cur = -1
+				}
+				if dir == 0 {
+					dir = cur
+				} else if dir != cur {
+					break
+				}
+				if dir > 0 {
+					res += 2 * int64(a[i].y) * int64(limit-1-a[j].y)
+				} else {
+					res += 2 * int64(limit-1-a[i].y) * int64(a[j].y)
+				}
+			}
+		}
+
+		l = r
+	}
+
+	return res
 }

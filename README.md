@@ -11,9 +11,9 @@ Generated with `go run ./tools/indexgen`.
 
 | Area | Count |
 | --- | ---: |
-| Total solutions | 10256 |
-| Local problem docs and explanations | 3075 |
-| Codeforces solutions | 4655 |
+| Total solutions | 10260 |
+| Local problem docs and explanations | 3077 |
+| Codeforces solutions | 4659 |
 | LeetCode solutions | 3016 |
 | CodeChef solutions | 2252 |
 | AtCoder solutions | 155 |
