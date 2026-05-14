@@ -1,6 +1,6 @@
 # AtCoder Index
 
-155 packages with `solution.go` under `src/atcoders`.
+156 packages with `solution.go` under `src/atcoders`.
 
 | Package | Local docs |
 | --- | --- |
@@ -150,6 +150,7 @@
 | [`src/atcoders/arc/arc200/arc201/b`](../../src/atcoders/arc/arc200/arc201/b) | [problem.md](../../src/atcoders/arc/arc200/arc201/b/problem.md) |
 | [`src/atcoders/arc/arc200/arc201/c`](../../src/atcoders/arc/arc200/arc201/c) | [problem.md](../../src/atcoders/arc/arc200/arc201/c/problem.md) |
 | [`src/atcoders/arc/arc200/arc214/b`](../../src/atcoders/arc/arc200/arc214/b) | [problem.md](../../src/atcoders/arc/arc200/arc214/b/problem.md) |
+| [`src/atcoders/arc/arc200/arc218/b`](../../src/atcoders/arc/arc200/arc218/b) | [problem.md](../../src/atcoders/arc/arc200/arc218/b/problem.md) |
 | [`src/atcoders/contest/aising2020/e`](../../src/atcoders/contest/aising2020/e) | [problem.md](../../src/atcoders/contest/aising2020/e/problem.md) |
 | [`src/atcoders/contest/tenka1_2017/c`](../../src/atcoders/contest/tenka1_2017/c) |  |
 | [`src/atcoders/contest/tenka1_2017/d`](../../src/atcoders/contest/tenka1_2017/d) |  |
