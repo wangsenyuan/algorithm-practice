@@ -6,9 +6,9 @@ Generated Markdown indexes for the main online judge platforms in this repositor
 
 | Metric | Count |
 | --- | ---: |
-| Total solutions | 10264 |
-| Local docs | 3081 |
-| Codeforces solutions | 4662 |
+| Total solutions | 10269 |
+| Local docs | 3085 |
+| Codeforces solutions | 4667 |
 | LeetCode solutions | 3016 |
 | CodeChef solutions | 2252 |
 | AtCoder solutions | 156 |

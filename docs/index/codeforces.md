@@ -1,13 +1,13 @@
 # Codeforces Index
 
-4662 packages with `solution.go` under `src/codeforces`.
+4667 packages with `solution.go` under `src/codeforces`.
 
 This index is split into smaller pages so GitHub can render it quickly.
 
 | Range | Packages |
 | --- | ---: |
 | [set0/set0](codeforces/set0-set0.md) | 295 |
-| [set0/set1](codeforces/set0-set1.md) | 206 |
+| [set0/set1](codeforces/set0-set1.md) | 207 |
 | [set0/set2](codeforces/set0-set2.md) | 181 |
 | [set0/set3](codeforces/set0-set3.md) | 165 |
 | [set0/set4](codeforces/set0-set4.md) | 167 |
@@ -27,5 +27,5 @@ This index is split into smaller pages so GitHub can render it quickly.
 | [set1/set18](codeforces/set1-set18.md) | 272 |
 | [set1/set19](codeforces/set1-set19.md) | 255 |
 | [set2/set20](codeforces/set2-set20.md) | 189 |
-| [set2/set21](codeforces/set2-set21.md) | 127 |
+| [set2/set21](codeforces/set2-set21.md) | 131 |
 | [set2/set22](codeforces/set2-set22.md) | 12 |
