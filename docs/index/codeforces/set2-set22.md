@@ -15,4 +15,5 @@
 | [`src/codeforces/set2/set22/set220/set2208/d1`](../../../src/codeforces/set2/set22/set220/set2208/d1) | [problem.md](../../../src/codeforces/set2/set22/set220/set2208/d1/problem.md) |
 | [`src/codeforces/set2/set22/set220/set2208/d2`](../../../src/codeforces/set2/set22/set220/set2208/d2) | [problem.md](../../../src/codeforces/set2/set22/set220/set2208/d2/problem.md) |
 | [`src/codeforces/set2/set22/set221/set2210/c2`](../../../src/codeforces/set2/set22/set221/set2210/c2) | [problem.md](../../../src/codeforces/set2/set22/set221/set2210/c2/problem.md) |
+| [`src/codeforces/set2/set22/set221/set2218/f`](../../../src/codeforces/set2/set22/set221/set2218/f) | [problem.md](../../../src/codeforces/set2/set22/set221/set2218/f/problem.md) |
 | [`src/codeforces/set2/set22/set221/set2218/g`](../../../src/codeforces/set2/set22/set221/set2218/g) | [problem.md](../../../src/codeforces/set2/set22/set221/set2218/g/problem.md) |

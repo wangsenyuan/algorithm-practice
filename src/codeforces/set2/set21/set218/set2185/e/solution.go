@@ -61,16 +61,7 @@ func solve(robots []int, spikes []int, commands string) []int {
 		dp[i+1].max_r = max(dp[i].max_r, move)
 	}
 
-	check := func(pos int, k int) bool {
-		d := sort.SearchInts(spikes, pos)
-		// spikes[r] >= pos
-		l, r := -inf, inf
-		if d < len(spikes) {
-			r = spikes[d]
-		}
-		if d > 0 {
-			l = spikes[d-1]
-		}
+	check := func(pos int, k int, l int, r int) bool {
 		dl := dp[k].min_l
 		dr := dp[k].max_r
 		return pos+dl <= l || pos+dr >= r
@@ -80,13 +71,21 @@ func solve(robots []int, spikes []int, commands string) []int {
 	diff[0] = len(robots)
 
 	for _, v := range robots {
-		if check(v, len(commands)) {
+		d := sort.SearchInts(spikes, v)
+		// spikes[r] >= pos
+		l, r := -inf, inf
+		if d < len(spikes) {
+			r = spikes[d]
+		}
+		if d > 0 {
+			l = spikes[d-1]
+		}
+		if check(v, len(commands), l, r) {
 			j := sort.Search(len(commands), func(j int) bool {
-				return check(v, j)
+				return check(v, j, l, r)
 			})
 			diff[j-1]--
 		}
-
 	}
 	for i := 1; i < len(commands); i++ {
 		diff[i] += diff[i-1]
