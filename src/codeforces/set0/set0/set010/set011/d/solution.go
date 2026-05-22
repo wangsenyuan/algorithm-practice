@@ -15,63 +15,57 @@ func main() {
 	fmt.Println(res)
 }
 
-func readInt(bytes []byte, from int, val *int) int {
-	i := from
-	sign := 1
-	if bytes[i] == '-' {
-		sign = -1
-		i++
-	}
-	tmp := 0
-	for i < len(bytes) && bytes[i] >= '0' && bytes[i] <= '9' {
-		tmp = tmp*10 + int(bytes[i]-'0')
-		i++
-	}
-	*val = tmp * sign
-	return i
-}
-
-func readNum(reader *bufio.Reader) (a int) {
-	bs, _ := reader.ReadBytes('\n')
-	readInt(bs, 0, &a)
-	return
-}
-
-func readTwoNums(reader *bufio.Reader) (a int, b int) {
-	res := readNNums(reader, 2)
-	a, b = res[0], res[1]
-	return
-}
-
-func readThreeNums(reader *bufio.Reader) (a int, b int, c int) {
-	res := readNNums(reader, 3)
-	a, b, c = res[0], res[1], res[2]
-	return
-}
-
-func readNNums(reader *bufio.Reader, n int) []int {
-	res := make([]int, n)
-	x := 0
-	bs, _ := reader.ReadBytes('\n')
-	for i := 0; i < n; i++ {
-		for x < len(bs) && (bs[x] < '0' || bs[x] > '9') && bs[x] != '-' {
-			x++
-		}
-		x = readInt(bs, x, &res[i])
-	}
-	return res
-}
-
 func process(reader *bufio.Reader) int {
-	n, m := readTwoNums(reader)
+	var n, m int
+	fmt.Fscan(reader, &n, &m)
+
 	edges := make([][]int, m)
 	for i := range m {
-		edges[i] = readNNums(reader, 2)
+		edges[i] = make([]int, 2)
+		fmt.Fscan(reader, &edges[i][0], &edges[i][1])
 	}
 	return solve(n, edges)
 }
 
 func solve(n int, edges [][]int) int {
+	adj := make([][]int, n)
+	for _, e := range edges {
+		u, v := e[0]-1, e[1]-1
+		adj[u] = append(adj[u], v)
+		adj[v] = append(adj[v], u)
+	}
+
+	dp := make([][]int, 1<<n)
+
+	for i := range 1 << n {
+		dp[i] = make([]int, n)
+	}
+	for i := range n {
+		dp[1<<i][i] = 1
+	}
+
+	var sum int
+
+	for mask := range 1 << n {
+		st := bits.TrailingZeros(uint(mask))
+		for v, fv := range dp[mask] {
+			if fv > 0 {
+				for _, w := range adj[v] {
+					if w == st {
+						// 产生了环
+						sum += fv
+					} else if w > st && mask&(1<<w) == 0 {
+						dp[mask|(1<<w)][w] += fv
+					}
+				}
+			}
+		}
+	}
+
+	return (sum - len(edges)) / 2
+}
+
+func solve1(n int, edges [][]int) int {
 	g := make([]int, n)
 	for _, e := range edges {
 		u, v := e[0]-1, e[1]-1
