@@ -6,7 +6,7 @@ func canReach(s string, minJump int, maxJump int) bool {
 		return false
 	}
 	dp := make([]int, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		if i > 0 {
 			dp[i] += dp[i-1]
 		}
@@ -22,11 +22,4 @@ func canReach(s string, minJump int, maxJump int) bool {
 		}
 	}
 	return dp[n-1] > 0
-}
-
-func min(a, b int) int {
-	if a <= b {
-		return a
-	}
-	return b
 }
