@@ -253,6 +253,32 @@ find the leftmost frog with x <= p and reach >= p
 
 No trimmed ownership intervals are needed.
 
+If using the ownership-interval approach, the repair direction matters. When a
+frog `A` grows, it can only take ownership from frogs to its right:
+
+```text
+A.x < B.x < C.x < D.x
+```
+
+So the merge must scan affected active intervals from left to right, starting
+from the first interval whose active left boundary is covered by `A.reach`.
+Scanning from the right, for example by taking the largest active-left boundary
+`<= A.reach`, may trim a later partial interval first and leave earlier fully
+covered intervals stale.
+
+Conceptually:
+
+```text
+while next active interval starts <= A.reach:
+    if interval.reach <= A.reach:
+        remove it
+    else:
+        move its active left boundary to A.reach + 1
+```
+
+The growth direction is left-to-right, so the ownership repair must follow the
+same direction.
+
 ### Complexity
 
 Each mosquito is inserted into the waiting tree at most once and deleted at most

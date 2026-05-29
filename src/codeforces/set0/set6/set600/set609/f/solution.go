@@ -65,6 +65,91 @@ func solve(frogs [][]int, mosquitos [][]int) [][]int {
 		return a.x - b.x
 	})
 
+	var tr *Node
+
+	merge := func(l int, r int) {
+		for {
+			// 找到下一个离key最近的右边的点
+			tmp := FindNextNode(tr, l+1)
+			if tmp == nil || r < tmp.key {
+				break
+			}
+			// tmp.key <= r
+			i1 := tmp.val
+			tr = Delete(tr, tmp.key)
+			// r >= R[i1]
+			if r < R[i1] {
+				tr = Insert(tr, r+1, i1)
+				break
+			}
+		}
+	}
+
+	for i := n - 1; i >= 0; i-- {
+		l, r := arr[i].x, arr[i].x+arr[i].t
+		merge(l, r)
+		// 所有的x都不一样，所有从后往前处理时，肯定还有空间
+		tr = Insert(tr, l, arr[i].id)
+	}
+
+	var tr2 *Node
+
+	play := func(p int, b int) {
+		// 先找到一个frog, frog.key <= p and p <= R[frog]
+		frog := FindPrevNode(tr, p)
+
+		if frog == nil || R[frog.val] < p {
+			// 暂时安全
+			tr2 = Insert(tr2, p, b)
+			return
+		}
+
+		id := frog.val
+		R[id] += b
+		ans[id][0]++
+		ans[id][1] += b
+		for {
+			tmp := FindPrevNode(tr2, R[id])
+			if tmp == nil || tmp.key < frog.key {
+				break
+			}
+			ans[id][0] += tmp.cnt
+			ans[id][1] += tmp.val
+			R[id] += tmp.val
+			tr2 = Delete(tr2, tmp.key)
+		}
+		merge(frog.key, R[id])
+	}
+
+	for _, cur := range mosquitos {
+		play(cur[0], cur[1])
+	}
+
+	return ans
+}
+
+func solve1(frogs [][]int, mosquitos [][]int) [][]int {
+	n := len(frogs)
+	arr := make([]frog, n)
+	ans := make([][]int, n)
+
+	R := make([]int, n)
+
+	for i := range n {
+		ans[i] = make([]int, 2)
+		ans[i][1] = frogs[i][1]
+		arr[i] = frog{
+			id: i,
+			x:  frogs[i][0],
+			t:  frogs[i][1],
+		}
+		R[i] = arr[i].x + arr[i].t
+	}
+
+	slices.SortFunc(arr, func(a, b frog) int {
+		return a.x - b.x
+	})
+
 	xs := make([]int, n)
 	reach := make([]int, n)
 	for i := range n {
@@ -350,4 +435,19 @@ func FindPrevNode(node *Node, key int) *Node {
 		return res
 	}
 	return FindPrevNode(node.left, key)
+}
+
+// find min node.key >= key
+func FindNextNode(node *Node, key int) *Node {
+	if node == nil {
+		return nil
+	}
+	if node.key >= key {
+		res := FindNextNode(node.left, key)
+		if res == nil {
+			res = node
+		}
+		return res
+	}
+	return FindNextNode(node.right, key)
 }
