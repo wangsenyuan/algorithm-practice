@@ -63,6 +63,7 @@
 | [`src/codeforces/set2/set20/set202/set2028/d`](../../../src/codeforces/set2/set20/set202/set2028/d) | [problem.md](../../../src/codeforces/set2/set20/set202/set2028/d/problem.md) |
 | [`src/codeforces/set2/set20/set202/set2029/c`](../../../src/codeforces/set2/set20/set202/set2029/c) | [problem.md](../../../src/codeforces/set2/set20/set202/set2029/c/problem.md) |
 | [`src/codeforces/set2/set20/set202/set2029/d`](../../../src/codeforces/set2/set20/set202/set2029/d) | [problem.md](../../../src/codeforces/set2/set20/set202/set2029/d/problem.md) |
+| [`src/codeforces/set2/set20/set203/set2030/c`](../../../src/codeforces/set2/set20/set203/set2030/c) |  |
 | [`src/codeforces/set2/set20/set203/set2030/d`](../../../src/codeforces/set2/set20/set203/set2030/d) | [problem.md](../../../src/codeforces/set2/set20/set203/set2030/d/problem.md) |
 | [`src/codeforces/set2/set20/set203/set2031/c`](../../../src/codeforces/set2/set20/set203/set2031/c) |  |
 | [`src/codeforces/set2/set20/set203/set2031/d`](../../../src/codeforces/set2/set20/set203/set2031/d) | [problem.md](../../../src/codeforces/set2/set20/set203/set2031/d/problem.md) |
@@ -152,6 +153,7 @@
 | [`src/codeforces/set2/set20/set206/set2066/b`](../../../src/codeforces/set2/set20/set206/set2066/b) | [problem.md](../../../src/codeforces/set2/set20/set206/set2066/b/problem.md) |
 | [`src/codeforces/set2/set20/set206/set2067/c`](../../../src/codeforces/set2/set20/set206/set2067/c) | [problem.md](../../../src/codeforces/set2/set20/set206/set2067/c/problem.md) |
 | [`src/codeforces/set2/set20/set206/set2068/c`](../../../src/codeforces/set2/set20/set206/set2068/c) | [problem.md](../../../src/codeforces/set2/set20/set206/set2068/c/problem.md) |
+| [`src/codeforces/set2/set20/set206/set2068/f`](../../../src/codeforces/set2/set20/set206/set2068/f) | [problem.md](../../../src/codeforces/set2/set20/set206/set2068/f/problem.md) |
 | [`src/codeforces/set2/set20/set206/set2069/b`](../../../src/codeforces/set2/set20/set206/set2069/b) |  |
 | [`src/codeforces/set2/set20/set206/set2069/c`](../../../src/codeforces/set2/set20/set206/set2069/c) | [problem.md](../../../src/codeforces/set2/set20/set206/set2069/c/problem.md) |
 | [`src/codeforces/set2/set20/set206/set2069/d`](../../../src/codeforces/set2/set20/set206/set2069/d) | [problem.md](../../../src/codeforces/set2/set20/set206/set2069/d/problem.md) |
