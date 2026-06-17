@@ -26,6 +26,7 @@ go mod tidy
 ## Code Structure
 
 Each problem lives in its own directory as `package main`:
+
 - `solution.go` — `main()` reads from stdin/writes to stdout; `solve(...)` contains the algorithm
 - `solution_test.go` — calls `solve(...)` directly with expected outputs
 
