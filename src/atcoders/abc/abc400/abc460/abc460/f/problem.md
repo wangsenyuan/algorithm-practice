@@ -179,6 +179,37 @@ It places `u` between the Euler-tour portions of consecutive child subtrees.
 Thus a query whose endpoints lie in two different child subtrees necessarily
 includes `u`, their LCA, in the queried interval.
 
+Starting from a vertex `w`, its ancestors appear later as DFS returns upward:
+first its parent, eventually its grandparent, and so on. They are not
+necessarily consecutive because DFS may visit remaining sibling subtrees
+between two returns.
+
+Therefore the Euler-tour interval between two vertices is not only an upward
+path. It can contain:
+
+1. movement upward from the first vertex toward the LCA;
+2. complete detours into sibling subtrees;
+3. movement downward from the LCA toward the second vertex.
+
+For the same example, the interval from the first `4` to the first `3` is:
+
+```text
+4, 2, 1, 3
+```
+
+If vertex `2` also had another child `5` visited after `4`, the interval would
+instead contain a detour:
+
+```text
+4, 2, 5, 2, 1, 3
+```
+
+This interval is not the simple path from `4` to `3`, but that does not harm
+RMQ. Every detour enters a descendant and therefore only increases depth. It
+cannot introduce a vertex shallower than the LCA. Consequently, even with both
+upward and downward movement and arbitrary sibling-subtree detours, the
+minimum-depth vertex in the interval is still exactly the LCA.
+
 ### Sparse-table RMQ
 
 Let:

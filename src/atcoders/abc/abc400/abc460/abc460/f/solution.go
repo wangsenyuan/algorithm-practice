@@ -40,18 +40,18 @@ func solve(n int, edges [][]int, queries []int) []int {
 		adj[v] = append(adj[v], u)
 	}
 
-	pos := make([]int, n)
-	at := make([]int, n)
+	// pos := make([]int, n)
+	// at := make([]int, n)
 	dep := make([]int, n)
 	first := make([]int, n)
 	euler := make([]int, 0, 2*n-1)
 
-	var ptr int
+	// var ptr int
 	var dfs func(p int, u int)
 	dfs = func(p int, u int) {
-		pos[u] = ptr
-		at[ptr] = u
-		ptr++
+		// pos[u] = ptr
+		// at[ptr] = u
+		// ptr++
 		first[u] = len(euler)
 		euler = append(euler, u)
 		for _, v := range adj[u] {
@@ -126,7 +126,7 @@ func solve(n int, edges [][]int, queries []int) []int {
 	var build func(i int, l int, r int)
 	build = func(i int, l int, r int) {
 		if l == r {
-			tr[i] = state{[]int{at[l], at[l]}, 0}
+			tr[i] = state{[]int{l, l}, 0}
 			return
 		}
 		mid := (l + r) >> 1
@@ -140,7 +140,7 @@ func solve(n int, edges [][]int, queries []int) []int {
 	flip = func(i int, l int, r int, pos int) {
 		if l == r {
 			if len(tr[i].nodes) == 0 {
-				tr[i].nodes = []int{at[l], at[l]}
+				tr[i].nodes = []int{l, l}
 				tr[i].dist = 0
 			} else {
 				tr[i].nodes = nil
@@ -161,7 +161,7 @@ func solve(n int, edges [][]int, queries []int) []int {
 	ans := make([]int, len(queries))
 
 	for i, x := range queries {
-		flip(0, 0, n-1, pos[x-1])
+		flip(0, 0, n-1, x-1)
 		ans[i] = tr[0].dist
 	}
 
