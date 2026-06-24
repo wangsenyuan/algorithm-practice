@@ -16,29 +16,30 @@ func runSample(t *testing.T, s string, expect int) {
 }
 
 func TestSample1(t *testing.T) {
-	s := `3
-1 2 3`
-	expect := 2
-	runSample(t, s, expect)
+	runSample(t, `3 2
+1 2
+2 3
+`, 4052)
 }
 
 func TestSample2(t *testing.T) {
-	s := `4
-1 2 4 5`
-	expect := 2
-	runSample(t, s, expect)
+	runSample(t, `4 6
+1 2
+2 3
+1 4
+2 4
+1 3
+3 4
+`, 4052)
 }
 
 func TestSample3(t *testing.T) {
-	s := `6
-1 2 11 12 21 22`
-	expect := 3
-	runSample(t, s, expect)
+	runSample(t, `2 1
+1 2
+`, 2026)
 }
 
-func TestSample4(t *testing.T) {
-	s := `7
-0 1 2 3 5 8 13`
-	expect := 6
-	runSample(t, s, expect)
+func TestNoEdges(t *testing.T) {
+	runSample(t, `2 0
+`, 4052)
 }
