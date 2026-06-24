@@ -20,49 +20,49 @@ func runSample(t *testing.T, s string, expect int) {
 
 func TestSample1(t *testing.T) {
 	runSample(t, `1
-3
-1 2 3
-`, 6)
+1
+1
+`, 0)
 }
 
 func TestSample2(t *testing.T) {
 	runSample(t, `1
-4
-2 1 3 4
-`, 24)
+2
+1 2
+`, 1)
 }
 
 func TestSample3(t *testing.T) {
 	runSample(t, `1
-6
-2 1 2 1 1 1
-`, 5)
+3
+2 1 1
+`, 1)
 }
 
 func TestSample4(t *testing.T) {
 	runSample(t, `1
-6
-1 2 1 3 1 5
-`, 30)
+4
+2 1 4 3
+`, 2)
 }
 
 func TestSample5(t *testing.T) {
 	runSample(t, `1
-9
-9 9 8 2 4 4 3 5 3
-`, 732)
+5
+1 2 4 5 3
+`, 1)
 }
 
 func TestSample6(t *testing.T) {
 	runSample(t, `1
-9
-9 9 3 2 4 4 8 5 3
-`, 696)
+6
+3 2 1 6 5 4
+`, 3)
 }
 
 func TestSample7(t *testing.T) {
 	runSample(t, `1
-27
-366 942 665 91 390 908 915 531 325 781 51 898 979 867 178 914 742 485 135 530 311 258 517 808 176 914 187
-`, 2724272014)
+10
+1 1 2 3 4 1 6 5 7 8
+`, 4)
 }

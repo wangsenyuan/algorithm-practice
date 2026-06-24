@@ -85,4 +85,36 @@ For each test case, output the maximum score you can get on a separate line.
   `(2, 4, 6)`).
 - Test case 5: three triangles; maximum score `732`.
 
-### ideas
+### Solution
+
+This is a circular interval DP.
+
+For any clockwise interval `[l..r]`, let `dp[l][r]` be the maximum score that can be
+obtained using only vertices inside this interval. Because triangles cannot overlap
+with positive area, an optimal configuration inside an interval has one of two forms:
+
+1. It contains a triangle using both interval endpoints `l` and `r`, plus some middle
+   vertex `k`. This triangle splits the remaining vertices into two independent
+   intervals: `[l+1..k-1]` and `[k+1..r-1]`.
+2. It does not need one triangle spanning both endpoints. Then the interval can be
+   split into two independent parts: `[l..k]` and `[k+1..r]`.
+
+So for each interval length `d >= 3`:
+
+```text
+dp[l][r] =
+  max over l < k < r:
+    a[l] * a[k] * a[r] + dp[l+1][k-1] + dp[k+1][r-1]
+
+  max over l <= k < r:
+    dp[l][k] + dp[k+1][r]
+```
+
+All indices are taken modulo `n`, since the polygon is circular. Process intervals by
+increasing length, then the answer is the maximum `dp[l][r]` over all circular intervals.
+
+The split transition is necessary: sometimes the best set of non-overlapping triangles
+inside an interval has endpoints used in different triangles, so no single triangle
+spans the whole interval.
+
+Complexity: `O(n^3)` time and `O(n^2)` memory.
