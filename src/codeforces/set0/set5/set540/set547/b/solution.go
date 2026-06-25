@@ -27,6 +27,40 @@ func drive(reader *bufio.Reader) []int {
 
 func solve(a []int) []int {
 	n := len(a)
+	stack := make([]int, n)
+	var top int
+	L := make([]int, n)
+	R := make([]int, n)
+	for i := range n {
+		R[i] = n
+		for top > 0 && a[stack[top-1]] >= a[i] {
+			R[stack[top-1]] = i
+			top--
+		}
+		if top > 0 {
+			L[i] = stack[top-1]
+		} else {
+			L[i] = -1
+		}
+		stack[top] = i
+		top++
+	}
+	f := make([]int, n+1)
+
+	for i := range n {
+		d := R[i] - L[i] - 1
+		f[d] = max(f[d], a[i])
+	}
+
+	for i := n - 1; i > 0; i-- {
+		f[i] = max(f[i], f[i+1])
+	}
+
+	return f[1:]
+}
+
+func solve1(a []int) []int {
+	n := len(a)
 
 	type pair struct {
 		first  int
