@@ -1,6 +1,6 @@
 # LeetCode Index
 
-3032 packages with `solution.go` under `src/leetcode`.
+3054 packages with `solution.go` under `src/leetcode`.
 
 This index is split into smaller pages so GitHub can render it quickly.
 
@@ -28,4 +28,4 @@ This index is split into smaller pages so GitHub can render it quickly.
 | [set0000/set900](leetcode/set0000-set900.md) | 100 |
 | [set1000/set1000](leetcode/set1000-set1000.md) | 659 |
 | [set1000/set2000](leetcode/set1000-set2000.md) | 717 |
-| [set1000/set3000](leetcode/set1000-set3000.md) | 707 |
+| [set1000/set3000](leetcode/set1000-set3000.md) | 729 |

@@ -76,6 +76,7 @@
 | [`src/codeforces/set0/set7/set730/set734/c`](../../../src/codeforces/set0/set7/set730/set734/c) | [problem.md](../../../src/codeforces/set0/set7/set730/set734/c/problem.md) |
 | [`src/codeforces/set0/set7/set730/set734/d`](../../../src/codeforces/set0/set7/set730/set734/d) | [problem.md](../../../src/codeforces/set0/set7/set730/set734/d/problem.md) |
 | [`src/codeforces/set0/set7/set730/set734/e`](../../../src/codeforces/set0/set7/set730/set734/e) | [problem.md](../../../src/codeforces/set0/set7/set730/set734/e/problem.md) |
+| [`src/codeforces/set0/set7/set730/set735/c`](../../../src/codeforces/set0/set7/set730/set735/c) | [problem.md](../../../src/codeforces/set0/set7/set730/set735/c/problem.md) |
 | [`src/codeforces/set0/set7/set730/set739/a`](../../../src/codeforces/set0/set7/set730/set739/a) | [problem.md](../../../src/codeforces/set0/set7/set730/set739/a/problem.md) |
 | [`src/codeforces/set0/set7/set730/set739/b`](../../../src/codeforces/set0/set7/set730/set739/b) | [problem.md](../../../src/codeforces/set0/set7/set730/set739/b/problem.md) |
 | [`src/codeforces/set0/set7/set740/set741/a`](../../../src/codeforces/set0/set7/set740/set741/a) | [problem.md](../../../src/codeforces/set0/set7/set740/set741/a/problem.md) |
@@ -156,6 +157,7 @@
 | [`src/codeforces/set0/set7/set780/set780/d`](../../../src/codeforces/set0/set7/set780/set780/d) | [problem.md](../../../src/codeforces/set0/set7/set780/set780/d/problem.md) |
 | [`src/codeforces/set0/set7/set780/set780/e`](../../../src/codeforces/set0/set7/set780/set780/e) | [problem.md](../../../src/codeforces/set0/set7/set780/set780/e/problem.md) |
 | [`src/codeforces/set0/set7/set780/set780/f`](../../../src/codeforces/set0/set7/set780/set780/f) | [problem.md](../../../src/codeforces/set0/set7/set780/set780/f/problem.md) |
+| [`src/codeforces/set0/set7/set780/set784/e`](../../../src/codeforces/set0/set7/set780/set784/e) | [problem.md](../../../src/codeforces/set0/set7/set780/set784/e/problem.md) |
 | [`src/codeforces/set0/set7/set780/set785/c`](../../../src/codeforces/set0/set7/set780/set785/c) | [problem.md](../../../src/codeforces/set0/set7/set780/set785/c/problem.md) |
 | [`src/codeforces/set0/set7/set780/set785/e`](../../../src/codeforces/set0/set7/set780/set785/e) | [problem.md](../../../src/codeforces/set0/set7/set780/set785/e/problem.md) |
 | [`src/codeforces/set0/set7/set780/set786/a`](../../../src/codeforces/set0/set7/set780/set786/a) | [problem.md](../../../src/codeforces/set0/set7/set780/set786/a/problem.md) |
