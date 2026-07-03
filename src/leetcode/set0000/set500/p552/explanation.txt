@@ -1,9 +1,0 @@
-This state diagram contains the states based only upon whether an AA is present in the string or not, and on the number of LL's that occur at the trailing edge of the string formed till now. The state transition occurs whenver we try to append a new character to the end of the current string.
-
-Based on the above state diagram, we keep a track of the number of unique transitions from which a rewardable state can be achieved. We start off with a string of length 0 and keep on adding a new character to the end of the string till we achieve a length of nn. At the end, we sum up the number of transitions possible to reach each rewardable state to obtain the required result.
-
-We can use variables corresponding to the states. axlyaxly represents the number of strings of length ii containing xx a'sa
-​′
-​​ s and ending with yy l'sl
-​′
-​
