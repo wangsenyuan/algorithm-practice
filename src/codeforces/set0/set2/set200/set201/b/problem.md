@@ -73,5 +73,62 @@ Print two lines:
 In the first example, with junction `(1, 1)` the total is
 `3·8 + 3·8 + 4·8 + 9·8 + 5·40 + 1·40 = 392`.
 
-### ideas
-1. 
+## Solution
+
+Let the junction be `(r, c)` with `0 <= r <= n` and `0 <= c <= m`. The total cost is
+
+```text
+sum_{i,j} c[i,j] * ((i - r)^2 + (j - c)^2)
+```
+
+Expand and regroup:
+
+```text
+sum_i (sum_j c[i,j]) * (i - r)^2  +  sum_j (sum_i c[i,j]) * (j - c)^2
+```
+
+Define row weights `row[i] = sum_j c[i,j]` and column weights `col[j] = sum_i c[i,j]`. The cost
+splits into two independent 1D problems:
+
+```text
+f(r) = sum_i row[i] * (i - r)^2
+g(c) = sum_j col[j] * (j - c)^2
+answer = min f(r) + min g(c)
+```
+
+So the optimal row index and optimal column index can be found separately.
+
+### Integer coordinates
+
+To avoid floating point, place junction `(r, c)` at `(4r, 4c)` and the center of cell `(i, j)` at
+`(4i + 2, 4j + 2)`. Then
+
+```text
+(i - r)^2 + (j - c)^2  =  ((4r - 4i - 2)^2 + (4c - 4j - 2)^2) / 16
+```
+
+The denominator is the same for every cell, so minimizing the total cost is equivalent to
+minimizing the integer sums using `(4r - 4i - 2)^2` and `(4c - 4j - 2)^2`.
+
+### Algorithm
+
+1. Compute `row[i]` and `col[j]`.
+2. For each `r = 0..n`, compute `f(r) = sum_i row[i] * (4r - 4i - 2)^2`; keep the smallest value
+   and the smallest `r` on ties.
+3. For each `c = 0..m`, compute `g(c)` similarly.
+4. Output `f(r0) + g(c0)` and `(r0, c0)`.
+
+### Correctness
+
+The objective is separable because cross terms never appear after expanding
+`c[i,j] * ((i-r)^2 + (j-c)^2)`. Therefore the global minimum is obtained by independently minimizing
+the row part and the column part. The integer scaling is a common factor on every term, so it does
+not change the argmin.
+
+Tie-breaking is handled by scanning `r` and `c` in increasing order and updating only on a strictly
+smaller cost.
+
+### Complexity
+
+Preprocessing the weights takes `O(n m)`. Each of the two 1D scans is `O(n^2 + m^2)` in the worst
+case, which is fine for `n, m <= 1000`.
