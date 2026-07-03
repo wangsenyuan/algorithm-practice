@@ -1,3 +1,0 @@
-Chef has a string S with length N. As Chef really likes his name, he defines the chefness of a string as the number of ways to find the string "chef" as a subsequence in S; formally, it's the number of ways to choose four indices i, j, k, l such that Si = 'c', Sj = 'h', Sk = 'e', Sl = 'f' and 1 ≤ i ≤ j ≤ k ≤ l ≤ N. For example, the chefness of "chehefc" is 3 (with subsequences given by indices (1, 2, 3, 6), (1, 2, 5, 6), (1, 4, 5, 6)).
-
-Chef perfectly understands that people really don't like strings with chefness greater than K. Therefore, he wants to erase a number of characters (possibly zero) from S in order to obtain a string with chefness equal to K. Help him compute the minimum number of characters he has to erase in order to achieve that!

@@ -1,8 +1,0 @@
-Chef has had a recipe. He had written it as a sequence of N integer numbers A[1], A[2], ..., A[N]. To be on the safe side, he decided to write out M triples of numbers, where i-th triple is composed of three numbers Xi, Yi and Zi. It means that the sum of numbers in the recipe from Xi-th to Yi-th is equal to Zi. In other words, A[Xi] + A[Xi + 1] + ... + A[Yi] = Zi. Unfortunately, the recipe has been recently lost. So Chef needs to restore his recipe using these M triples. Your task is to help him.
-
-
-
-Let A 1 , A 2 , …, A[N] be an array that we should restore. Consider the sequence of partial sums S[k]=A1+…+A[k], 0<=k<=N. In particular, S[0]=0. Clearly, conditions on array A[] mean that
-
-S[Yi] - S[Xi - 1] = Zi, 1 <= i <= M. & nbsp; (*)
-Let’s build a weighted graph on numbers 0, 1, …, N, where for each triple (Xi, Yi, Zi) from the input we add edges from Xi- 1 to Yi with weight Zi and from Yi to Xi-1 with weight -Zi. We consider this graph as not-oriented when talk about connectivity but weights of edges depends on direction. Then if in some connected component of this graph we set value S[v] for some vertex v, all other values of S[] in this component can be restored by simple DFS using equalities (*). Namely, if we are in some vertex v and the value S[v] is known then for each neighbor u of v the value S[u] must be equal to S[v]+e[u][v] where e[u][v] is the weight of the edge from u to v. So if it is not known we set S[u] to this value and run DFS for it. Otherwise if it is known but not equal to this value the recipe can’t be restored. This leads to a simple algorithm for restoring array S[]. Then array A**[]** can be restored by formulas A[i]=S[i]-S[i-1], 1<=i<=N. The total complexity is O(N+M).
