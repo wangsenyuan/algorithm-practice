@@ -56,3 +56,36 @@ func TestSample2(t *testing.T) {
 	runSample(t, `4 4 7
 `, false)
 }
+
+func TestSample4(t *testing.T) {
+	runSample(t, `3 4 3
+`, true)
+}
+
+func TestSmall(t *testing.T) {
+	for n := 1; n <= 8; n++ {
+		for m := 1; m <= 8; m++ {
+			for k := 2; k <= 2*n*m+2; k++ {
+				res := solve(n, m, k)
+				expectOK := (2*n*m)%k == 0
+				if res.ok != expectOK {
+					t.Fatalf("n=%d m=%d k=%d: expect ok=%v, got %v", n, m, k, expectOK, res)
+				}
+				if !res.ok {
+					continue
+				}
+				if len(res.pts) != 3 {
+					t.Fatalf("n=%d m=%d k=%d: expect 3 points, got %v", n, m, k, res.pts)
+				}
+				for _, p := range res.pts {
+					if p[0] < 0 || p[0] > n || p[1] < 0 || p[1] > m {
+						t.Fatalf("n=%d m=%d k=%d: point %v is out of bounds", n, m, k, p)
+					}
+				}
+				if area2(res.pts) != 2*n*m/k {
+					t.Fatalf("n=%d m=%d k=%d: expect doubled area %d, got %d", n, m, k, 2*n*m/k, area2(res.pts))
+				}
+			}
+		}
+	}
+}

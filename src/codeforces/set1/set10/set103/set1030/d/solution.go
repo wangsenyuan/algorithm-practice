@@ -31,45 +31,30 @@ func drive(reader *bufio.Reader) result {
 }
 
 func solve(n, m, k int) result {
-	g := gcd(n*m, k)
-	k1 := k / g
-	if 2%k1 != 0 {
-		// k1 = 2 or k1 = 1
+	a, b := n, m
+
+	g := gcd(a, k)
+	a /= g
+	k /= g
+
+	g = gcd(b, k)
+	b /= g
+	k /= g
+
+	if k > 2 {
 		return result{ok: false}
 	}
-	// w := n * m / g * 2 / k1
-	// a * b = w
 
-	play := func(a int, b int) [][]int {
-		return [][]int{{0, 0}, {a, 0}, {0, b}}
-	}
-
-	for i := 1; i <= g/i; i++ {
-		if g%i == 0 {
-			j := g / i
-			if 2/k1*n%i == 0 && m%j == 0 {
-				a := 2 / k1 * n / i
-				b := m / j
-				if a <= n && b <= m {
-					return result{ok: true, pts: play(a, b)}
-				}
-				if a <= m && b <= n {
-					return result{ok: true, pts: play(b, a)}
-				}
-			}
-			if n%i == 0 && 2/k1*m%j == 0 {
-				a := n / i
-				b := 2 / k1 * m / j
-				if a <= n && b <= m {
-					return result{ok: true, pts: play(a, b)}
-				}
-				if a <= m && b <= n {
-					return result{ok: true, pts: play(b, a)}
-				}
-			}
+	if k == 1 {
+		if 2*a <= n {
+			a *= 2
+		} else {
+			b *= 2
 		}
 	}
-	return result{ok: false}
+
+	pts := [][]int{{0, 0}, {a, 0}, {0, b}}
+	return result{ok: true, pts: pts}
 }
 
 func gcd(a, b int) int {
