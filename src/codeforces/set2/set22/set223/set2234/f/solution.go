@@ -11,23 +11,26 @@ func main() {
 	reader := bufio.NewReader(os.Stdin)
 	writer := bufio.NewWriter(os.Stdout)
 	defer writer.Flush()
-	var tc int
-	fmt.Fscan(reader, &tc)
-	for range tc {
-		res := drive(reader)
+	for _, res := range drive(reader) {
 		s := fmt.Sprintf("%v", res)
 		fmt.Fprintln(writer, s[1:len(s)-1])
 	}
 }
 
-func drive(reader *bufio.Reader) []int {
-	var n int
-	fmt.Fscan(reader, &n)
-	h := make([]int, n)
-	for i := range n {
-		fmt.Fscan(reader, &h[i])
+func drive(reader *bufio.Reader) [][]int {
+	var tc int
+	fmt.Fscan(reader, &tc)
+	res := make([][]int, tc)
+	for i := range tc {
+		var n int
+		fmt.Fscan(reader, &n)
+		h := make([]int, n)
+		for j := range n {
+			fmt.Fscan(reader, &h[j])
+		}
+		res[i] = solve(h)
 	}
-	return solve(h)
+	return res
 }
 
 func solve(h []int) []int {
