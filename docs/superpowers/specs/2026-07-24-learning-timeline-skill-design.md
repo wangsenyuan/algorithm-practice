@@ -50,9 +50,12 @@ Only directories whose newly added files include `solution.go` qualify as new
 solution packages. Modified, deleted, renamed-only, generated-index, and
 unrelated files are excluded.
 
-On the first run, when no `through-commit` exists, use `HEAD^` as the baseline.
-Consequently, the first run includes additions from the latest commit plus
-current staged and untracked additions.
+On the first run, when no `through-commit` exists, find the most recent commit
+reachable from `HEAD` that added a `solution.go`, and use that commit's parent
+as the baseline. Consequently, an unrelated documentation or tooling commit at
+`HEAD` cannot hide the latest committed solution package. The first run includes
+that solution-adding commit, any later committed additions, and current staged
+and untracked additions.
 
 The script emits deterministic JSON containing:
 
@@ -169,7 +172,8 @@ the learning content.
 
 Use temporary Git repositories to verify:
 
-- first-run `HEAD^..HEAD` discovery;
+- first-run discovery from the parent of the latest solution-adding commit;
+- first-run behavior when later commits contain no solution additions;
 - later `through-commit..HEAD` discovery;
 - staged and untracked additions;
 - exclusion of modifications, deletions, ignored files, and unrelated files;
@@ -199,9 +203,9 @@ unchanged and deterministic.
 
 ## First-run result for the current repository
 
-With `HEAD` at `8cc81d778066866d909bb12f04fe216b26bb4bea`, the first run
-would discover Codeforces 2241F from the latest commit and ten untracked
-packages:
+With current `HEAD` at `71ddbbc06`, the most recent solution-adding commit is
+`8cc81d778066866d909bb12f04fe216b26bb4bea`. The first run would therefore
+discover Codeforces 2241F from that commit and ten untracked packages:
 
 - AtCoder ABC426 C, D, E, F, and G;
 - Codeforces 212D, 493D, 513D1, 513D2, and 742B.
