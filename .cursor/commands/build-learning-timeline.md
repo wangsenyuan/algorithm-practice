@@ -74,6 +74,8 @@ complete, interruption-safe record.
 
 Report concisely: changed files, recorded packages, skipped or unrecorded
 packages, and the final discovery verification. On a no-package run, report
-that no dated file was created. On any error, partial-entry preflight failure,
-or unresolved evidence, report the reason and confirm that no timeline writes
-were made.
+that no dated file was created. Report the exact changed or restored state on
+every failure. Claim that no timeline writes were made only for failures before
+the first write: initial discovery, partial-entry preflight, or unresolved
+evidence. If a post-write verification fails, report every file left changed or
+restored and preserve or restore the old marker.
