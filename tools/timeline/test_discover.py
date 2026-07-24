@@ -164,6 +164,36 @@ class DiscoverTimelineTest(unittest.TestCase):
 
         self.assertEqual(payload["packages"], [])
 
+    def test_dated_timeline_dedupes_only_markdown_links(self):
+        repo = self.make_repo()
+        repo.write("README.md", "practice\n")
+        marker = repo.commit_all("initial")
+        repo.write(
+            "docs/timeline/README.md",
+            f"<!-- through-commit: {marker} -->\n",
+        )
+        repo.commit_all("marker")
+        for package in ("a", "b", "c"):
+            repo.write(f"src/x/{package}/solution.go")
+        repo.write(
+            "docs/timeline/2026-07-24.md",
+            "\n".join(
+                [
+                    "[A](../../src/x/a/)",
+                    "[B](../../src/x/b)",
+                    "Plain text ../../src/x/c/ is not a link.",
+                ]
+            ),
+        )
+        repo.commit_all("add packages and timeline references")
+
+        payload = self.assert_success(repo.discover())
+
+        self.assertEqual(
+            [package["path"] for package in payload["packages"]],
+            ["src/x/c"],
+        )
+
     def test_invalid_marker_fails_without_mutating_repository(self):
         repo = self.make_repo()
         repo.write(

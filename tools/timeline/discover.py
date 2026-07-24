@@ -12,7 +12,9 @@ from pathlib import Path, PurePosixPath
 
 MARKER = re.compile(r"<!--\s*through-commit:\s*([0-9a-fA-F]{40})\s*-->")
 DATED_TIMELINE = re.compile(r"\d{4}-\d{2}-\d{2}\.md")
-LINKED_PACKAGE = re.compile(r"\.\./\.\./(src/[^)\s]+?)/(?=[)\s])")
+LINKED_PACKAGE = re.compile(
+    r"\[[^\]\r\n]*\]\(\.\./\.\./(src/[^)\s]+?)/?\)"
+)
 FILE_NAMES = (
     "solution.go",
     "solution_test.go",
