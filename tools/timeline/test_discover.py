@@ -134,6 +134,44 @@ class DiscoverTimelineTest(unittest.TestCase):
             ["src/root/a"],
         )
 
+    def test_shallow_boundary_is_not_treated_as_true_root_commit(self):
+        source = self.make_repo()
+        source.write("src/existing/a/solution.go")
+        source.commit_all("old solution")
+        source.write("notes.md", "later documentation\n")
+        source.commit_all("latest docs")
+
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        shallow = Path(temporary.name) / "shallow"
+        subprocess.run(
+            [
+                "git",
+                "clone",
+                "-q",
+                "--depth",
+                "1",
+                source.root.as_uri(),
+                str(shallow),
+            ],
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+
+        result = subprocess.run(
+            [sys.executable, str(DISCOVER), "--repo", str(shallow)],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("discover timeline:", result.stderr)
+        self.assertIn("shallow history", result.stderr)
+        self.assertNotIn('"baseline": "4b825d', result.stdout)
+
     def test_marker_combines_committed_staged_and_untracked_additions(self):
         repo = self.make_repo()
         repo.write(".gitignore", "src/ignored/\n")
@@ -289,6 +327,27 @@ class DiscoverTimelineTest(unittest.TestCase):
                 self.assertEqual(result.returncode, 2)
                 self.assertIn("discover timeline:", result.stderr)
                 self.assertIn("ambiguous through-commit", result.stderr)
+
+    def test_valid_and_malformed_markers_are_rejected_as_ambiguous(self):
+        repo = self.make_repo()
+        repo.write("README.md", "practice\n")
+        marker = repo.commit_all("initial")
+        repo.write(
+            "docs/timeline/README.md",
+            "\n".join(
+                [
+                    f"<!-- through-commit: {marker} -->",
+                    "<!-- through-commit: malformed -->",
+                ]
+            ),
+        )
+        repo.commit_all("mixed markers")
+
+        result = repo.discover()
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("discover timeline:", result.stderr)
+        self.assertIn("ambiguous through-commit", result.stderr)
 
     def test_usage_errors_follow_cli_error_contract(self):
         result = subprocess.run(

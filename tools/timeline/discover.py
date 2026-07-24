@@ -11,6 +11,7 @@ from pathlib import Path, PurePosixPath
 
 
 MARKER = re.compile(r"<!--\s*through-commit:\s*([0-9a-fA-F]{40})\s*-->")
+MARKER_DECLARATION = re.compile(r"through-commit\s*:")
 DATED_TIMELINE = re.compile(r"\d{4}-\d{2}-\d{2}\.md")
 LINKED_PACKAGE = re.compile(
     r"\[[^\]\r\n]*\]\(\.\./\.\./(src/[^)\s]+?)/?\)"
@@ -65,12 +66,13 @@ def read_marker(repo):
     if not marker_file.is_file():
         return None
     contents = marker_file.read_text(encoding="utf-8")
-    matches = MARKER.findall(contents)
-    if len(matches) > 1:
+    declarations = MARKER_DECLARATION.findall(contents)
+    if len(declarations) > 1:
         raise DiscoveryError("ambiguous through-commit markers")
+    matches = MARKER.findall(contents)
     if matches:
         return matches[0].lower()
-    if "through-commit" in contents:
+    if declarations or "through-commit" in contents:
         raise DiscoveryError("invalid through-commit marker")
     return None
 
@@ -98,10 +100,24 @@ def first_run_baseline(repo, head):
     addition = result.stdout.strip()
     if not addition:
         return head
-    parent = run_git(repo, "rev-parse", f"{addition}^", check=False)
-    if parent.returncode:
+    raw_commit = run_git(repo, "cat-file", "-p", addition).stdout
+    parents = []
+    for line in raw_commit.splitlines():
+        if not line:
+            break
+        if line.startswith("parent "):
+            parents.append(line.removeprefix("parent "))
+    if not parents:
         return EMPTY_TREE
-    return parent.stdout.strip()
+    parent = parents[0]
+    available = run_git(
+        repo, "cat-file", "-e", f"{parent}^{{commit}}", check=False
+    )
+    if available.returncode:
+        raise DiscoveryError(
+            f"shallow history: parent {parent} of {addition} is unavailable"
+        )
+    return parent
 
 
 def added_solution_paths(repo, baseline):
