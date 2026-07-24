@@ -68,6 +68,20 @@ func TestCollectRepoCountsSolutionsDocsAndPlatforms(t *testing.T) {
 	}
 }
 
+func TestRenderIndexHomeLinksLearningTimeline(t *testing.T) {
+	root := makeFixtureRepo(t)
+	index, err := collectRepo(root)
+	if err != nil {
+		t.Fatalf("collectRepo() error = %v", err)
+	}
+
+	out := renderIndexHome(index)
+
+	if !strings.Contains(out, "[Learning timeline](../timeline/README.md)") {
+		t.Fatalf("renderIndexHome() missing learning timeline link in:\n%s", out)
+	}
+}
+
 func TestRenderPlatformLinksPackageAndDocs(t *testing.T) {
 	root := makeFixtureRepo(t)
 	index, err := collectRepo(root)
