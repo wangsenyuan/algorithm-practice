@@ -1,0 +1,4 @@
+interface:
+  display_name: "Build Learning Timeline"
+  short_description: "Summarize newly added solution packages"
+  default_prompt: "Use $build-learning-timeline to summarize newly added solution packages in today's learning timeline."
