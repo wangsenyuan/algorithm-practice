@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -36,12 +37,13 @@ class GitRepo:
         self.git("commit", "-q", "-m", message)
         return self.git("rev-parse", "HEAD").stdout.strip()
 
-    def discover(self):
+    def discover(self, env=None):
         return subprocess.run(
             [sys.executable, str(DISCOVER), "--repo", str(self.root)],
             text=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            env=env,
         )
 
 
@@ -82,6 +84,54 @@ class DiscoverTimelineTest(unittest.TestCase):
                     ],
                 }
             ],
+        )
+
+    def test_repo_argument_overrides_git_repository_environment(self):
+        target = self.make_repo()
+        target.write("README.md", "target\n")
+        baseline = target.commit_all("target initial")
+        target.write("src/target/a/solution.go")
+        target_head = target.commit_all("target solution")
+
+        decoy = self.make_repo()
+        decoy.write("README.md", "decoy\n")
+        decoy.commit_all("decoy initial")
+        decoy.write("src/decoy/b/solution.go")
+        decoy.commit_all("decoy solution")
+
+        environment = os.environ.copy()
+        environment.update(
+            {
+                "GIT_DIR": str(decoy.root / ".git"),
+                "GIT_WORK_TREE": str(decoy.root),
+                "GIT_INDEX_FILE": str(decoy.root / ".git" / "index"),
+            }
+        )
+
+        payload = self.assert_success(target.discover(env=environment))
+
+        self.assertEqual(payload["baseline"], baseline)
+        self.assertEqual(payload["head"], target_head)
+        self.assertEqual(
+            [package["path"] for package in payload["packages"]],
+            ["src/target/a"],
+        )
+
+    def test_first_run_supports_solution_added_in_root_commit(self):
+        repo = self.make_repo()
+        repo.write("src/root/a/solution.go")
+        head = repo.commit_all("root solution")
+
+        payload = self.assert_success(repo.discover())
+
+        self.assertEqual(
+            payload["baseline"],
+            "4b825dc642cb6eb9a060e54bf8d69288fbee4904",
+        )
+        self.assertEqual(payload["head"], head)
+        self.assertEqual(
+            [package["path"] for package in payload["packages"]],
+            ["src/root/a"],
         )
 
     def test_marker_combines_committed_staged_and_untracked_additions(self):
@@ -213,6 +263,32 @@ class DiscoverTimelineTest(unittest.TestCase):
             repo.git("status", "--porcelain=v1", "-uall").stdout, before_status
         )
         self.assertEqual(repo.git("rev-parse", "HEAD").stdout, before_head)
+
+    def test_duplicate_markers_are_rejected_as_ambiguous(self):
+        for conflicting in (False, True):
+            with self.subTest(conflicting=conflicting):
+                repo = self.make_repo()
+                repo.write("README.md", "practice\n")
+                first = repo.commit_all("initial")
+                repo.write("notes.md", "next\n")
+                second = repo.commit_all("second")
+                other = second if conflicting else first
+                repo.write(
+                    "docs/timeline/README.md",
+                    "\n".join(
+                        [
+                            f"<!-- through-commit: {first} -->",
+                            f"<!-- through-commit: {other} -->",
+                        ]
+                    ),
+                )
+                repo.commit_all("duplicate markers")
+
+                result = repo.discover()
+
+                self.assertEqual(result.returncode, 2)
+                self.assertIn("discover timeline:", result.stderr)
+                self.assertIn("ambiguous through-commit", result.stderr)
 
     def test_usage_errors_follow_cli_error_contract(self):
         result = subprocess.run(

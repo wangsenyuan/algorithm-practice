@@ -23,6 +23,13 @@ FILE_NAMES = (
     "README.md",
 )
 SOLUTION_PATHSPEC = ":(glob)src/**/solution.go"
+EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+REPOSITORY_ENVIRONMENT = (
+    "GIT_DIR",
+    "GIT_WORK_TREE",
+    "GIT_INDEX_FILE",
+    "GIT_COMMON_DIR",
+)
 
 
 class DiscoveryError(Exception):
@@ -36,6 +43,8 @@ class TimelineArgumentParser(argparse.ArgumentParser):
 
 def run_git(repo, *args, check=True):
     environment = os.environ.copy()
+    for name in REPOSITORY_ENVIRONMENT:
+        environment.pop(name, None)
     environment["GIT_OPTIONAL_LOCKS"] = "0"
     result = subprocess.run(
         ["git", "-C", str(repo), *args],
@@ -56,9 +65,11 @@ def read_marker(repo):
     if not marker_file.is_file():
         return None
     contents = marker_file.read_text(encoding="utf-8")
-    match = MARKER.search(contents)
-    if match:
-        return match.group(1).lower()
+    matches = MARKER.findall(contents)
+    if len(matches) > 1:
+        raise DiscoveryError("ambiguous through-commit markers")
+    if matches:
+        return matches[0].lower()
     if "through-commit" in contents:
         raise DiscoveryError("invalid through-commit marker")
     return None
@@ -89,9 +100,7 @@ def first_run_baseline(repo, head):
         return head
     parent = run_git(repo, "rev-parse", f"{addition}^", check=False)
     if parent.returncode:
-        raise DiscoveryError(
-            f"cannot find parent of first solution addition {addition}"
-        )
+        return EMPTY_TREE
     return parent.stdout.strip()
 
 
