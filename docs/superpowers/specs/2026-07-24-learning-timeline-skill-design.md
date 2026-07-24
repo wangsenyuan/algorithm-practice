@@ -14,7 +14,8 @@ aggregate or rewrite its summaries.
 The feature consists of:
 
 - a repository-local `build-learning-timeline` skill;
-- a deterministic discovery script bundled with the skill;
+- a Cursor `/build-learning-timeline` command;
+- a shared deterministic discovery script under `tools/timeline`;
 - dated notes under `docs/timeline/YYYY-MM-DD.md`;
 - a lightweight `docs/timeline/README.md`;
 - one timeline reference in `docs/index/README.md`, rendered by `tools/indexgen`.
@@ -35,7 +36,24 @@ the daily learning timeline from newly added contest-solution packages.
 
 The skill owns the judgment-heavy part of the workflow: reading source material
 and writing concise, evidence-based summaries. Mechanical Git discovery stays
-in a bundled script so repeated invocations select packages consistently.
+in `tools/timeline/discover.py` so repeated invocations and editor integrations
+select packages consistently.
+
+## Cursor command
+
+Store the Cursor version at:
+
+```text
+.cursor/commands/build-learning-timeline.md
+```
+
+It is an explicit custom command, invoked as `/build-learning-timeline`, because
+timeline generation happens only when requested. It is not an always-applied or
+file-attached Cursor rule.
+
+The command follows the same discovery, summary, output, state, and failure
+workflow as the Codex skill. It calls `tools/timeline/discover.py` rather than
+carrying a second implementation.
 
 ## Discovery boundary
 
@@ -180,6 +198,14 @@ Use temporary Git repositories to verify:
 - grouping by package and stable ordering;
 - deduplication using existing timeline links;
 - invalid-state failure without mutation.
+
+### Cursor command
+
+Forward-test the command against a clean temporary repository containing
+committed, staged, untracked, and modified packages. It must select the same
+packages and produce the same timeline structure as the Codex skill. Add a
+static check that the command remains user-invoked and references the shared
+discovery script.
 
 ### Skill behavior
 
