@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 420" width="480" height="420">
+  <defs>
+    <style>
+      .edge { stroke: #334155; stroke-width: 3; fill: none; }
+      .node { stroke-width: 2.5; }
+      .label { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 18px; font-weight: 700; text-anchor: middle; dominant-baseline: central; }
+      .tag { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 14px; font-weight: 700; text-anchor: middle; }
+      .title { font-family: ui-sans-serif, system-ui, sans-serif; font-size: 16px; fill: #0f172a; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <rect width="480" height="420" fill="#f8fafc" rx="12"/>
+  <text class="title" x="240" y="28">Tree with 7 nodes (root = 1)</text>
+
+  <!-- edges -->
+  <line class="edge" x1="240" y1="90" x2="120" y2="180"/>
+  <line class="edge" x1="240" y1="90" x2="240" y2="180"/>
+  <line class="edge" x1="240" y1="90" x2="360" y2="180"/>
+  <line class="edge" x1="120" y1="180" x2="60" y2="290"/>
+  <line class="edge" x1="120" y1="180" x2="180" y2="290"/>
+  <line class="edge" x1="360" y1="180" x2="360" y2="290"/>
+
+  <!-- root 1 -->
+  <circle class="node" cx="240" cy="90" r="28" fill="#e2e8f0" stroke="#334155"/>
+  <text class="label" x="240" y="90" fill="#0f172a">1</text>
+
+  <!-- u = 2 -->
+  <circle class="node" cx="120" cy="180" r="28" fill="#dbeafe" stroke="#2563eb"/>
+  <text class="label" x="120" y="180" fill="#1e3a8a">2</text>
+  <text class="tag" x="120" y="222" fill="#2563eb">u</text>
+
+  <!-- 3 -->
+  <circle class="node" cx="240" cy="180" r="28" fill="#e2e8f0" stroke="#334155"/>
+  <text class="label" x="240" y="180" fill="#0f172a">3</text>
+
+  <!-- v = 4 -->
+  <circle class="node" cx="360" cy="180" r="28" fill="#dcfce7" stroke="#16a34a"/>
+  <text class="label" x="360" y="180" fill="#14532d">4</text>
+  <text class="tag" x="360" y="222" fill="#16a34a">v</text>
+
+  <!-- 5 -->
+  <circle class="node" cx="60" cy="290" r="28" fill="#e2e8f0" stroke="#334155"/>
+  <text class="label" x="60" y="290" fill="#0f172a">5</text>
+
+  <!-- w = 6 -->
+  <circle class="node" cx="180" cy="290" r="28" fill="#ffedd5" stroke="#ea580c"/>
+  <text class="label" x="180" y="290" fill="#9a3412">6</text>
+  <text class="tag" x="180" y="332" fill="#ea580c">w</text>
+
+  <!-- 7 -->
+  <circle class="node" cx="360" cy="290" r="28" fill="#e2e8f0" stroke="#334155"/>
+  <text class="label" x="360" y="290" fill="#0f172a">7</text>
+
+  <!-- legend -->
+  <rect x="24" y="360" width="432" height="40" rx="8" fill="#fff" stroke="#cbd5e1"/>
+  <circle cx="52" cy="380" r="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text class="tag" x="78" y="385" fill="#2563eb" text-anchor="start">u = 2</text>
+  <circle cx="170" cy="380" r="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text class="tag" x="196" y="385" fill="#16a34a" text-anchor="start">v = 4</text>
+  <circle cx="288" cy="380" r="8" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/>
+  <text class="tag" x="314" y="385" fill="#ea580c" text-anchor="start">w = 6</text>
+</svg>
