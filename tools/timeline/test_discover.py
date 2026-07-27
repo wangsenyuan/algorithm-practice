@@ -59,9 +59,24 @@ class DiscoverTimelineTest(unittest.TestCase):
         self.addCleanup(temporary.cleanup)
         return GitRepo(temporary.name)
 
+    def make_outside_dir(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        return Path(temporary.name)
+
     def assert_success(self, result):
         self.assertEqual(result.returncode, 0, result.stderr)
         return json.loads(result.stdout)
+
+    def assert_unsafe_path_failure(self, result, fragment):
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(result.stdout, "")
+        self.assertTrue(
+            result.stderr.startswith("discover timeline:"),
+            result.stderr,
+        )
+        self.assertIn("symlink", result.stderr)
+        self.assertIn(fragment, result.stderr)
 
     def test_first_run_uses_parent_of_latest_solution_addition(self):
         repo = self.make_repo()
@@ -237,6 +252,137 @@ class DiscoverTimelineTest(unittest.TestCase):
                 },
             ],
         )
+
+    def test_added_solution_symlink_outside_repository_is_rejected(self):
+        repo = self.make_repo()
+        repo.write("README.md", "practice\n")
+        marker = repo.commit_all("initial")
+        repo.write(
+            "docs/timeline/README.md",
+            f"<!-- through-commit: {marker} -->\n",
+        )
+        repo.commit_all("marker")
+        outside = self.make_outside_dir() / "solution.go"
+        outside.write_text("package secret\n", encoding="utf-8")
+        solution = repo.root / "src/unsafe/a/solution.go"
+        solution.parent.mkdir(parents=True)
+        solution.symlink_to(outside)
+        repo.git("add", "src/unsafe/a/solution.go")
+
+        result = repo.discover()
+
+        self.assert_unsafe_path_failure(result, "src/unsafe/a/solution.go")
+
+    def test_emitted_auxiliary_evidence_symlink_is_rejected(self):
+        for name in ("solution_test.go", "problem.md", "readme.md", "README.md"):
+            with self.subTest(name=name):
+                repo = self.make_repo()
+                repo.write("README.md", "practice\n")
+                marker = repo.commit_all("initial")
+                repo.write(
+                    "docs/timeline/README.md",
+                    f"<!-- through-commit: {marker} -->\n",
+                )
+                repo.commit_all("marker")
+                repo.write("src/unsafe/a/solution.go")
+                outside = self.make_outside_dir() / name
+                outside.write_text("do not read me\n", encoding="utf-8")
+                (repo.root / "src/unsafe/a" / name).symlink_to(outside)
+
+                result = repo.discover()
+
+                self.assert_unsafe_path_failure(
+                    result, f"src/unsafe/a/{name}"
+                )
+
+    def test_symlinked_timeline_output_paths_are_rejected(self):
+        cases = ("docs", "docs/timeline", "README", "dated")
+        for case in cases:
+            with self.subTest(case=case):
+                repo = self.make_repo()
+                repo.write("README.md", "practice\n")
+                marker = repo.commit_all("initial")
+                outside_root = self.make_outside_dir()
+                if case == "docs":
+                    (repo.root / "docs").symlink_to(
+                        outside_root, target_is_directory=True
+                    )
+                    fragment = "docs"
+                else:
+                    (repo.root / "docs").mkdir()
+                    if case == "docs/timeline":
+                        (repo.root / "docs/timeline").symlink_to(
+                            outside_root, target_is_directory=True
+                        )
+                        fragment = "docs/timeline"
+                    else:
+                        timeline = repo.root / "docs/timeline"
+                        timeline.mkdir()
+                        if case == "README":
+                            outside = outside_root / "README.md"
+                            outside.write_text(
+                                f"<!-- through-commit: {marker} -->\n",
+                                encoding="utf-8",
+                            )
+                            (timeline / "README.md").symlink_to(outside)
+                            fragment = "docs/timeline/README.md"
+                        else:
+                            repo.write(
+                                "docs/timeline/README.md",
+                                f"<!-- through-commit: {marker} -->\n",
+                            )
+                            outside = outside_root / "2026-07-27.md"
+                            outside.write_text(
+                                "[unsafe](../../src/unsafe/a/)\n",
+                                encoding="utf-8",
+                            )
+                            (timeline / "2026-07-27.md").symlink_to(outside)
+                            fragment = "docs/timeline/2026-07-27.md"
+
+                result = repo.discover()
+
+                self.assert_unsafe_path_failure(result, fragment)
+
+    def test_git_paths_preserve_unicode_and_control_characters(self):
+        for quote_path in ("true", "false"):
+            with self.subTest(core_quote_path=quote_path):
+                repo = self.make_repo()
+                repo.git("config", "core.quotePath", quote_path)
+                repo.write("README.md", "practice\n")
+                marker = repo.commit_all("initial")
+                repo.write(
+                    "docs/timeline/README.md",
+                    f"<!-- through-commit: {marker} -->\n",
+                )
+                repo.commit_all("marker")
+                packages = {
+                    "committed": "src/路径/committed\n控制",
+                    "staged": "src/阶段/staged\t控制",
+                    "untracked": "src/未跟踪/untracked\n\t控制",
+                }
+                repo.write(f"{packages['committed']}/solution.go")
+                repo.commit_all("committed unusual path")
+                repo.write(f"{packages['staged']}/solution.go")
+                repo.git("add", f"{packages['staged']}/solution.go")
+                repo.write(f"{packages['untracked']}/solution.go")
+
+                payload = self.assert_success(repo.discover())
+
+                self.assertEqual(
+                    payload["packages"],
+                    [
+                        {
+                            "path": packages[origin],
+                            "origins": [origin],
+                            "files": [
+                                f"{packages[origin]}/solution.go"
+                            ],
+                        }
+                        for origin in sorted(
+                            packages, key=lambda key: packages[key]
+                        )
+                    ],
+                )
 
     def test_excludes_package_linked_from_dated_timeline(self):
         repo = self.make_repo()

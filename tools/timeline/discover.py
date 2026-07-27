@@ -5,6 +5,7 @@ import argparse
 import json
 import os
 import re
+import stat
 import subprocess
 import sys
 from pathlib import Path, PurePosixPath
@@ -42,7 +43,7 @@ class TimelineArgumentParser(argparse.ArgumentParser):
         self.exit(2, f"discover timeline: {message}\n")
 
 
-def run_git(repo, *args, check=True):
+def run_git(repo, *args, check=True, binary=False):
     environment = os.environ.copy()
     for name in REPOSITORY_ENVIRONMENT:
         environment.pop(name, None)
@@ -50,19 +51,78 @@ def run_git(repo, *args, check=True):
     result = subprocess.run(
         ["git", "-C", str(repo), *args],
         check=False,
-        text=True,
+        text=not binary,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         env=environment,
     )
     if check and result.returncode:
-        detail = result.stderr.strip() or "git command failed"
+        detail = result.stderr.strip()
+        if binary:
+            detail = os.fsdecode(detail)
+        detail = detail or "git command failed"
         raise DiscoveryError(detail)
     return result
 
 
+def repo_relative(repo, path):
+    try:
+        return path.relative_to(repo)
+    except ValueError as error:
+        raise DiscoveryError(f"path escapes repository: {path}") from error
+
+
+def reject_symlink_components(repo, path):
+    relative = repo_relative(repo, path)
+    current = repo
+    for component in relative.parts:
+        current /= component
+        try:
+            mode = current.lstat().st_mode
+        except FileNotFoundError:
+            break
+        if stat.S_ISLNK(mode):
+            raise DiscoveryError(
+                f"symlink path is not allowed: {relative.as_posix()}"
+            )
+    resolved = path.resolve(strict=False)
+    try:
+        resolved.relative_to(repo)
+    except ValueError as error:
+        raise DiscoveryError(
+            f"path escapes repository: {relative.as_posix()}"
+        ) from error
+
+
+def validate_timeline_paths(repo):
+    docs = repo / "docs"
+    timeline = docs / "timeline"
+    marker = timeline / "README.md"
+    for path in (docs, timeline, marker):
+        reject_symlink_components(repo, path)
+    try:
+        entries = list(timeline.iterdir())
+    except FileNotFoundError:
+        return
+    except NotADirectoryError as error:
+        raise DiscoveryError("timeline path is not a directory") from error
+    for path in entries:
+        if DATED_TIMELINE.fullmatch(path.name):
+            reject_symlink_components(repo, path)
+
+
+def git_paths(repo, *args):
+    result = run_git(repo, *args, binary=True)
+    return [
+        os.fsdecode(path)
+        for path in result.stdout.split(b"\0")
+        if path
+    ]
+
+
 def read_marker(repo):
     marker_file = repo / "docs" / "timeline" / "README.md"
+    reject_symlink_components(repo, marker_file)
     if not marker_file.is_file():
         return None
     contents = marker_file.read_text(encoding="utf-8")
@@ -121,29 +181,31 @@ def first_run_baseline(repo, head):
 
 
 def added_solution_paths(repo, baseline):
-    committed = run_git(
+    committed = git_paths(
         repo,
         "diff",
         "--name-only",
         "--diff-filter=A",
+        "-z",
         f"{baseline}..HEAD",
         "--",
         SOLUTION_PATHSPEC,
-    ).stdout.splitlines()
-    staged = run_git(
+    )
+    staged = git_paths(
         repo,
         "diff",
         "--cached",
         "--name-only",
         "--diff-filter=A",
+        "-z",
         "--",
         SOLUTION_PATHSPEC,
-    ).stdout.splitlines()
+    )
     untracked = [
         path
-        for path in run_git(
-            repo, "ls-files", "--others", "--exclude-standard"
-        ).stdout.splitlines()
+        for path in git_paths(
+            repo, "ls-files", "--others", "--exclude-standard", "-z"
+        )
         if is_solution_path(path)
     ]
     return (
@@ -165,20 +227,26 @@ def is_solution_path(path):
 def linked_packages(repo):
     timeline = repo / "docs" / "timeline"
     linked = set()
+    reject_symlink_components(repo, timeline)
     if not timeline.is_dir():
         return linked
     for path in timeline.iterdir():
-        if path.is_file() and DATED_TIMELINE.fullmatch(path.name):
-            contents = path.read_text(encoding="utf-8")
-            linked.update(
-                match.group(1).rstrip("/")
-                for match in LINKED_PACKAGE.finditer(contents)
-            )
+        if not DATED_TIMELINE.fullmatch(path.name):
+            continue
+        reject_symlink_components(repo, path)
+        if not stat.S_ISREG(path.lstat().st_mode):
+            continue
+        contents = path.read_text(encoding="utf-8")
+        linked.update(
+            match.group(1).rstrip("/")
+            for match in LINKED_PACKAGE.finditer(contents)
+        )
     return linked
 
 
 def discover(repo):
     repo = repo.resolve()
+    validate_timeline_paths(repo)
     head = run_git(repo, "rev-parse", "HEAD").stdout.strip()
     marker = read_marker(repo)
     if marker:
@@ -193,6 +261,18 @@ def discover(repo):
         for solution in paths:
             if not is_solution_path(solution):
                 continue
+            solution_path = repo / solution
+            reject_symlink_components(repo, solution_path)
+            try:
+                solution_mode = solution_path.lstat().st_mode
+            except FileNotFoundError as error:
+                raise DiscoveryError(
+                    f"added solution is missing: {solution}"
+                ) from error
+            if not stat.S_ISREG(solution_mode):
+                raise DiscoveryError(
+                    f"added solution is not a regular file: {solution}"
+                )
             package = str(PurePosixPath(solution).parent)
             if package in excluded:
                 continue
@@ -201,13 +281,17 @@ def discover(repo):
     output = []
     for package in sorted(packages):
         package_dir = repo / package
-        existing_names = {
-            entry.name for entry in package_dir.iterdir() if entry.is_file()
-        }
+        reject_symlink_components(repo, package_dir)
+        evidence_names = set()
+        for evidence in package_dir.iterdir():
+            if evidence.name not in FILE_NAMES:
+                continue
+            reject_symlink_components(repo, evidence)
+            mode = evidence.lstat().st_mode
+            if stat.S_ISREG(mode):
+                evidence_names.add(evidence.name)
         files = [
-            f"{package}/{name}"
-            for name in FILE_NAMES
-            if name in existing_names
+            f"{package}/{name}" for name in FILE_NAMES if name in evidence_names
         ]
         output.append(
             {"path": package, "origins": packages[package], "files": files}
