@@ -456,3 +456,79 @@ complete manifest SHA-256: a48799beaebdeca73ea39bdd4cc1b5e4e0081790e850f21d46aea
 
 Fixture `/tmp/learning-timeline-rename.mQogOc` was removed; the malicious
 sentinel remained absent.
+
+## Bounded first-run candidate preselection
+
+Discovery changed to preselect solution-path history in one Git query and run
+unrestricted diff-tree classification only for returned candidates:
+
+```text
+683dc840f6366170b9d760263070c66ab282655b6a7878b6bcde7a1c4b0714f7  tools/timeline/discover.py
+8bf535d5244af1d16c9d58eef72ba1a0e9ec1e9846d99c47e2184bb0eaabb42d  .agents/skills/build-learning-timeline/SKILL.md
+4c218913721f5f48b6e1dac415daf1c9706f320893b474fa9a20f37c98bc1cce  .cursor/commands/build-learning-timeline.md
+```
+
+Automated call-count regressions recorded:
+
+- one genuine add followed by twenty docs-only commits: one history query and
+  one diff-tree classification;
+- twenty commits with no solution-path candidate: one history query, zero
+  diff-tree calls, and a clear hard error; and
+- a genuine add plus a later rename candidate and twenty docs-only commits:
+  one history query and exactly two diff-tree classifications.
+
+### Codex skill
+
+Agent `/root/timeline_security_fixes/codex_skill_forward_test`: **PASS**.
+The no-marker fixture contained an initial `old.go`, a genuine solution `A`, a
+later `R100` rename to another `solution.go`, and twelve separate docs-only
+commits. First-run discovery returned the genuine addition's exact parent as
+`baseline`, the docs-tail commit as `head`, and only `src/genuine/a`. The
+rename-only package and docs tail did not change selection.
+
+After adding a valid marker as fixture setup, the complete workflow selected
+only genuine committed `src/committed/scan`, staged `src/staged/count`, and
+safe-Unicode untracked `src/unicode/算.法_安全-1`; it excluded rename-only,
+pre-marker, and modified-existing packages. Preservation, malicious-evidence
+safety, old-marker/final empty gates, and exact marker advancement passed.
+
+The second invocation was a true no-op. Pre/post values:
+
+```text
+49e5e3c2ee39813b76710885096822231af1ef1ff29d36f2a1fad665bdfe4e25  docs/timeline/2026-07-27.md
+e5da0d44e0176f7b309a654ffc42b793ca049b2a78fcec579068251951aebb85  docs/timeline/README.md
+status SHA-256: c7a96b20a5d86f6447370577d9c4433837037e0a5c42a8c9ff38d22a252e42a6
+complete manifest SHA-256: f3c98ba2092c45f6c4d6b82dd8f7e4512e423053bfa525b5ab60bfbd3e2fba4c
+```
+
+All package/tool hashes were unchanged. Fixture
+`/tmp/codex-timeline-first-run.1ij8wa` was removed and `test ! -e` succeeded.
+
+### Cursor command
+
+Agent `/root/timeline_security_fixes/cursor_command_forward_test`: **PASS**.
+Its no-marker fixture likewise contained an initial `old.go`, genuine solution
+`A`, later `R100` rename, and twelve docs-only commits. First-run discovery
+returned the genuine addition's parent as `baseline`, the docs-tail `HEAD`,
+and only `src/demo/genuine-a`; the rename-only package was excluded and no
+timeline file existed.
+
+After adding a valid marker as fixture setup, the complete workflow selected
+only genuine committed `src/demo/committed-b`, untracked
+`src/demo/untracked`, and safe-Unicode staged
+`src/demo/算法.v4_测试-案例`; it excluded rename-only and modified-existing
+packages. Preservation, malicious-evidence safety, old-marker/final empty
+gates, and marker advancement passed.
+
+The second invocation was a true no-op. Pre/post values:
+
+```text
+8f8fd61adc230724eb58528371d457b2687c63684ee9c91b8e643b17b616d90c  docs/timeline/2026-07-27.md
+d198187f16e21ccf5bb60a5e8685bca27731a99aad6ae07548d013c404291f45  docs/timeline/README.md
+status SHA-256: 3ee0c0bf10e03509bdcd3644bc88a60412384485034dca5057ce3dc9f54bf941
+package manifest SHA-256: a39d149a8a91f2b2324771985aa72063e18266bf5281c32c4249d040395b03f5
+complete manifest SHA-256: 4cbb5e9da983a36bca76a2772678ce520ddf798f9de0396650af4e0553bc7362
+```
+
+Fixture `/tmp/learning-timeline-first-run.Gip0io` was removed; the malicious
+sentinel remained absent.

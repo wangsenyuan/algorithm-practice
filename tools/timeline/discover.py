@@ -28,6 +28,7 @@ FILE_NAMES = (
     "readme.md",
     "README.md",
 )
+SOLUTION_PATHSPEC = ":(glob)src/**/solution.go"
 EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 REPOSITORY_ENVIRONMENT = (
     "GIT_DIR",
@@ -197,7 +198,19 @@ def validate_marker(repo, marker, head):
 
 def first_run_baseline(repo, head):
     addition = None
-    commits = run_git(repo, "rev-list", head).stdout.splitlines()
+    commits = run_git(
+        repo,
+        "log",
+        "--format=%H",
+        "--full-history",
+        head,
+        "--",
+        SOLUTION_PATHSPEC,
+    ).stdout.splitlines()
+    if not commits:
+        raise DiscoveryError(
+            "no solution additions found in reachable history"
+        )
     for commit in commits:
         records = git_name_status(
             repo,
@@ -215,7 +228,9 @@ def first_run_baseline(repo, head):
             addition = commit
             break
     if addition is None:
-        return head
+        raise DiscoveryError(
+            "no solution additions found in reachable history"
+        )
     raw_commit = run_git(repo, "cat-file", "-p", addition).stdout
     parents = []
     for line in raw_commit.splitlines():

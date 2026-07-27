@@ -5,6 +5,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from tools.timeline import discover as timeline_discover
 
@@ -87,6 +88,20 @@ class DiscoverTimelineTest(unittest.TestCase):
         self.assertIn("symlink", result.stderr)
         self.assertIn(fragment, result.stderr)
 
+    def record_git_calls(self):
+        calls = []
+        original = timeline_discover.run_git
+
+        def recording_run_git(repo, *args, **kwargs):
+            calls.append(args)
+            return original(repo, *args, **kwargs)
+
+        return calls, mock.patch.object(
+            timeline_discover,
+            "run_git",
+            side_effect=recording_run_git,
+        )
+
     def test_name_status_parser_handles_single_rename_and_copy_records(self):
         output = (
             b"A\0src/add/solution.go\0"
@@ -141,6 +156,82 @@ class DiscoverTimelineTest(unittest.TestCase):
                 }
             ],
         )
+
+    def test_first_run_long_docs_tail_classifies_one_candidate(self):
+        repo = self.make_repo()
+        repo.write("README.md", "practice\n")
+        initial = repo.commit_all("initial")
+        repo.write("src/genuine/a/solution.go")
+        repo.commit_all("genuine solution")
+        for index in range(20):
+            repo.write(f"docs/note-{index}.md", f"note {index}\n")
+            repo.commit_all(f"docs {index}")
+        calls, recorder = self.record_git_calls()
+
+        with recorder:
+            payload = timeline_discover.discover(repo.root)
+
+        history_calls = [args for args in calls if args[0] == "log"]
+        diff_tree_calls = [args for args in calls if args[0] == "diff-tree"]
+        self.assertEqual(payload["baseline"], initial)
+        self.assertEqual(
+            [package["path"] for package in payload["packages"]],
+            ["src/genuine/a"],
+        )
+        self.assertEqual(len(history_calls), 1, history_calls)
+        self.assertEqual(len(diff_tree_calls), 1, diff_tree_calls)
+
+    def test_first_run_without_solution_candidates_skips_diff_tree(self):
+        repo = self.make_repo()
+        repo.write("README.md", "practice\n")
+        repo.commit_all("initial")
+        for index in range(20):
+            repo.write(f"docs/note-{index}.md", f"note {index}\n")
+            repo.commit_all(f"docs {index}")
+        calls, recorder = self.record_git_calls()
+
+        with recorder:
+            with self.assertRaisesRegex(
+                timeline_discover.DiscoveryError,
+                "no solution additions found",
+            ):
+                timeline_discover.discover(repo.root)
+
+        history_calls = [args for args in calls if args[0] == "log"]
+        diff_tree_calls = [args for args in calls if args[0] == "diff-tree"]
+        self.assertEqual(len(history_calls), 1, history_calls)
+        self.assertEqual(diff_tree_calls, [])
+
+    def test_first_run_classifies_only_add_and_later_rename_candidates(self):
+        repo = self.make_repo()
+        repo.write("README.md", "practice\n")
+        repo.write("src/renamed/a/old.go", "package renamed\n")
+        initial = repo.commit_all("initial source")
+        repo.write("src/genuine/b/solution.go", "package genuine\n")
+        repo.commit_all("genuine solution")
+        repo.git(
+            "mv",
+            "src/renamed/a/old.go",
+            "src/renamed/a/solution.go",
+        )
+        repo.commit_all("rename source to solution")
+        for index in range(20):
+            repo.write(f"docs/note-{index}.md", f"note {index}\n")
+            repo.commit_all(f"docs {index}")
+        calls, recorder = self.record_git_calls()
+
+        with recorder:
+            payload = timeline_discover.discover(repo.root)
+
+        history_calls = [args for args in calls if args[0] == "log"]
+        diff_tree_calls = [args for args in calls if args[0] == "diff-tree"]
+        self.assertEqual(payload["baseline"], initial)
+        self.assertEqual(
+            [package["path"] for package in payload["packages"]],
+            ["src/genuine/b"],
+        )
+        self.assertEqual(len(history_calls), 1, history_calls)
+        self.assertEqual(len(diff_tree_calls), 2, diff_tree_calls)
 
     def test_repo_argument_overrides_git_repository_environment(self):
         target = self.make_repo()
