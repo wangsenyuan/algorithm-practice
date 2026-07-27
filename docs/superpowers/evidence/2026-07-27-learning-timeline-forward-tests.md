@@ -290,3 +290,86 @@ All package hashes were unchanged, the no-op discovery gates returned
 `packages: []`, and no edit occurred. Fixture
 `/tmp/learning-timeline-final.heHuvx` was removed; the malicious sentinel
 remained absent.
+
+## Canonical link-safe grammar rerun
+
+The final allowlist permits only `/`, `.`, `_`, `-`, and Unicode alphanumeric
+characters. Because discovery changed, both workflows were rerun against:
+
+```text
+e3537932e737d3757fa4e026d96d2e76866e84f1ac38261318fcb882b7784041  tools/timeline/discover.py
+8bf535d5244af1d16c9d58eef72ba1a0e9ec1e9846d99c47e2184bb0eaabb42d  .agents/skills/build-learning-timeline/SKILL.md
+4c218913721f5f48b6e1dac415daf1c9706f320893b474fa9a20f37c98bc1cce  .cursor/commands/build-learning-timeline.md
+```
+
+The skill and command hashes were unchanged; their stable-local-filesystem
+boundary remained in force.
+
+### Codex skill
+
+Agent `/root/timeline_security_fixes/codex_skill_forward_test`: **PASS**.
+Under an exclusively owned local fixture with no symlinks or background
+writer, an unsafe candidate containing `[` and U+200D reached discovery
+exactly and hard-failed:
+
+```text
+discover timeline: invalid package path: "src/unsafe/bad[\u200dformat"
+exit: 2
+```
+
+Before/after the failure, the dated file, README, status, and full manifest
+hashes were identical. After removing only that unsafe fixture file, discovery
+selected committed `src/committed/scan`, staged `src/staged/count`, and
+safe-Unicode untracked `src/unicode/算.法_安全-1`; it excluded
+modified-existing `src/existing/base`. The valid Unicode path exercised every
+allowed punctuation character and deduplicated through
+`../../src/unicode/算.法_安全-1/`.
+
+The workflow preserved manual content, ignored malicious evidence, passed the
+old-marker empty gate, advanced to the docs-only `HEAD`, and finished with
+`packages: []`. A complete second invocation made no edit. Pre/post values:
+
+```text
+e6faceb31c6b4bf952a61fa909306cde9108155470ef5df6ece856c8680c5621  docs/timeline/2026-07-27.md
+03ffe286216af82aecea3b7a74de70f9418dfdb3ee3e13e6b0bdd0ba3dff8917  docs/timeline/README.md
+status SHA-256: c7a96b20a5d86f6447370577d9c4433837037e0a5c42a8c9ff38d22a252e42a6
+complete manifest SHA-256: ff8ace3a68a6d6477c008de8cdbf339e11b02c9f8bbffe1a3b1f4cd1c8d41844
+```
+
+All package hashes were unchanged. Fixture
+`/tmp/codex-timeline-e353.OfaGsb` was removed and `test ! -e` succeeded.
+
+### Cursor command
+
+Agent `/root/timeline_security_fixes/cursor_command_forward_test`: **PASS**.
+In a private mode-`0700` fixture on locally mounted APFS, an unsafe candidate
+containing `]` and U+200B reached discovery exactly and hard-failed:
+
+```text
+discover timeline: invalid package path: "src/demo/bad]\u200bpath"
+exit: 2
+```
+
+Before/after the failure, dated, README, status, and complete-manifest hashes
+were identical. After removing only that unsafe fixture file, discovery
+selected committed `src/demo/committed`, untracked `src/demo/untracked`, and
+safe-Unicode staged `src/demo/算法.v1_测试-案例`; it excluded
+modified-existing `src/demo/existing`. The valid Unicode path exercised every
+allowed punctuation character and deduplicated through
+`../../src/demo/算法.v1_测试-案例/`.
+
+The workflow preserved dated content, ignored malicious evidence, passed the
+old-marker empty gate, advanced to the docs-only `HEAD`, and finished with
+`packages: []`. A complete second invocation made no edit. Pre/post values:
+
+```text
+6c8ea29e2870603a743be9334b937206244b7a07b3e9939d14e0ff68ddffff8b  docs/timeline/2026-07-27.md
+0c0621e8f154f7fc509589044e846b2aa71e9465518d8c475f3940ed0dbbb9a0  docs/timeline/README.md
+status SHA-256: df63b5cf7cb24a53a6399618eca566daa9253517540420283a188b071fc697bb
+package manifest SHA-256: b01aafbabf198af0e441b97f9402dcc76dcf951976808af27301b5ec657f5076
+complete manifest SHA-256: bccad2994e5f29f38a2cd84cc0c4a6807881f90f6dbe4cd14e819dd2cc059f65
+```
+
+All package hashes were unchanged. Fixture
+`/tmp/learning-timeline-pathsafe.G5KpFf` was removed; the malicious sentinel
+remained absent.

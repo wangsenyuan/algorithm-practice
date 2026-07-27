@@ -36,6 +36,7 @@ REPOSITORY_ENVIRONMENT = (
     "GIT_INDEX_FILE",
     "GIT_COMMON_DIR",
 )
+MARKDOWN_SAFE_PATH_PUNCTUATION = frozenset("/._-")
 STABLE_FILESYSTEM_BOUNDARY = (
     "Symlink containment assumes a stable local filesystem for each "
     "invocation; stop if concurrent mutation is possible."
@@ -240,12 +241,12 @@ def is_solution_path(path):
 
 
 def validate_package_path(package):
-    if any(
-        character.isspace()
-        or ord(character) < 32
-        or ord(character) == 127
+    is_markdown_safe = all(
+        character.isalnum()
+        or character in MARKDOWN_SAFE_PATH_PUNCTUATION
         for character in package
-    ):
+    )
+    if not is_markdown_safe:
         raise DiscoveryError(
             f"invalid package path: {quote_path(package)}"
         )

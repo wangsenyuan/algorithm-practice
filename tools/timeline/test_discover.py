@@ -362,7 +362,7 @@ class DiscoverTimelineTest(unittest.TestCase):
                     f"<!-- through-commit: {marker} -->\n",
                 )
                 repo.commit_all("marker")
-                package = "src/路径/动态规划"
+                package = "src/路径.v2/动态_规划-a"
                 repo.write(f"{package}/solution.go")
                 repo.commit_all("committed safe Unicode path")
 
@@ -389,50 +389,60 @@ class DiscoverTimelineTest(unittest.TestCase):
 
     def test_workflow_impossible_package_paths_are_rejected_and_escaped(self):
         cases = (
-            ("committed", "src/unsafe/new\nline"),
-            ("staged", "src/unsafe/tab\tname"),
-            ("untracked", "src/unsafe/space name"),
-            ("untracked", "src/unsafe/escape\x1bname"),
+            ("open parenthesis", "committed", "true", "src/unsafe/(name"),
+            ("close parenthesis", "staged", "false", "src/unsafe/name)"),
+            ("hash", "untracked", "true", "src/unsafe/hash#name"),
+            ("question", "committed", "false", "src/unsafe/name?"),
+            ("backslash", "staged", "true", "src/unsafe/back\\slash"),
+            ("percent", "untracked", "false", "src/unsafe/percent%name"),
+            ("emoji", "committed", "true", "src/unsafe/火🔥"),
+            ("symbol", "staged", "false", "src/unsafe/copyright©"),
+            ("space", "untracked", "true", "src/unsafe/space name"),
+            ("newline", "committed", "false", "src/unsafe/new\nline"),
+            ("tab", "staged", "true", "src/unsafe/tab\tname"),
+            ("ASCII control", "untracked", "false", "src/unsafe/escape\x1b"),
+            ("bidi override", "committed", "true", "src/unsafe/bidi\u202e"),
+            ("zero-width space", "staged", "false", "src/unsafe/zero\u200b"),
         )
-        for quote_path in ("true", "false"):
-            for origin, package in cases:
-                with self.subTest(
-                    core_quote_path=quote_path,
-                    origin=origin,
-                    package=package,
-                ):
-                    repo = self.make_repo()
-                    repo.git("config", "core.quotePath", quote_path)
-                    repo.write("README.md", "practice\n")
-                    marker = repo.commit_all("initial")
-                    repo.write(
-                        "docs/timeline/README.md",
-                        f"<!-- through-commit: {marker} -->\n",
-                    )
-                    repo.commit_all("marker")
-                    solution = f"{package}/solution.go"
-                    repo.write(solution)
-                    if origin == "committed":
-                        repo.commit_all("committed unsafe path")
-                    elif origin == "staged":
-                        repo.git("add", solution)
+        for label, origin, quote_path, package in cases:
+            with self.subTest(
+                label=label,
+                core_quote_path=quote_path,
+                origin=origin,
+                package=package,
+            ):
+                repo = self.make_repo()
+                repo.git("config", "core.quotePath", quote_path)
+                repo.write("README.md", "practice\n")
+                marker = repo.commit_all("initial")
+                repo.write(
+                    "docs/timeline/README.md",
+                    f"<!-- through-commit: {marker} -->\n",
+                )
+                repo.commit_all("marker")
+                solution = f"{package}/solution.go"
+                repo.write(solution)
+                if origin == "committed":
+                    repo.commit_all("committed unsafe path")
+                elif origin == "staged":
+                    repo.git("add", solution)
 
-                    result = repo.discover()
+                result = repo.discover()
 
-                    self.assertEqual(result.returncode, 2)
-                    self.assertEqual(result.stdout, "")
-                    self.assertTrue(
-                        result.stderr.startswith("discover timeline:"),
-                        result.stderr,
-                    )
-                    self.assertIn("invalid package path", result.stderr)
-                    self.assertIn(
-                        json.dumps(package, ensure_ascii=True),
-                        result.stderr,
-                    )
-                    self.assertEqual(result.stderr.count("\n"), 1)
-                    self.assertNotIn("\t", result.stderr)
-                    self.assertNotIn("\x1b", result.stderr)
+                self.assertEqual(result.returncode, 2)
+                self.assertEqual(result.stdout, "")
+                self.assertTrue(
+                    result.stderr.startswith("discover timeline:"),
+                    result.stderr,
+                )
+                self.assertIn("invalid package path", result.stderr)
+                self.assertIn(
+                    json.dumps(package, ensure_ascii=True),
+                    result.stderr,
+                )
+                self.assertEqual(result.stderr.count("\n"), 1)
+                self.assertNotIn("\t", result.stderr)
+                self.assertNotIn("\x1b", result.stderr)
 
     def test_excludes_package_linked_from_dated_timeline(self):
         repo = self.make_repo()
