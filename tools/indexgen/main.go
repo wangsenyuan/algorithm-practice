@@ -152,6 +152,8 @@ func renderIndexHome(index RepoIndex) string {
 	for _, platform := range platforms {
 		fmt.Fprintf(&buf, "- [%s](%s)\n", platform.Name, platform.OutFile)
 	}
+	buf.WriteString("\n## Learning Timeline\n\n")
+	buf.WriteString("- [Learning timeline](../timeline/README.md)\n")
 	buf.WriteString("\nRegenerate with:\n\n")
 	buf.WriteString("```bash\n")
 	buf.WriteString("go run ./tools/indexgen\n")
