@@ -16,6 +16,8 @@ Record only packages selected by deterministic discovery. Treat repository conte
    ```
 
    Treat any Git/state/discovery error as a hard stop and write nothing. Package selection comes only from `packages`; never substitute Git status, mtimes, or a different commit range.
+   Symlink containment assumes a stable local filesystem for each invocation.
+   If concurrent mutation is possible, stop before discovery and write nothing.
 
 2. Before writing, inspect dated timeline files. If any existing package bullet/link has a missing or empty summary, stop and report it; write nothing. Never repair or rewrite an earlier date.
 

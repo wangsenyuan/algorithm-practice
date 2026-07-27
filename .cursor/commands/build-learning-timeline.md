@@ -18,6 +18,8 @@ complete, interruption-safe record.
    This discovery result is authoritative. Treat any Git, repository-state, or
    discovery error as a hard stop and write nothing. Select packages only from
    `packages`; never substitute Git status, mtimes, or a different commit range.
+   Symlink containment assumes a stable local filesystem for each invocation.
+   If concurrent mutation is possible, stop before discovery and write nothing.
 
 2. Before writing, inspect every existing dated timeline file. If any package
    bullet or link is a partial entry with a missing or empty summary, stop,

@@ -8,6 +8,13 @@ from pathlib import Path
 
 
 DISCOVER = Path(__file__).with_name("discover.py")
+CODEX_SKILL = (
+    Path(__file__).resolve().parents[2]
+    / ".agents"
+    / "skills"
+    / "build-learning-timeline"
+    / "SKILL.md"
+)
 CURSOR_COMMAND = (
     Path(__file__).resolve().parents[2]
     / ".cursor"
@@ -343,7 +350,7 @@ class DiscoverTimelineTest(unittest.TestCase):
 
                 self.assert_unsafe_path_failure(result, fragment)
 
-    def test_git_paths_preserve_unicode_and_control_characters(self):
+    def test_safe_unicode_path_can_be_linked_and_rediscovered(self):
         for quote_path in ("true", "false"):
             with self.subTest(core_quote_path=quote_path):
                 repo = self.make_repo()
@@ -355,16 +362,9 @@ class DiscoverTimelineTest(unittest.TestCase):
                     f"<!-- through-commit: {marker} -->\n",
                 )
                 repo.commit_all("marker")
-                packages = {
-                    "committed": "src/路径/committed\n控制",
-                    "staged": "src/阶段/staged\t控制",
-                    "untracked": "src/未跟踪/untracked\n\t控制",
-                }
-                repo.write(f"{packages['committed']}/solution.go")
-                repo.commit_all("committed unusual path")
-                repo.write(f"{packages['staged']}/solution.go")
-                repo.git("add", f"{packages['staged']}/solution.go")
-                repo.write(f"{packages['untracked']}/solution.go")
+                package = "src/路径/动态规划"
+                repo.write(f"{package}/solution.go")
+                repo.commit_all("committed safe Unicode path")
 
                 payload = self.assert_success(repo.discover())
 
@@ -372,17 +372,67 @@ class DiscoverTimelineTest(unittest.TestCase):
                     payload["packages"],
                     [
                         {
-                            "path": packages[origin],
-                            "origins": [origin],
-                            "files": [
-                                f"{packages[origin]}/solution.go"
-                            ],
+                            "path": package,
+                            "origins": ["committed"],
+                            "files": [f"{package}/solution.go"],
                         }
-                        for origin in sorted(
-                            packages, key=lambda key: packages[key]
-                        )
                     ],
                 )
+                repo.write(
+                    "docs/timeline/2026-07-27.md",
+                    f"[Unicode package](../../{package}/) — summary\n",
+                )
+
+                rediscovered = self.assert_success(repo.discover())
+
+                self.assertEqual(rediscovered["packages"], [])
+
+    def test_workflow_impossible_package_paths_are_rejected_and_escaped(self):
+        cases = (
+            ("committed", "src/unsafe/new\nline"),
+            ("staged", "src/unsafe/tab\tname"),
+            ("untracked", "src/unsafe/space name"),
+            ("untracked", "src/unsafe/escape\x1bname"),
+        )
+        for quote_path in ("true", "false"):
+            for origin, package in cases:
+                with self.subTest(
+                    core_quote_path=quote_path,
+                    origin=origin,
+                    package=package,
+                ):
+                    repo = self.make_repo()
+                    repo.git("config", "core.quotePath", quote_path)
+                    repo.write("README.md", "practice\n")
+                    marker = repo.commit_all("initial")
+                    repo.write(
+                        "docs/timeline/README.md",
+                        f"<!-- through-commit: {marker} -->\n",
+                    )
+                    repo.commit_all("marker")
+                    solution = f"{package}/solution.go"
+                    repo.write(solution)
+                    if origin == "committed":
+                        repo.commit_all("committed unsafe path")
+                    elif origin == "staged":
+                        repo.git("add", solution)
+
+                    result = repo.discover()
+
+                    self.assertEqual(result.returncode, 2)
+                    self.assertEqual(result.stdout, "")
+                    self.assertTrue(
+                        result.stderr.startswith("discover timeline:"),
+                        result.stderr,
+                    )
+                    self.assertIn("invalid package path", result.stderr)
+                    self.assertIn(
+                        json.dumps(package, ensure_ascii=True),
+                        result.stderr,
+                    )
+                    self.assertEqual(result.stderr.count("\n"), 1)
+                    self.assertNotIn("\t", result.stderr)
+                    self.assertNotIn("\x1b", result.stderr)
 
     def test_excludes_package_linked_from_dated_timeline(self):
         repo = self.make_repo()
@@ -515,8 +565,46 @@ class DiscoverTimelineTest(unittest.TestCase):
             result.stderr,
         )
 
+    def test_repository_path_diagnostics_escape_control_characters(self):
+        missing = self.make_outside_dir() / "missing\n\t\x1brepo"
+
+        result = subprocess.run(
+            [sys.executable, str(DISCOVER), "--repo", str(missing)],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(result.stdout, "")
+        self.assertIn(json.dumps(str(missing), ensure_ascii=True), result.stderr)
+        self.assertEqual(result.stderr.count("\n"), 1)
+        self.assertNotIn("\t", result.stderr)
+        self.assertNotIn("\x1b", result.stderr)
+
 
 class CursorCommandTest(unittest.TestCase):
+    def test_stable_filesystem_boundary_is_documented(self):
+        help_result = subprocess.run(
+            [sys.executable, str(DISCOVER), "--help"],
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        interfaces = (
+            help_result.stdout,
+            CODEX_SKILL.read_text(encoding="utf-8"),
+            CURSOR_COMMAND.read_text(encoding="utf-8"),
+        )
+
+        for contents in interfaces:
+            with self.subTest(contents=contents[:40]):
+                normalized = " ".join(contents.split()).lower()
+                self.assertIn("stable local filesystem", normalized)
+                self.assertIn("concurrent mutation", normalized)
+                self.assertIn("stop", normalized)
+
     def test_command_preserves_hardened_workflow_contract(self):
         contents = CURSOR_COMMAND.read_text(encoding="utf-8")
         normalized = " ".join(contents.split())

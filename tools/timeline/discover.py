@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Discover newly added solution packages for a learning timeline."""
+"""Discover newly added solution packages for a learning timeline.
+
+Symlink containment assumes a stable local filesystem for each invocation.
+Stop instead of running discovery when concurrent mutation is possible.
+"""
 
 import argparse
 import json
@@ -32,6 +36,10 @@ REPOSITORY_ENVIRONMENT = (
     "GIT_INDEX_FILE",
     "GIT_COMMON_DIR",
 )
+STABLE_FILESYSTEM_BOUNDARY = (
+    "Symlink containment assumes a stable local filesystem for each "
+    "invocation; stop if concurrent mutation is possible."
+)
 
 
 class DiscoveryError(Exception):
@@ -41,6 +49,10 @@ class DiscoveryError(Exception):
 class TimelineArgumentParser(argparse.ArgumentParser):
     def error(self, message):
         self.exit(2, f"discover timeline: {message}\n")
+
+
+def quote_path(path):
+    return json.dumps(os.fspath(path), ensure_ascii=True)
 
 
 def run_git(repo, *args, check=True, binary=False):
@@ -69,7 +81,9 @@ def repo_relative(repo, path):
     try:
         return path.relative_to(repo)
     except ValueError as error:
-        raise DiscoveryError(f"path escapes repository: {path}") from error
+        raise DiscoveryError(
+            f"path escapes repository: {quote_path(path)}"
+        ) from error
 
 
 def reject_symlink_components(repo, path):
@@ -83,14 +97,15 @@ def reject_symlink_components(repo, path):
             break
         if stat.S_ISLNK(mode):
             raise DiscoveryError(
-                f"symlink path is not allowed: {relative.as_posix()}"
+                "symlink path is not allowed: "
+                f"{quote_path(relative.as_posix())}"
             )
     resolved = path.resolve(strict=False)
     try:
         resolved.relative_to(repo)
     except ValueError as error:
         raise DiscoveryError(
-            f"path escapes repository: {relative.as_posix()}"
+            f"path escapes repository: {quote_path(relative.as_posix())}"
         ) from error
 
 
@@ -224,6 +239,18 @@ def is_solution_path(path):
     )
 
 
+def validate_package_path(package):
+    if any(
+        character.isspace()
+        or ord(character) < 32
+        or ord(character) == 127
+        for character in package
+    ):
+        raise DiscoveryError(
+            f"invalid package path: {quote_path(package)}"
+        )
+
+
 def linked_packages(repo):
     timeline = repo / "docs" / "timeline"
     linked = set()
@@ -245,7 +272,13 @@ def linked_packages(repo):
 
 
 def discover(repo):
+    repo_argument = repo
     repo = repo.resolve()
+    if not repo.is_dir():
+        raise DiscoveryError(
+            "repository directory does not exist: "
+            f"{quote_path(repo_argument)}"
+        )
     validate_timeline_paths(repo)
     head = run_git(repo, "rev-parse", "HEAD").stdout.strip()
     marker = read_marker(repo)
@@ -261,19 +294,21 @@ def discover(repo):
         for solution in paths:
             if not is_solution_path(solution):
                 continue
+            package = str(PurePosixPath(solution).parent)
+            validate_package_path(package)
             solution_path = repo / solution
             reject_symlink_components(repo, solution_path)
             try:
                 solution_mode = solution_path.lstat().st_mode
             except FileNotFoundError as error:
                 raise DiscoveryError(
-                    f"added solution is missing: {solution}"
+                    f"added solution is missing: {quote_path(solution)}"
                 ) from error
             if not stat.S_ISREG(solution_mode):
                 raise DiscoveryError(
-                    f"added solution is not a regular file: {solution}"
+                    "added solution is not a regular file: "
+                    f"{quote_path(solution)}"
                 )
-            package = str(PurePosixPath(solution).parent)
             if package in excluded:
                 continue
             packages.setdefault(package, []).append(origin)
@@ -300,7 +335,7 @@ def discover(repo):
 
 
 def main(argv=None):
-    parser = TimelineArgumentParser()
+    parser = TimelineArgumentParser(description=STABLE_FILESYSTEM_BOUNDARY)
     parser.add_argument("--repo", required=True, type=Path)
     args = parser.parse_args(argv)
     try:

@@ -204,3 +204,89 @@ complete non-Git manifest SHA-256: 71ac007be5d39a9635d40d13750f73c599be985f76882
 The raw porcelain status and all eight package hashes were byte-identical.
 Result: **PASS — byte-identical no-op**. Fixture
 `/tmp/learning-timeline-noop.euUMVD` was removed.
+
+## Final path-policy and stable-filesystem rerun
+
+The post-review reruns used these final source hashes:
+
+```text
+e3f3d68a28d496601eac1924d5cbd6058f9debce059d9f53d3db84a07658c657  tools/timeline/discover.py
+8bf535d5244af1d16c9d58eef72ba1a0e9ec1e9846d99c47e2184bb0eaabb42d  .agents/skills/build-learning-timeline/SKILL.md
+4c218913721f5f48b6e1dac415daf1c9706f320893b474fa9a20f37c98bc1cce  .cursor/commands/build-learning-timeline.md
+```
+
+Both workflows applied the documented boundary: symlink containment assumes a
+stable local filesystem for each invocation, and the workflow must stop if
+concurrent mutation is possible. Each fixture was a fresh, exclusively owned
+local temporary repository with no background writer. The Codex agent also
+verified that the fixture contained no symlinks; the Cursor agent verified a
+mode-`0700` fixture on a locally mounted APFS filesystem. Consecutive complete
+manifests and status hashes around discovery calls matched, with no unexplained
+transition.
+
+### Codex skill final result
+
+Agent `/root/timeline_security_fixes/codex_skill_forward_test` directly
+followed the current skill and used:
+
+```bash
+REPO_ROOT="$PWD"
+python3 "$REPO_ROOT/tools/timeline/discover.py" --repo "$REPO_ROOT"
+```
+
+Result: **PASS**. Discovery selected committed `src/committed/scan`, staged
+`src/staged/count`, and safe-Unicode untracked `src/unicode/算法`, while
+excluding modified-existing `src/existing/base`. A partial entry first caused
+a hash-verified no-write stop. After fixture-only repair, malicious commands
+and URLs in evidence were ignored, manual dated content was preserved, the
+Unicode link `../../src/unicode/算法/` deduplicated correctly, the old-marker
+gate returned `packages: []`, the marker advanced to the docs-only `HEAD`, and
+final discovery returned `baseline == head` with `packages: []`.
+
+The completed workflow's second invocation was a true no-op. Pre/post values
+were identical:
+
+```text
+23bc7403957d91c9bd6a8b486ebf32067101535dec856f14872b171d67812b32  docs/timeline/2026-07-27.md
+5f281336cfe7131bca63d088ba64dc9a2ab92d02804cd54c30629b46f04500b2  docs/timeline/README.md
+status SHA-256: 392bd0fd41b746cdc1bdff003a7dab22723250198c6d39c4a0aedab645c65419
+complete manifest SHA-256: c67acf9abf0a7f4486d751ba202078e7c8fa49fdbb7dbb565d790ae286c5cf0a
+```
+
+All package/tool hashes were unchanged, every no-op discovery gate returned
+`packages: []`, and no edit occurred. Fixture
+`/tmp/codex-timeline-final.DU7wg6` was removed and `test ! -e` succeeded.
+
+### Cursor command final result
+
+Agent `/root/timeline_security_fixes/cursor_command_forward_test` invoked
+`/build-learning-timeline` and used:
+
+```bash
+python3 "$REPO_ROOT/tools/timeline/discover.py" --repo "$REPO_ROOT"
+```
+
+Result: **PASS**. Discovery selected committed `src/demo/committed`, untracked
+`src/demo/untracked`, and safe-Unicode staged `src/demo/算法`, while excluding
+modified-existing `src/demo/existing`. A partial entry first caused a
+hash-verified no-write stop. After fixture-only repair, malicious commands and
+URLs in evidence were ignored, manual Unicode dated content was preserved, the
+link `../../src/demo/算法/` deduplicated correctly, the old-marker gate returned
+`packages: []`, the marker advanced to the docs-only `HEAD`, and final
+discovery returned `baseline == head` with `packages: []`.
+
+The completed workflow's second invocation was a true no-op. Pre/post values
+were identical:
+
+```text
+58e4701227fcf9975058f0fb748bc976fc45f4f8080c029469650e1aed31048d  docs/timeline/2026-07-27.md
+3cd7ec0033a18bdbf53f4857e031712b71ad8ea254239a329f48ac0e6c99b52e  docs/timeline/README.md
+status SHA-256: c1c52d0cbd2d92b0201e93367619eadbec3f829bd51b3650a85a6f7884729bb9
+package manifest SHA-256: c991b363e2605fb57748c7588ce7c3ba1c0b144aa7a6ade5c4dd67b41d5bc097
+complete manifest SHA-256: 2ebdd6b226c14a321ab6c2ab8b0f4c6484225d8b115b382d0cbb28a97d84002b
+```
+
+All package hashes were unchanged, the no-op discovery gates returned
+`packages: []`, and no edit occurred. Fixture
+`/tmp/learning-timeline-final.heHuvx` was removed; the malicious sentinel
+remained absent.
