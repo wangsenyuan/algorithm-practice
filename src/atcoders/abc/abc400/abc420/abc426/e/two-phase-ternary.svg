@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="390" viewBox="0 0 920 390" role="img" aria-labelledby="title desc">
+  <title id="title">Two-phase ternary search timeline</title>
+  <desc id="desc">The time interval is split when the first walker reaches the goal. Distance is unimodal within each phase, but not necessarily across the breakpoint.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#334155"/>
+    </marker>
+    <style>
+      .title { font: 700 24px system-ui, sans-serif; fill: #0f172a; }
+      .label { font: 600 16px system-ui, sans-serif; fill: #0f172a; }
+      .body { font: 14px system-ui, sans-serif; fill: #334155; }
+      .formula { font: 15px ui-monospace, SFMono-Regular, monospace; fill: #0f172a; }
+      .small { font: 13px system-ui, sans-serif; fill: #475569; }
+    </style>
+  </defs>
+
+  <rect width="920" height="390" rx="18" fill="#f8fafc"/>
+  <text x="460" y="42" text-anchor="middle" class="title">Split at the first stopping time</text>
+
+  <line x1="90" y1="115" x2="840" y2="115" stroke="#334155" stroke-width="3" marker-end="url(#arrow)"/>
+  <line x1="130" y1="100" x2="130" y2="130" stroke="#334155" stroke-width="3"/>
+  <line x1="500" y1="92" x2="500" y2="138" stroke="#dc2626" stroke-width="4"/>
+  <line x1="800" y1="100" x2="800" y2="130" stroke="#334155" stroke-width="3"/>
+
+  <text x="130" y="88" text-anchor="middle" class="label">0</text>
+  <text x="500" y="78" text-anchor="middle" class="label">t_short = min(t₁, t₂)</text>
+  <text x="800" y="88" text-anchor="middle" class="label">t_long = max(t₁, t₂)</text>
+
+  <rect x="105" y="155" width="370" height="135" rx="14" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+  <text x="290" y="184" text-anchor="middle" class="label">Phase 1: both walkers move</text>
+  <text x="290" y="218" text-anchor="middle" class="formula">R(t) = A + (u₁ − u₂)t</text>
+  <text x="290" y="247" text-anchor="middle" class="body">Fixed relative velocity</text>
+  <text x="290" y="271" text-anchor="middle" class="body">distance ‖R(t)‖ is unimodal</text>
+
+  <rect x="525" y="155" width="295" height="135" rx="14" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+  <text x="672" y="184" text-anchor="middle" class="label">Phase 2: one walker moves</text>
+  <text x="672" y="218" text-anchor="middle" class="formula">R(t) = B + vt</text>
+  <text x="672" y="247" text-anchor="middle" class="body">A different relative velocity</text>
+  <text x="672" y="271" text-anchor="middle" class="body">distance ‖R(t)‖ is unimodal</text>
+
+  <path d="M500 300 C500 330, 500 330, 500 345" stroke="#dc2626" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <text x="500" y="372" text-anchor="middle" class="small">Velocity changes here, so the complete interval need not be unimodal.</text>
+</svg>
