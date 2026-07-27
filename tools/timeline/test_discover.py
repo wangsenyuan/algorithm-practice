@@ -187,20 +187,90 @@ class DiscoverTimelineTest(unittest.TestCase):
         repo.commit_all("initial")
         for index in range(20):
             repo.write(f"docs/note-{index}.md", f"note {index}\n")
-            repo.commit_all(f"docs {index}")
+            head = repo.commit_all(f"docs {index}")
         calls, recorder = self.record_git_calls()
 
         with recorder:
-            with self.assertRaisesRegex(
-                timeline_discover.DiscoveryError,
-                "no solution additions found",
-            ):
-                timeline_discover.discover(repo.root)
+            payload = timeline_discover.discover(repo.root)
 
         history_calls = [args for args in calls if args[0] == "log"]
         diff_tree_calls = [args for args in calls if args[0] == "diff-tree"]
+        shallow_calls = [
+            args
+            for args in calls
+            if args[:2] == ("rev-parse", "--is-shallow-repository")
+        ]
+        self.assertEqual(payload["baseline"], head)
+        self.assertEqual(payload["head"], head)
+        self.assertEqual(payload["packages"], [])
         self.assertEqual(len(history_calls), 1, history_calls)
         self.assertEqual(diff_tree_calls, [])
+        self.assertEqual(len(shallow_calls), 1, shallow_calls)
+
+    def test_first_uncommitted_solution_uses_head_baseline(self):
+        for origin in ("staged", "untracked"):
+            with self.subTest(origin=origin):
+                repo = self.make_repo()
+                repo.write("README.md", "practice\n")
+                head = repo.commit_all("initial")
+                repo.write(f"src/{origin}/a/solution.go")
+                if origin == "staged":
+                    repo.git("add", f"src/{origin}/a/solution.go")
+
+                payload = self.assert_success(repo.discover())
+
+                self.assertEqual(payload["baseline"], head)
+                self.assertEqual(payload["head"], head)
+                self.assertEqual(
+                    payload["packages"],
+                    [
+                        {
+                            "path": f"src/{origin}/a",
+                            "origins": [origin],
+                            "files": [
+                                f"src/{origin}/a/solution.go"
+                            ],
+                        }
+                    ],
+                )
+
+    def test_shallow_history_without_solution_candidate_fails(self):
+        source = self.make_repo()
+        source.write("README.md", "practice\n")
+        source.commit_all("initial")
+        source.write("notes.md", "later documentation\n")
+        source.commit_all("latest docs")
+
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        shallow = Path(temporary.name) / "shallow"
+        subprocess.run(
+            [
+                "git",
+                "clone",
+                "-q",
+                "--depth",
+                "1",
+                source.root.as_uri(),
+                str(shallow),
+            ],
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+
+        result = subprocess.run(
+            [sys.executable, str(DISCOVER), "--repo", str(shallow)],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("discover timeline:", result.stderr)
+        self.assertIn("shallow history", result.stderr)
+        self.assertIn("hidden history", result.stderr)
 
     def test_first_run_classifies_only_add_and_later_rename_candidates(self):
         repo = self.make_repo()

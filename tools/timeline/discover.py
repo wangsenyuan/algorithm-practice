@@ -196,6 +196,20 @@ def validate_marker(repo, marker, head):
         raise DiscoveryError(f"invalid through-commit: {marker}")
 
 
+def baseline_without_reachable_addition(repo, head):
+    shallow = run_git(
+        repo, "rev-parse", "--is-shallow-repository"
+    ).stdout.strip()
+    if shallow == "true":
+        raise DiscoveryError(
+            "shallow history: no reachable solution addition; "
+            "hidden history may exist"
+        )
+    if shallow != "false":
+        raise DiscoveryError("could not confirm complete repository history")
+    return head
+
+
 def first_run_baseline(repo, head):
     addition = None
     commits = run_git(
@@ -208,9 +222,7 @@ def first_run_baseline(repo, head):
         SOLUTION_PATHSPEC,
     ).stdout.splitlines()
     if not commits:
-        raise DiscoveryError(
-            "no solution additions found in reachable history"
-        )
+        return baseline_without_reachable_addition(repo, head)
     for commit in commits:
         records = git_name_status(
             repo,
@@ -228,9 +240,7 @@ def first_run_baseline(repo, head):
             addition = commit
             break
     if addition is None:
-        raise DiscoveryError(
-            "no solution additions found in reachable history"
-        )
+        return baseline_without_reachable_addition(repo, head)
     raw_commit = run_git(repo, "cat-file", "-p", addition).stdout
     parents = []
     for line in raw_commit.splitlines():

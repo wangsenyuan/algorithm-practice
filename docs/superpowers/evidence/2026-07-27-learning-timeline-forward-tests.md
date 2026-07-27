@@ -532,3 +532,97 @@ complete manifest SHA-256: 4cbb5e9da983a36bca76a2772678ce520ddf798f9de0396650af4
 
 Fixture `/tmp/learning-timeline-first-run.Gip0io` was removed; the malicious
 sentinel remained absent.
+
+## First uncommitted solution fallback
+
+When complete history has no reachable genuine committed `solution.go`
+addition, discovery now confirms the repository is non-shallow and uses the
+current `HEAD` as the first-run baseline. This lets the first staged or
+untracked solution package enter the timeline while an actually empty full
+repository remains an empty result. A shallow repository without a reachable
+candidate fails instead of assuming that hidden history is irrelevant.
+
+Forward-tested source hashes:
+
+```text
+266d3a779aa9b7e6c51c9bb3479a9386c117776ae2afeb7f7bdc3c20ac2a4b63  tools/timeline/discover.py
+8bf535d5244af1d16c9d58eef72ba1a0e9ec1e9846d99c47e2184bb0eaabb42d  .agents/skills/build-learning-timeline/SKILL.md
+4c218913721f5f48b6e1dac415daf1c9706f320893b474fa9a20f37c98bc1cce  .cursor/commands/build-learning-timeline.md
+```
+
+Automated regressions cover:
+
+- a non-shallow docs-only repository returning `baseline == HEAD` and no
+  packages with one history query, zero diff-tree calls, and one shallow check;
+- the repository's first staged and first untracked solution packages being
+  emitted from that `HEAD` baseline; and
+- a depth-one repository with no reachable candidate failing with
+  `shallow history` and `hidden history`.
+
+### Codex skill
+
+Agent `/root/timeline_security_fixes/codex_skill_forward_test`: **PASS**.
+Its non-shallow repository had only committed documentation/tool history and
+no committed solution. Initial discovery returned:
+
+```text
+baseline = head = 8e388c638cb2c36205604a02f004545bef6d510c
+packages = []
+```
+
+After adding the repository's first solutions, discovery retained that
+baseline and selected exactly staged `src/staged/scan` and safe-Unicode
+untracked `src/unicode/算.法_安全-1`. The workflow preserved manual text,
+ignored embedded commands and external URLs, appended both entries, returned
+empty before marker creation, created one marker at `HEAD`, and returned empty
+afterward. Package hashes stayed unchanged.
+
+The repeated invocation was a true no-op:
+
+```text
+94a2ccd6f43cbb7f5840442d04ad80278843bf2df296b23276819bb042dd0606  docs/timeline/2026-07-27.md
+be3c6ccc98067a40f877bccb9d22334892f1f4b33bfbd7762960074b8b55787c  docs/timeline/README.md
+status SHA-256: 28224285242d9915af5b2406e4ef83e98885db524f3fb532293310cd531bd34c
+complete manifest SHA-256: 9bde049835730a7ad13c33d80b83faf69936c14eb9023c996a993b1883fde9ce
+```
+
+Its separate depth-one clone was shallow and had only the docs-only commit
+visible. Discovery exited 2 with:
+
+```text
+discover timeline: shallow history: no reachable solution addition; hidden history may exist
+```
+
+Both private fixtures were removed and their removal assertions succeeded.
+
+### Cursor command
+
+Agent `/root/timeline_security_fixes/cursor_command_forward_test`: **PASS**.
+Its non-shallow repository likewise had only three docs commits and no
+solution history. Initial discovery returned:
+
+```text
+baseline = head = 8355809254970f536d1de0048e771e64d19bd0fd
+packages = []
+```
+
+After adding the first solution packages, discovery selected exactly untracked
+`src/demo/untracked-first` and safe-Unicode staged
+`src/demo/算法.v5_测试-案例`. The ordered workflow preserved the manual prefix,
+ignored malicious evidence, appended both entries, observed the empty
+pre-marker gate, created one marker at `HEAD`, and observed the empty final
+gate. Package hashes stayed unchanged.
+
+The repeated invocation was a true no-op:
+
+```text
+a6fdef7f7e04b622aeaa553cb03d40a629f46fbc02ae7fde579b770c5ead8554  docs/timeline/2026-07-27.md
+fbbd8b9537820cf12fa340afefb285d59439e9ac2e3c5fe4d10e569f90dd8ad9  docs/timeline/README.md
+status SHA-256: 6aa1e0a751bdcac72820d260212b0974eab39760ec4cc1031650f65a798ce3d3
+package manifest SHA-256: 2ac716373981a81a25bf3ae5351552c7b0eb90d87a679d8f89dcbdd19b7b1dc4
+complete manifest SHA-256: 5ffe867cd58d81f7af0ed5b9866f6f65862c1c23a5459c7cbfeb0f0c08e4b5a9
+```
+
+Its separate depth-one clone also exited 2 with the exact shallow/hidden
+history diagnostic. Both private fixtures were removed and the malicious
+sentinel remained absent.
