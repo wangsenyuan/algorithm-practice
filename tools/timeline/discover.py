@@ -28,7 +28,6 @@ FILE_NAMES = (
     "readme.md",
     "README.md",
 )
-SOLUTION_PATHSPEC = ":(glob)src/**/solution.go"
 EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 REPOSITORY_ENVIRONMENT = (
     "GIT_DIR",
@@ -136,6 +135,40 @@ def git_paths(repo, *args):
     ]
 
 
+def parse_name_status(output):
+    fields = output.split(b"\0")
+    if fields and not fields[-1]:
+        fields.pop()
+    records = []
+    index = 0
+    while index < len(fields):
+        status = os.fsdecode(fields[index])
+        index += 1
+        path_count = 2 if status[:1] in ("R", "C") else 1
+        if not status or index + path_count > len(fields):
+            raise DiscoveryError("malformed Git name-status output")
+        paths = tuple(
+            os.fsdecode(path)
+            for path in fields[index : index + path_count]
+        )
+        index += path_count
+        records.append((status, paths))
+    return records
+
+
+def git_name_status(repo, *args):
+    result = run_git(repo, *args, binary=True)
+    return parse_name_status(result.stdout)
+
+
+def genuine_added_solution_paths(records):
+    return [
+        paths[0]
+        for status, paths in records
+        if status == "A" and is_solution_path(paths[0])
+    ]
+
+
 def read_marker(repo):
     marker_file = repo / "docs" / "timeline" / "README.md"
     reject_symlink_components(repo, marker_file)
@@ -163,18 +196,25 @@ def validate_marker(repo, marker, head):
 
 
 def first_run_baseline(repo, head):
-    result = run_git(
-        repo,
-        "log",
-        "-1",
-        "--format=%H",
-        "--diff-filter=A",
-        head,
-        "--",
-        SOLUTION_PATHSPEC,
-    )
-    addition = result.stdout.strip()
-    if not addition:
+    addition = None
+    commits = run_git(repo, "rev-list", head).stdout.splitlines()
+    for commit in commits:
+        records = git_name_status(
+            repo,
+            "diff-tree",
+            "--root",
+            "--first-parent",
+            "--no-commit-id",
+            "-r",
+            "--name-status",
+            "--find-renames",
+            "-z",
+            commit,
+        )
+        if genuine_added_solution_paths(records):
+            addition = commit
+            break
+    if addition is None:
         return head
     raw_commit = run_git(repo, "cat-file", "-p", addition).stdout
     parents = []
@@ -197,25 +237,25 @@ def first_run_baseline(repo, head):
 
 
 def added_solution_paths(repo, baseline):
-    committed = git_paths(
-        repo,
-        "diff",
-        "--name-only",
-        "--diff-filter=A",
-        "-z",
-        f"{baseline}..HEAD",
-        "--",
-        SOLUTION_PATHSPEC,
+    committed = genuine_added_solution_paths(
+        git_name_status(
+            repo,
+            "diff",
+            "--name-status",
+            "--find-renames",
+            f"{baseline}..HEAD",
+            "-z",
+        )
     )
-    staged = git_paths(
-        repo,
-        "diff",
-        "--cached",
-        "--name-only",
-        "--diff-filter=A",
-        "-z",
-        "--",
-        SOLUTION_PATHSPEC,
+    staged = genuine_added_solution_paths(
+        git_name_status(
+            repo,
+            "diff",
+            "--cached",
+            "--name-status",
+            "--find-renames",
+            "-z",
+        )
     )
     untracked = [
         path

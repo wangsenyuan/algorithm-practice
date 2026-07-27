@@ -6,6 +6,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from tools.timeline import discover as timeline_discover
+
 
 DISCOVER = Path(__file__).with_name("discover.py")
 CODEX_SKILL = (
@@ -84,6 +86,32 @@ class DiscoverTimelineTest(unittest.TestCase):
         )
         self.assertIn("symlink", result.stderr)
         self.assertIn(fragment, result.stderr)
+
+    def test_name_status_parser_handles_single_rename_and_copy_records(self):
+        output = (
+            b"A\0src/add/solution.go\0"
+            b"M\0notes.md\0"
+            b"R100\0src/old.go\0src/renamed/solution.go\0"
+            b"C75\0src/source.go\0src/copied/solution.go\0"
+        )
+
+        records = timeline_discover.parse_name_status(output)
+
+        self.assertEqual(
+            records,
+            [
+                ("A", ("src/add/solution.go",)),
+                ("M", ("notes.md",)),
+                (
+                    "R100",
+                    ("src/old.go", "src/renamed/solution.go"),
+                ),
+                (
+                    "C75",
+                    ("src/source.go", "src/copied/solution.go"),
+                ),
+            ],
+        )
 
     def test_first_run_uses_parent_of_latest_solution_addition(self):
         repo = self.make_repo()
@@ -258,6 +286,72 @@ class DiscoverTimelineTest(unittest.TestCase):
                     ],
                 },
             ],
+        )
+
+    def test_staged_rename_to_solution_is_not_an_addition(self):
+        repo = self.make_repo()
+        repo.write("src/renamed/a/old.go")
+        marker = repo.commit_all("initial source")
+        repo.write(
+            "docs/timeline/README.md",
+            f"<!-- through-commit: {marker} -->\n",
+        )
+        repo.commit_all("marker")
+        repo.git(
+            "mv",
+            "src/renamed/a/old.go",
+            "src/renamed/a/solution.go",
+        )
+
+        payload = self.assert_success(repo.discover())
+
+        self.assertEqual(payload["packages"], [])
+
+    def test_committed_range_rename_to_solution_is_not_an_addition(self):
+        repo = self.make_repo()
+        repo.write("src/renamed/a/old.go")
+        marker = repo.commit_all("initial source")
+        repo.write(
+            "docs/timeline/README.md",
+            f"<!-- through-commit: {marker} -->\n",
+        )
+        repo.commit_all("marker")
+        repo.git(
+            "mv",
+            "src/renamed/a/old.go",
+            "src/renamed/a/solution.go",
+        )
+        head = repo.commit_all("rename source to solution")
+
+        payload = self.assert_success(repo.discover())
+
+        self.assertEqual(payload["baseline"], marker)
+        self.assertEqual(payload["head"], head)
+        self.assertEqual(payload["packages"], [])
+
+    def test_first_run_ignores_later_rename_only_solution_commit(self):
+        repo = self.make_repo()
+        repo.write("README.md", "practice\n")
+        repo.write("src/renamed/a/old.go", "package renamed\n")
+        initial = repo.commit_all("initial source")
+        repo.write("src/genuine/b/solution.go", "package genuine\n")
+        repo.commit_all("genuine solution addition")
+        repo.git(
+            "mv",
+            "src/renamed/a/old.go",
+            "src/renamed/a/solution.go",
+        )
+        repo.commit_all("rename source to solution")
+        repo.write("notes.md", "docs after rename\n")
+        head = repo.commit_all("docs follow-up")
+
+        payload = self.assert_success(repo.discover())
+
+        self.assertEqual(payload["baseline"], initial)
+        self.assertEqual(payload["head"], head)
+        self.assertEqual(
+            [package["path"] for package in payload["packages"]],
+            ["src/genuine/b"],
         )
 
     def test_added_solution_symlink_outside_repository_is_rejected(self):

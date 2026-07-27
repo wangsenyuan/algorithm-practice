@@ -373,3 +373,86 @@ complete manifest SHA-256: bccad2994e5f29f38a2cd84cc0c4a6807881f90f6dbe4cd14e819
 All package hashes were unchanged. Fixture
 `/tmp/learning-timeline-pathsafe.G5KpFf` was removed; the malicious sentinel
 remained absent.
+
+## Rename-only exclusion rerun
+
+Because discovery's Git record parser changed, both workflows were rerun
+against:
+
+```text
+721147d3da22d3c6d1d2b6f923aabfda58a40d179ea2afa7ebf37c7d1b21f549  tools/timeline/discover.py
+8bf535d5244af1d16c9d58eef72ba1a0e9ec1e9846d99c47e2184bb0eaabb42d  .agents/skills/build-learning-timeline/SKILL.md
+4c218913721f5f48b6e1dac415daf1c9706f320893b474fa9a20f37c98bc1cce  .cursor/commands/build-learning-timeline.md
+```
+
+The workflow documents were unchanged. Both fresh, exclusively owned local
+fixtures preserved stable status and complete-manifest hashes around every
+discovery call.
+
+### Codex skill
+
+Agent `/root/timeline_security_fixes/codex_skill_forward_test`: **PASS**.
+`src/renamed/case/old.go` existed before the marker. Its staged rename to
+`solution.go` produced:
+
+```text
+R100 src/renamed/case/old.go src/renamed/case/solution.go
+```
+
+Discovery returned `packages: []`. After committing the rename, unrestricted
+marker-range name-status still produced `R100` and discovery again returned
+`packages: []`. Matching manifests around both calls proved no timeline write.
+
+The completed workflow then selected only genuine committed
+`src/committed/scan`, staged `src/staged/count`, and safe-Unicode untracked
+`src/unicode/算.法_安全-1`; it excluded the rename-only and modified-existing
+packages. Manual content and package hashes were preserved, malicious evidence
+was ignored, the old-marker gate returned empty, the marker advanced to the
+docs-only `HEAD`, and final discovery returned `packages: []`.
+
+The second invocation was a true no-op. Pre/post values:
+
+```text
+49e5e3c2ee39813b76710885096822231af1ef1ff29d36f2a1fad665bdfe4e25  docs/timeline/2026-07-27.md
+20a06bc5ccf84b908bfbfbbc59f6bb944e4e340fdc6f9274247d617fb36cc05b  docs/timeline/README.md
+status SHA-256: c7a96b20a5d86f6447370577d9c4433837037e0a5c42a8c9ff38d22a252e42a6
+complete manifest SHA-256: 7155f3cc7438a7ab06fbf094c4b2a7b8322a906a3390a1bf502df3726f521046
+```
+
+All package/tool hashes were unchanged. Fixture
+`/tmp/codex-timeline-rename.2HgZWs` was removed and `test ! -e` succeeded.
+
+### Cursor command
+
+Agent `/root/timeline_security_fixes/cursor_command_forward_test`: **PASS**.
+`src/demo/renamed/old.go` existed before the marker. Its staged rename to
+`solution.go` produced:
+
+```text
+R100 src/demo/renamed/old.go src/demo/renamed/solution.go
+```
+
+Discovery returned `packages: []`, with identical dated, README, status, and
+manifest hashes before and after. After committing the rename, marker-range
+name-status still produced `R100`; committed-range discovery again returned
+`packages: []`.
+
+The completed workflow selected only genuine committed `src/demo/committed`,
+untracked `src/demo/untracked`, and safe-Unicode staged
+`src/demo/算法.v3_测试-案例`; it excluded the rename-only and modified-existing
+packages. Preserved content and package hashes remained unchanged, malicious
+evidence was ignored, the old-marker gate returned empty, the marker advanced
+to the docs-only `HEAD`, and final discovery returned `packages: []`.
+
+The second invocation was a true no-op. Pre/post values:
+
+```text
+d81b518b6e37ba8a266d0362d1cb6d5229f3b1a4737c6047639bcedcaddb3355  docs/timeline/2026-07-27.md
+bb7ce9f50b7ace7413f498c97b9300d75cbbc69784508cf08fbe0b4899f34a53  docs/timeline/README.md
+status SHA-256: 43ea3b486c317477c3e97176ce5a8d07cac92cd88ca3ad800b15755e9828f2cd
+package manifest SHA-256: cadfc55fe7ad2df7da69a32d8b65967b5550e1c63c12fb8480561150ff9d436d
+complete manifest SHA-256: a48799beaebdeca73ea39bdd4cc1b5e4e0081790e850f21d46aeacb6c4d4c6ad
+```
+
+Fixture `/tmp/learning-timeline-rename.mQogOc` was removed; the malicious
+sentinel remained absent.
