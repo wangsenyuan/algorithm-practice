@@ -1,0 +1,84 @@
+<h2>Choose the SVG layout</h2>
+<p class="subtitle">All options show node IDs, friendliness values, and the three queries without showing their answers.</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <svg viewBox="0 0 320 180" role="img" aria-label="One tree with three colored paths overlaid">
+        <g fill="none" stroke="#94a3b8" stroke-width="6" stroke-linecap="round">
+          <path d="M160 45 L65 135 M160 45 L160 135 M160 45 L255 135"/>
+        </g>
+        <g fill="none" stroke-width="3" stroke-linecap="round">
+          <path d="M160 45 L255 135" stroke="#f59e0b"/>
+          <path d="M65 135 L160 45 L160 135" stroke="#3b82f6"/>
+          <path d="M65 135 L160 45 L255 135" stroke="#ec4899" stroke-dasharray="7 5"/>
+        </g>
+        <g fill="#ffffff" stroke="#334155" stroke-width="2">
+          <circle cx="160" cy="45" r="21"/><circle cx="65" cy="135" r="21"/>
+          <circle cx="160" cy="135" r="21"/><circle cx="255" cy="135" r="21"/>
+        </g>
+        <g text-anchor="middle" dominant-baseline="middle" font-size="14" fill="#0f172a">
+          <text x="160" y="45">1</text><text x="65" y="135">2</text>
+          <text x="160" y="135">3</text><text x="255" y="135">4</text>
+        </g>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>A. Combined overlay</h3>
+      <p>Most compact, but overlapping query colors make the shared edges harder to read.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <svg viewBox="0 0 360 180" role="img" aria-label="Three separate small tree panels, one for each query">
+        <g transform="translate(0 0)">
+          <text x="60" y="18" text-anchor="middle" font-size="12">1 → 4</text>
+          <path d="M60 50 L25 125 M60 50 L60 125 M60 50 L95 125" fill="none" stroke="#cbd5e1" stroke-width="3"/>
+          <path d="M60 50 L95 125" fill="none" stroke="#3b82f6" stroke-width="6" stroke-linecap="round"/>
+          <g fill="#fff" stroke="#334155"><circle cx="60" cy="50" r="13"/><circle cx="25" cy="125" r="13"/><circle cx="60" cy="125" r="13"/><circle cx="95" cy="125" r="13"/></g>
+        </g>
+        <g transform="translate(120 0)">
+          <text x="60" y="18" text-anchor="middle" font-size="12">2 → 3</text>
+          <path d="M60 50 L25 125 M60 50 L60 125 M60 50 L95 125" fill="none" stroke="#cbd5e1" stroke-width="3"/>
+          <path d="M25 125 L60 50 L60 125" fill="none" stroke="#3b82f6" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+          <g fill="#fff" stroke="#334155"><circle cx="60" cy="50" r="13"/><circle cx="25" cy="125" r="13"/><circle cx="60" cy="125" r="13"/><circle cx="95" cy="125" r="13"/></g>
+        </g>
+        <g transform="translate(240 0)">
+          <text x="60" y="18" text-anchor="middle" font-size="12">2 → 4</text>
+          <path d="M60 50 L25 125 M60 50 L60 125 M60 50 L95 125" fill="none" stroke="#cbd5e1" stroke-width="3"/>
+          <path d="M25 125 L60 50 L95 125" fill="none" stroke="#3b82f6" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+          <g fill="#fff" stroke="#334155"><circle cx="60" cy="50" r="13"/><circle cx="25" cy="125" r="13"/><circle cx="60" cy="125" r="13"/><circle cx="95" cy="125" r="13"/></g>
+        </g>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>B. Three query panels — recommended</h3>
+      <p>Each path is immediately clear; repeats the small tree three times.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <svg viewBox="0 0 360 180" role="img" aria-label="Large overview tree with three miniature path strips">
+        <path d="M105 45 L45 135 M105 45 L105 135 M105 45 L165 135" fill="none" stroke="#64748b" stroke-width="4"/>
+        <g fill="#fff" stroke="#334155" stroke-width="2">
+          <circle cx="105" cy="45" r="18"/><circle cx="45" cy="135" r="18"/>
+          <circle cx="105" cy="135" r="18"/><circle cx="165" cy="135" r="18"/>
+        </g>
+        <g fill="none" stroke="#3b82f6" stroke-width="5" stroke-linecap="round">
+          <path d="M225 40 L320 40"/><path d="M225 90 L272 90 L320 90"/><path d="M225 140 L272 140 L320 140"/>
+        </g>
+        <g fill="#fff" stroke="#334155">
+          <circle cx="225" cy="40" r="11"/><circle cx="320" cy="40" r="11"/>
+          <circle cx="225" cy="90" r="11"/><circle cx="272" cy="90" r="11"/><circle cx="320" cy="90" r="11"/>
+          <circle cx="225" cy="140" r="11"/><circle cx="272" cy="140" r="11"/><circle cx="320" cy="140" r="11"/>
+        </g>
+      </svg>
+    </div>
+    <div class="card-body">
+      <h3>C. Overview plus path strips</h3>
+      <p>Balanced and compact, but the miniature paths lose some tree context.</p>
+    </div>
+  </div>
+</div>

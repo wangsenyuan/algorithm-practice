@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1280" height="520" viewBox="0 0 1280 520" role="img" aria-labelledby="title desc">
+  <title id="title">Sample 1 first test case: sideways gravity with optional removal</title>
+  <desc id="desc">Three panels for a = [1, 2, 3, 2, 1]. Left: initial stacks. Middle: after rightward gravity (total movement 5). Right: remove the cube in column 5, then gravity (total movement 9).</desc>
+
+  <defs>
+    <style type="text/css"><![CDATA[
+      .canvas { fill: #ffffff; }
+      .panel { fill: #f7f4ef; stroke: #d7d0c5; stroke-width: 2; }
+      .title { fill: #1f2430; font: 600 22px system-ui, sans-serif; text-anchor: middle; }
+      .subtitle { fill: #5d6573; font: 14px system-ui, sans-serif; text-anchor: middle; }
+      .label { fill: #5d6573; font: 13px system-ui, sans-serif; text-anchor: middle; }
+      .floor { stroke: #8a8174; stroke-width: 3; stroke-linecap: round; }
+      .grid { stroke: #e7e1d7; stroke-width: 1.5; }
+      .cube { fill: #0f766e; stroke: #0b4f4a; stroke-width: 2; }
+      .ghost { fill: none; stroke: #c2410c; stroke-width: 2.5; stroke-dasharray: 5 4; }
+      .arrow { fill: none; stroke: #c2410c; stroke-width: 2.8; stroke-linecap: round; marker-end: url(#arr); }
+      .badge { fill: #ccfbf1; stroke: #0b4f4a; stroke-width: 1.5; }
+      .badge-text { fill: #1f2430; font: 600 14px system-ui, sans-serif; text-anchor: middle; }
+      .legend { fill: #5d6573; font: 14px system-ui, sans-serif; }
+    ]]></style>
+
+    <marker id="arr" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 1 1 L 11 6 L 1 11 z" fill="#c2410c"/>
+    </marker>
+
+    <g id="col-labels">
+      <text class="label" x="40" y="28">1</text>
+      <text class="label" x="100" y="28">2</text>
+      <text class="label" x="160" y="28">3</text>
+      <text class="label" x="220" y="28">4</text>
+      <text class="label" x="280" y="28">5</text>
+    </g>
+
+    <g id="board-frame">
+      <line class="grid" x1="10" y1="-150" x2="10" y2="0"/>
+      <line class="grid" x1="70" y1="-150" x2="70" y2="0"/>
+      <line class="grid" x1="130" y1="-150" x2="130" y2="0"/>
+      <line class="grid" x1="190" y1="-150" x2="190" y2="0"/>
+      <line class="grid" x1="250" y1="-150" x2="250" y2="0"/>
+      <line class="grid" x1="310" y1="-150" x2="310" y2="0"/>
+      <line class="floor" x1="10" y1="0" x2="310" y2="0"/>
+    </g>
+
+    <rect id="unit" class="cube" width="44" height="44" x="-22" y="3" rx="6" ry="6"/>
+  </defs>
+
+  <rect class="canvas" width="1280" height="520"/>
+
+  <g transform="translate(30 24)">
+    <rect class="panel" width="390" height="420" rx="18" ry="18"/>
+    <text class="title" x="195" y="42">Initial</text>
+    <text class="subtitle" x="195" y="66">a = [1, 2, 3, 2, 1]</text>
+
+    <g transform="translate(35 340)">
+      <use xlink:href="#board-frame"/>
+      <use xlink:href="#col-labels"/>
+      <g transform="translate(40 0)"><use xlink:href="#unit"/></g>
+      <g transform="translate(100 0)"><use xlink:href="#unit"/></g>
+      <g transform="translate(100 -50)"><use xlink:href="#unit"/></g>
+      <g transform="translate(160 0)"><use xlink:href="#unit"/></g>
+      <g transform="translate(160 -50)"><use xlink:href="#unit"/></g>
+      <g transform="translate(160 -100)"><use xlink:href="#unit"/></g>
+      <g transform="translate(220 0)"><use xlink:href="#unit"/></g>
+      <g transform="translate(220 -50)"><use xlink:href="#unit"/></g>
+      <g transform="translate(280 0)"><use xlink:href="#unit"/></g>
+    </g>
+
+    <text class="subtitle" x="195" y="390">gravity will pull right</text>
+  </g>
+
+  <g transform="translate(445 24)">
+    <rect class="panel" width="390" height="420" rx="18" ry="18"/>
+    <text class="title" x="195" y="42">After gravity</text>
+    <text class="subtitle" x="195" y="66">no removal - total move = 5</text>
+
+    <g transform="translate(35 340)">
+      <use xlink:href="#board-frame"/>
+      <use xlink:href="#col-labels"/>
+      <g transform="translate(40 0)"><use xlink:href="#unit"/></g>
+      <g transform="translate(100 0)"><use xlink:href="#unit"/></g>
+      <g transform="translate(160 0)"><use xlink:href="#unit"/></g>
+      <g transform="translate(220 0)"><use xlink:href="#unit"/></g>
+      <g transform="translate(280 0)"><use xlink:href="#unit"/></g>
+      <g transform="translate(160 -50)"><use xlink:href="#unit"/></g>
+      <g transform="translate(220 -50)"><use xlink:href="#unit"/></g>
+      <g transform="translate(280 -50)"><use xlink:href="#unit"/></g>
+      <g transform="translate(280 -100)"><use xlink:href="#unit"/></g>
+      <path class="arrow" d="M 100 -28 L 145 -28"/>
+      <path class="arrow" d="M 160 -28 L 205 -28"/>
+      <path class="arrow" d="M 220 -28 L 265 -28"/>
+      <path class="arrow" d="M 160 -78 L 255 -78"/>
+    </g>
+
+    <rect class="badge" x="118" y="378" width="154" height="28" rx="14" ry="14"/>
+    <text class="badge-text" x="195" y="397">sum |j-i| = 5</text>
+  </g>
+
+  <g transform="translate(860 24)">
+    <rect class="panel" width="390" height="420" rx="18" ry="18"/>
+    <text class="title" x="195" y="42">Remove column 5</text>
+    <text class="subtitle" x="195" y="66">then gravity - total move = 9</text>
+
+    <g transform="translate(35 340)">
+      <use xlink:href="#board-frame"/>
+      <use xlink:href="#col-labels"/>
+      <rect class="ghost" x="258" y="-41" width="44" height="44" rx="6" ry="6"/>
+      <g transform="translate(100 0)"><use xlink:href="#unit"/></g>
+      <g transform="translate(160 0)"><use xlink:href="#unit"/></g>
+      <g transform="translate(220 0)"><use xlink:href="#unit"/></g>
+      <g transform="translate(280 0)"><use xlink:href="#unit"/></g>
+      <g transform="translate(160 -50)"><use xlink:href="#unit"/></g>
+      <g transform="translate(220 -50)"><use xlink:href="#unit"/></g>
+      <g transform="translate(280 -50)"><use xlink:href="#unit"/></g>
+      <g transform="translate(280 -100)"><use xlink:href="#unit"/></g>
+      <path class="arrow" d="M 40 22 L 85 22"/>
+      <path class="arrow" d="M 100 22 L 145 22"/>
+      <path class="arrow" d="M 160 22 L 205 22"/>
+      <path class="arrow" d="M 220 22 L 265 22"/>
+      <path class="arrow" d="M 100 -28 L 145 -28"/>
+      <path class="arrow" d="M 160 -28 L 205 -28"/>
+      <path class="arrow" d="M 220 -28 L 265 -28"/>
+      <path class="arrow" d="M 160 -78 L 255 -78"/>
+    </g>
+
+    <rect class="badge" x="118" y="378" width="154" height="28" rx="14" ry="14"/>
+    <text class="badge-text" x="195" y="397">sum |j-i| = 9</text>
+  </g>
+
+  <g transform="translate(360 485)">
+    <rect class="cube" width="18" height="18" x="0" y="-14" rx="4" ry="4"/>
+    <text class="legend" x="28" y="0">cube</text>
+    <rect class="ghost" width="18" height="18" x="110" y="-14" rx="4" ry="4"/>
+    <text class="legend" x="138" y="0">removed cube</text>
+    <line class="arrow" x1="280" y1="-5" x2="330" y2="-5"/>
+    <text class="legend" x="342" y="0">slide right at fixed height</text>
+  </g>
+</svg>
