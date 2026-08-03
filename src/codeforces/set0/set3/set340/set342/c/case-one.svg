@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="300" viewBox="0 0 420 300" role="img" aria-labelledby="title desc">
+  <title id="title">Case 1: leftover height less than half the diameter</title>
+  <desc id="desc">A cupboard top with one centered balloon fitting when x is less than r over 2.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#444"/>
+    </marker>
+  </defs>
+  <rect width="420" height="300" fill="#fff"/>
+  <path d="M70 140 A100 100 0 0 1 270 140" fill="none" stroke="#222" stroke-width="4"/>
+  <path d="M70 140 L70 250 M270 140 L270 250 M70 250 L270 250" fill="none" stroke="#222" stroke-width="4"/>
+  <rect x="70" y="140" width="200" height="35" fill="#f3c969" opacity="0.45"/>
+  <circle cx="170" cy="90" r="50" fill="#8fc7ff" stroke="#1f5f9f" stroke-width="3"/>
+  <line x1="302" y1="140" x2="302" y2="175" stroke="#444" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <text x="315" y="162" font-family="Arial, sans-serif" font-size="16" fill="#222">x &lt; r/2</text>
+  <text x="54" y="276" font-family="Arial, sans-serif" font-size="17" fill="#222">Only the middle balloon can be added: +1</text>
+  <text x="152" y="94" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#0d365c">1</text>
+</svg>

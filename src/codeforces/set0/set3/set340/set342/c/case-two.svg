@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="300" viewBox="0 0 420 300" role="img" aria-labelledby="title desc">
+  <title id="title">Case 2: leftover height can hold two side balloons</title>
+  <desc id="desc">A cupboard top with two side by side balloons fitting when x is at least r over 2 but below sqrt three times r over 2.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#444"/>
+    </marker>
+  </defs>
+  <rect width="420" height="300" fill="#fff"/>
+  <path d="M70 140 A100 100 0 0 1 270 140" fill="none" stroke="#222" stroke-width="4"/>
+  <path d="M70 140 L70 250 M270 140 L270 250 M70 250 L270 250" fill="none" stroke="#222" stroke-width="4"/>
+  <rect x="70" y="140" width="200" height="65" fill="#f3c969" opacity="0.45"/>
+  <circle cx="120" cy="155" r="50" fill="#8fc7ff" stroke="#1f5f9f" stroke-width="3"/>
+  <circle cx="220" cy="155" r="50" fill="#8fc7ff" stroke="#1f5f9f" stroke-width="3"/>
+  <line x1="302" y1="140" x2="302" y2="205" stroke="#444" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <text x="315" y="166" font-family="Arial, sans-serif" font-size="15" fill="#222">r/2 &lt;= x</text>
+  <text x="315" y="185" font-family="Arial, sans-serif" font-size="15" fill="#222">x &lt; sqrt(3)r/2</text>
+  <text x="58" y="276" font-family="Arial, sans-serif" font-size="17" fill="#222">Two lower balloons fit, but not the upper one: +2</text>
+  <text x="104" y="160" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#0d365c">1</text>
+  <text x="204" y="160" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#0d365c">2</text>
+</svg>

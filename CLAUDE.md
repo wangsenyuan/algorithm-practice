@@ -28,7 +28,7 @@ go mod tidy
 Each problem lives in its own directory as `package main`:
 
 - `solution.go` — `main()` reads from stdin/writes to stdout; `solve(...)` contains the algorithm
-- `solution_test.go` — calls `solve(...)` directly with expected outputs
+- `solution_test.go` — calls `drive(...)` with raw sample input and expected outputs
 
 ### Directory Conventions
 
@@ -40,7 +40,9 @@ Each problem lives in its own directory as `package main`:
 
 ### Solution Template Pattern
 
-Every `solution.go` embeds its own I/O helpers (no shared utility package). The preferred pattern separates I/O into a `drive()` function:
+Every `solution.go` embeds its own I/O helpers (no shared utility package). The preferred pattern separates I/O into a `drive()` function.
+
+**Requirement: `drive` executes one test case only.** For multi-test input, `main` reads `t` and calls `drive` once per case. Do **not** put the `t`-loop inside `drive`.
 
 ```go
 package main
@@ -49,12 +51,18 @@ import ("bufio"; "fmt"; "os")
 
 func main() {
     reader := bufio.NewReader(os.Stdin)
-    res := drive(reader)
-    fmt.Println(res)
+    writer := bufio.NewWriter(os.Stdout)
+    defer writer.Flush()
+
+    var tc int
+    fmt.Fscan(reader, &tc)
+    for range tc {
+        fmt.Fprintln(writer, drive(reader))
+    }
 }
 
 func drive(reader *bufio.Reader) <type> {
-    // parse input using fmt.Fscan or custom readX helpers
+    // parse ONE test case using fmt.Fscan or custom readX helpers
     return solve(...)
 }
 
@@ -67,30 +75,44 @@ func solve(...) <type> {
 }
 ```
 
+If the problem has a single test (no leading `t`), `main` may call `drive` once without a loop.
+
 ### Test Pattern
 
-Tests pass raw input strings to `drive()` — the same I/O path used in production:
+Tests pass raw input strings to `drive()` — the same I/O path used in production.
+
+**Requirement: one case, one sample.** Each `TestSampleN` covers exactly one test case from the official sample (or a custom case). Do **not** pack the whole multi-test sample into a single `TestSample`. The input string is the body of one case only — no leading `t`.
 
 ```go
 package main
 
 import (
     "bufio"
-    "reflect"
     "strings"
     "testing"
 )
 
 func runSample(t *testing.T, s string, expect <type>) {
+    t.Helper()
     reader := bufio.NewReader(strings.NewReader(s))
     res := drive(reader)
-    if !reflect.DeepEqual(res, expect) {
-        t.Errorf("Sample expect %v, but got %v", expect, res)
+    if res != expect { // or !reflect.DeepEqual for slices/structs
+        t.Fatalf("Sample expect %v, but got %v", expect, res)
     }
 }
 
 func TestSample1(t *testing.T) {
-    runSample(t, "input line here\n", expectedValue)
+    runSample(t, `3
+1 2 3
+1 2 3
+`, "YES")
+}
+
+func TestSample2(t *testing.T) {
+    runSample(t, `1
+9
+8
+`, "NO")
 }
 ```
 
@@ -99,3 +121,4 @@ func TestSample1(t *testing.T) {
 - Each `solution.go` is self-contained — copy I/O helpers into every new file rather than importing a shared package.
 - Problem statements are sometimes stored as `problem.md` or `readme.md` alongside the solution.
 - Some solutions include Chinese comments explaining the algorithm approach.
+- When adding a new problem, follow the two requirements above (`drive` = one case; tests = one case per `TestSample`).
