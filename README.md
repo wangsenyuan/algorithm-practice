@@ -5,25 +5,23 @@
 
 Competitive-programming solutions in Go, organized as self-contained packages by online judge and contest. The repository is mostly standard-library Go: each problem directory owns its parser, `solve` function, tests, and, when available, a local statement or explanation file.
 
+LeetCode and CodeChef solutions were moved out to [lc-fun](https://github.com/wangsenyuan/lc-fun) and [codechef-fun](https://github.com/wangsenyuan/codechef-fun).
+
 ## Repository Stats
 
 Generated with `go run ./tools/indexgen`.
 
 | Area | Count |
 | --- | ---: |
-| Total solutions | 10260 |
-| Local problem docs and explanations | 3077 |
-| Codeforces solutions | 4659 |
-| LeetCode solutions | 3016 |
-| CodeChef solutions | 2252 |
-| AtCoder solutions | 155 |
+| Total solutions | 5287 |
+| Local problem docs and explanations | 3352 |
+| Codeforces solutions | 4851 |
+| AtCoder solutions | 295 |
 
 ## Browse
 
 - [All generated indexes](docs/index/README.md)
 - [Codeforces](docs/index/codeforces.md)
-- [LeetCode](docs/index/leetcode.md)
-- [CodeChef](docs/index/codechef.md)
 - [AtCoder](docs/index/atcoder.md)
 
 The generated indexes are path-oriented on purpose. Many older packages do not have normalized titles or topic tags, but the package paths are stable and link directly to local `problem.md`, `readme.md`, or `README.md` files when those docs exist.
@@ -33,12 +31,6 @@ The generated indexes are path-oriented on purpose. Many older packages do not h
 ```text
 src/
   codeforces/set1/set18/set185/set1857/g/
-    solution.go
-    solution_test.go
-  leetcode/set1000/set3000/set3900/set3920/p3921/
-    solution.go
-    solution_test.go
-  codechef/easy/section00/example/
     solution.go
     solution_test.go
   atcoders/arc/arc100/arc127/d/

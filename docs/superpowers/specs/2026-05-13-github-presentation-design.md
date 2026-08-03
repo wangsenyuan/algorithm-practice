@@ -37,8 +37,6 @@ The first pass should include:
 
 - `docs/index/README.md`: index entry point and generation note
 - `docs/index/codeforces.md`
-- `docs/index/leetcode.md`
-- `docs/index/codechef.md`
 - `docs/index/atcoder.md`
 
 Each platform index should list package paths and link to available local docs when present. It is acceptable for the first pass to be path-oriented rather than metadata-rich because many packages do not have structured titles or tags.
@@ -51,7 +49,7 @@ The generator should report at least:
 
 - Total `solution.go` files
 - Total local docs files named `problem.md`, `readme.md`, or `README.md`
-- Solution counts for Codeforces, LeetCode, CodeChef, and AtCoder
+- Solution counts for Codeforces and AtCoder
 
 The generator may update a small generated stats file consumed by README maintenance. It does not need to edit `README.md` automatically in the first pass unless that keeps the workflow simpler.
 
