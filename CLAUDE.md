@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-A Go competitive programming practice repository solving problems from LeetCode, Codeforces, CodeChef, AtCoder, CodeJam, CodeWars, Luogu, and Gym contests. No external dependencies — pure Go standard library.
+A Go competitive programming practice repository solving problems from Codeforces, AtCoder, CodeJam, CodeWars, Luogu, and Gym contests. No external dependencies — pure Go standard library. LeetCode and CodeChef solutions live in separate repositories.
 
 ## Commands
 
@@ -33,8 +33,6 @@ Each problem lives in its own directory as `package main`:
 ### Directory Conventions
 
 - **Codeforces**: `src/codeforces/set{0,1,2}/set{XY}/set{XY0}/set{XYZW}/` where `XYZW` is the contest number, then `{a,b,c,...}/` for problem letter
-- **LeetCode**: `src/leetcode/set1000/set{N000}/set{N0X0}/p{NXYZ}/`
-- **CodeChef**: `src/codechef/{easy,medium}/section{NN}/...`
 - **AtCoder**: `src/atcoders/arc/arc{N00}/arc{NXY}/`
 - **Gym**: `src/gym/set{contest_id}/`
 

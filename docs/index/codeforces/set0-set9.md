@@ -31,6 +31,7 @@
 | [`src/codeforces/set0/set9/set910/set915/c`](../../../src/codeforces/set0/set9/set910/set915/c) |  |
 | [`src/codeforces/set0/set9/set910/set915/d`](../../../src/codeforces/set0/set9/set910/set915/d) | [problem.md](../../../src/codeforces/set0/set9/set910/set915/d/problem.md) |
 | [`src/codeforces/set0/set9/set910/set915/e`](../../../src/codeforces/set0/set9/set910/set915/e) | [problem.md](../../../src/codeforces/set0/set9/set910/set915/e/problem.md) |
+| [`src/codeforces/set0/set9/set910/set915/f`](../../../src/codeforces/set0/set9/set910/set915/f) | [problem.md](../../../src/codeforces/set0/set9/set910/set915/f/problem.md) |
 | [`src/codeforces/set0/set9/set910/set916/b`](../../../src/codeforces/set0/set9/set910/set916/b) | [problem.md](../../../src/codeforces/set0/set9/set910/set916/b/problem.md) |
 | [`src/codeforces/set0/set9/set910/set916/c`](../../../src/codeforces/set0/set9/set910/set916/c) | [problem.md](../../../src/codeforces/set0/set9/set910/set916/c/problem.md) |
 | [`src/codeforces/set0/set9/set910/set916/d`](../../../src/codeforces/set0/set9/set910/set916/d) | [problem.md](../../../src/codeforces/set0/set9/set910/set916/d/problem.md) |
@@ -59,7 +60,10 @@
 | [`src/codeforces/set0/set9/set920/set926/e`](../../../src/codeforces/set0/set9/set920/set926/e) | [problem.md](../../../src/codeforces/set0/set9/set920/set926/e/problem.md) |
 | [`src/codeforces/set0/set9/set920/set926/f`](../../../src/codeforces/set0/set9/set920/set926/f) | [problem.md](../../../src/codeforces/set0/set9/set920/set926/f/problem.md) |
 | [`src/codeforces/set0/set9/set920/set926/g`](../../../src/codeforces/set0/set9/set920/set926/g) | [problem.md](../../../src/codeforces/set0/set9/set920/set926/g/problem.md) |
+| [`src/codeforces/set0/set9/set920/set926/i`](../../../src/codeforces/set0/set9/set920/set926/i) |  |
 | [`src/codeforces/set0/set9/set920/set926/j`](../../../src/codeforces/set0/set9/set920/set926/j) | [problem.md](../../../src/codeforces/set0/set9/set920/set926/j/problem.md) |
+| [`src/codeforces/set0/set9/set920/set928/c`](../../../src/codeforces/set0/set9/set920/set928/c) | [problem.md](../../../src/codeforces/set0/set9/set920/set928/c/problem.md) |
+| [`src/codeforces/set0/set9/set920/set928/d`](../../../src/codeforces/set0/set9/set920/set928/d) | [problem.md](../../../src/codeforces/set0/set9/set920/set928/d/problem.md) |
 | [`src/codeforces/set0/set9/set930/set930/a`](../../../src/codeforces/set0/set9/set930/set930/a) |  |
 | [`src/codeforces/set0/set9/set930/set930/b`](../../../src/codeforces/set0/set9/set930/set930/b) | [problem.md](../../../src/codeforces/set0/set9/set930/set930/b/problem.md) |
 | [`src/codeforces/set0/set9/set930/set930/c`](../../../src/codeforces/set0/set9/set930/set930/c) | [problem.md](../../../src/codeforces/set0/set9/set930/set930/c/problem.md) |
@@ -68,6 +72,7 @@
 | [`src/codeforces/set0/set9/set930/set932/d`](../../../src/codeforces/set0/set9/set930/set932/d) | [problem.md](../../../src/codeforces/set0/set9/set930/set932/d/problem.md) |
 | [`src/codeforces/set0/set9/set930/set933/a`](../../../src/codeforces/set0/set9/set930/set933/a) | [problem.md](../../../src/codeforces/set0/set9/set930/set933/a/problem.md) |
 | [`src/codeforces/set0/set9/set930/set934/a`](../../../src/codeforces/set0/set9/set930/set934/a) |  |
+| [`src/codeforces/set0/set9/set930/set935/c`](../../../src/codeforces/set0/set9/set930/set935/c) | [problem.md](../../../src/codeforces/set0/set9/set930/set935/c/problem.md) |
 | [`src/codeforces/set0/set9/set930/set936/a`](../../../src/codeforces/set0/set9/set930/set936/a) | [problem.md](../../../src/codeforces/set0/set9/set930/set936/a/problem.md) |
 | [`src/codeforces/set0/set9/set930/set936/b`](../../../src/codeforces/set0/set9/set930/set936/b) | [problem.md](../../../src/codeforces/set0/set9/set930/set936/b/problem.md) |
 | [`src/codeforces/set0/set9/set930/set938/c`](../../../src/codeforces/set0/set9/set930/set938/c) | [problem.md](../../../src/codeforces/set0/set9/set930/set938/c/problem.md) |
@@ -104,6 +109,7 @@
 | [`src/codeforces/set0/set9/set950/set958/f1`](../../../src/codeforces/set0/set9/set950/set958/f1) | [problem.md](../../../src/codeforces/set0/set9/set950/set958/f1/problem.md) |
 | [`src/codeforces/set0/set9/set950/set958/f2`](../../../src/codeforces/set0/set9/set950/set958/f2) | [problem.md](../../../src/codeforces/set0/set9/set950/set958/f2/problem.md) |
 | [`src/codeforces/set0/set9/set950/set959/c`](../../../src/codeforces/set0/set9/set950/set959/c) | [problem.md](../../../src/codeforces/set0/set9/set950/set959/c/problem.md) |
+| [`src/codeforces/set0/set9/set950/set959/d`](../../../src/codeforces/set0/set9/set950/set959/d) | [problem.md](../../../src/codeforces/set0/set9/set950/set959/d/problem.md) |
 | [`src/codeforces/set0/set9/set950/set959/e`](../../../src/codeforces/set0/set9/set950/set959/e) | [problem.md](../../../src/codeforces/set0/set9/set950/set959/e/problem.md) |
 | [`src/codeforces/set0/set9/set950/set959/f`](../../../src/codeforces/set0/set9/set950/set959/f) | [problem.md](../../../src/codeforces/set0/set9/set950/set959/f/problem.md) |
 | [`src/codeforces/set0/set9/set960/set960/b`](../../../src/codeforces/set0/set9/set960/set960/b) | [problem.md](../../../src/codeforces/set0/set9/set960/set960/b/problem.md) |
@@ -152,6 +158,7 @@
 | [`src/codeforces/set0/set9/set980/set989/c`](../../../src/codeforces/set0/set9/set980/set989/c) | [problem.md](../../../src/codeforces/set0/set9/set980/set989/c/problem.md) |
 | [`src/codeforces/set0/set9/set990/set990/c`](../../../src/codeforces/set0/set9/set990/set990/c) |  |
 | [`src/codeforces/set0/set9/set990/set990/d`](../../../src/codeforces/set0/set9/set990/set990/d) | [problem.md](../../../src/codeforces/set0/set9/set990/set990/d/problem.md) |
+| [`src/codeforces/set0/set9/set990/set990/e`](../../../src/codeforces/set0/set9/set990/set990/e) | [problem.md](../../../src/codeforces/set0/set9/set990/set990/e/problem.md) |
 | [`src/codeforces/set0/set9/set990/set990/g`](../../../src/codeforces/set0/set9/set990/set990/g) | [problem.md](../../../src/codeforces/set0/set9/set990/set990/g/problem.md) |
 | [`src/codeforces/set0/set9/set990/set991/c`](../../../src/codeforces/set0/set9/set990/set991/c) | [problem.md](../../../src/codeforces/set0/set9/set990/set991/c/problem.md) |
 | [`src/codeforces/set0/set9/set990/set991/d`](../../../src/codeforces/set0/set9/set990/set991/d) |  |
@@ -159,6 +166,7 @@
 | [`src/codeforces/set0/set9/set990/set992/b`](../../../src/codeforces/set0/set9/set990/set992/b) | [problem.md](../../../src/codeforces/set0/set9/set990/set992/b/problem.md) |
 | [`src/codeforces/set0/set9/set990/set992/c`](../../../src/codeforces/set0/set9/set990/set992/c) |  |
 | [`src/codeforces/set0/set9/set990/set992/d`](../../../src/codeforces/set0/set9/set990/set992/d) | [problem.md](../../../src/codeforces/set0/set9/set990/set992/d/problem.md) |
+| [`src/codeforces/set0/set9/set990/set993/a`](../../../src/codeforces/set0/set9/set990/set993/a) | [problem.md](../../../src/codeforces/set0/set9/set990/set993/a/problem.md) |
 | [`src/codeforces/set0/set9/set990/set993/b`](../../../src/codeforces/set0/set9/set990/set993/b) | [problem.md](../../../src/codeforces/set0/set9/set990/set993/b/problem.md) |
 | [`src/codeforces/set0/set9/set990/set995/a`](../../../src/codeforces/set0/set9/set990/set995/a) | [problem.md](../../../src/codeforces/set0/set9/set990/set995/a/problem.md) |
 | [`src/codeforces/set0/set9/set990/set997/a`](../../../src/codeforces/set0/set9/set990/set997/a) | [problem.md](../../../src/codeforces/set0/set9/set990/set997/a/problem.md) |

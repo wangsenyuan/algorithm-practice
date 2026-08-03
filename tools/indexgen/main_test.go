@@ -24,9 +24,6 @@ func makeFixtureRepo(t *testing.T) string {
 	files := map[string]string{
 		"src/codeforces/set1/set18/set185/set1857/g/solution.go":               "package main\n",
 		"src/codeforces/set1/set18/set185/set1857/g/problem.md":                "# Problem\n",
-		"src/leetcode/set1000/set3000/set3900/set3920/p3921/solution.go":       "package main\n",
-		"src/codechef/easy/section00/example/solution.go":                      "package main\n",
-		"src/codechef/easy/section00/example/readme.md":                        "# Example\n",
 		"src/atcoders/arc/arc100/arc127/d/solution.go":                         "package main\n",
 		"src/unknown/demo/solution.go":                                         "package main\n",
 		"docs/index/README.md":                                                 "old generated content\n",
@@ -48,17 +45,15 @@ func TestCollectRepoCountsSolutionsDocsAndPlatforms(t *testing.T) {
 		t.Fatalf("collectRepo() error = %v", err)
 	}
 
-	if index.TotalSolutions != 5 {
-		t.Fatalf("TotalSolutions = %d, want 5", index.TotalSolutions)
+	if index.TotalSolutions != 3 {
+		t.Fatalf("TotalSolutions = %d, want 3", index.TotalSolutions)
 	}
-	if index.TotalDocs != 2 {
-		t.Fatalf("TotalDocs = %d, want 2", index.TotalDocs)
+	if index.TotalDocs != 1 {
+		t.Fatalf("TotalDocs = %d, want 1", index.TotalDocs)
 	}
 
 	wantCounts := map[Platform]int{
 		platformCodeforces: 1,
-		platformLeetcode:   1,
-		platformCodechef:   1,
 		platformAtcoder:    1,
 	}
 	for platform, want := range wantCounts {
@@ -125,26 +120,11 @@ func TestWriteIndexesSplitsLargePlatformIndexesIntoShardFiles(t *testing.T) {
 	if !strings.Contains(string(landing), "[set1/set18](codeforces/set1-set18.md)") {
 		t.Fatalf("Codeforces landing page does not link to shard:\n%s", landing)
 	}
-	leetcodeLanding, err := os.ReadFile(filepath.Join(root, "docs", "index", "leetcode.md"))
-	if err != nil {
-		t.Fatalf("read LeetCode landing page: %v", err)
+	if _, err := os.Stat(filepath.Join(root, "docs", "index", "leetcode.md")); !os.IsNotExist(err) {
+		t.Fatalf("expected no LeetCode index after writeIndexes, err=%v", err)
 	}
-	if !strings.Contains(string(leetcodeLanding), "[set1000/set3000](leetcode/set1000-set3000.md)") {
-		t.Fatalf("LeetCode landing page does not link to range page:\n%s", leetcodeLanding)
-	}
-	leetcodeGroup, err := os.ReadFile(filepath.Join(root, "docs", "index", "leetcode", "set1000-set3000.md"))
-	if err != nil {
-		t.Fatalf("read LeetCode range page: %v", err)
-	}
-	if !strings.Contains(string(leetcodeGroup), "[`src/leetcode/set1000/set3000/set3900/set3920/p3921`](../../../src/leetcode/set1000/set3000/set3900/set3920/p3921)") {
-		t.Fatalf("LeetCode range page does not link to package:\n%s", leetcodeGroup)
-	}
-	codechefLanding, err := os.ReadFile(filepath.Join(root, "docs", "index", "codechef.md"))
-	if err != nil {
-		t.Fatalf("read CodeChef landing page: %v", err)
-	}
-	if !strings.Contains(string(codechefLanding), "[easy/section00](codechef/easy-section00.md)") {
-		t.Fatalf("CodeChef landing page does not link to shard:\n%s", codechefLanding)
+	if _, err := os.Stat(filepath.Join(root, "docs", "index", "codechef.md")); !os.IsNotExist(err) {
+		t.Fatalf("expected no CodeChef index after writeIndexes, err=%v", err)
 	}
 
 	if err := writeIndexes(root, index); err != nil {

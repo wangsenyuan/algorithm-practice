@@ -37,10 +37,8 @@ type RepoIndex struct {
 
 var (
 	platformCodeforces = Platform{Key: "codeforces", Name: "Codeforces", Prefix: "src/codeforces/", OutFile: "codeforces.md", ShardDepth: 2}
-	platformLeetcode   = Platform{Key: "leetcode", Name: "LeetCode", Prefix: "src/leetcode/", OutFile: "leetcode.md", GroupDepth: 2}
-	platformCodechef   = Platform{Key: "codechef", Name: "CodeChef", Prefix: "src/codechef/", OutFile: "codechef.md", ShardDepth: 2}
 	platformAtcoder    = Platform{Key: "atcoder", Name: "AtCoder", Prefix: "src/atcoders/", OutFile: "atcoder.md"}
-	platforms          = []Platform{platformCodeforces, platformLeetcode, platformCodechef, platformAtcoder}
+	platforms          = []Platform{platformCodeforces, platformAtcoder}
 )
 
 func main() {
