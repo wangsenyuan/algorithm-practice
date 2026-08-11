@@ -97,24 +97,24 @@ NO
 
 ## Solution
 
-Each subtree, after an optimal cyclic shift of children, yields a left-to-right
-leaf sequence that breaks into a few contiguous value intervals. DFS merges
-those intervals bottom-up.
+Goal: leaf order must be exactly `1…k`. Operations only cyclically rotate
+children, so every subtree always occupies a contiguous segment of the leaf
+sequence. In a YES configuration that segment must be a value interval
+`[L, R]` in increasing order — so **every** node ends with `|dp[u]| = 1`.
 
 ### 1. Model a subtree as intervals
 
-For node `u`, `dp[u]` is a list of pairs `(L, R)` — increasing contiguous value
-blocks among leaves in `u`'s subtree (in left-to-right order after shifts).
+For node `u`, `dp[u]` is a list of pairs `(L, R)` — contiguous increasing
+value blocks among leaves under `u` (after chosen shifts).
 
 - Leaf `u` with value `a_u`: `dp[u] = [(a_u, a_u)]`.
-- Internal node: recurse on children, then concatenate their interval lists.
+- Internal node: recurse on children, concatenate their (single) intervals.
 
 ### 2. Cyclic shift = rotate to the minimum start
 
-Among all child intervals, find the one with the smallest `L`, then rotate the
-concatenated list so that interval comes first. That is the best cyclic left
-shift of the children: start scanning values at the global minimum in the
-subtree.
+Concatenate children’s intervals, find the block with smallest `L`, and rotate
+so it comes first. If the subtree is arrangeable as `[L, R]`, that sorted order
+must start with `L = min`, so this is the only candidate rotation.
 
 ### 3. Merge consecutive blocks
 
@@ -123,19 +123,21 @@ Walk the rotated list and merge:
 | relation to previous `(L', R')` | action |
 |---|---|
 | `L == R' + 1` | extend previous block to `R` |
-| `L > R' + 1` | keep as a new separate block (gap) |
-| `L ≤ R'` | overlap / disorder → impossible (`NO`) |
+| `L > R' + 1` | hole inside this position block → `NO` |
+| `L ≤ R'` | overlap / disorder → `NO` |
 
-After merging, require `|dp[u]| ≤ 2` (at most two residual contiguous runs).
+After merging, require `|dp[u]| = 1` (one interval `[L, R]`). A second residual
+run would mean a hole in a contiguous leaf segment, which can never appear
+inside the global order `1…k`. (The code’s `|dp[u]| ≤ 2` is a looser early
+filter; the tight invariant for YES is `|dp[u]| = 1` at every node.)
 
 ### 4. Root check
 
-Answer `YES` iff the DFS succeeds and the root has **exactly one** interval
-(the leaves form one contiguous increasing range; with a permutation of `1…k`
-that means `[1, k]`).
+Answer `YES` iff every node merged successfully and the root’s unique interval
+is `[1, k]`.
 
 ### One-liner
 
-Bottom-up interval merge: rotate each node’s child blocks to start at the
-minimum value, glue abutting ranges, reject overlaps; root must be a single
+Bottom-up: rotate each node’s child blocks to start at the subtree minimum,
+glue abutting ranges; every node (including the root) must become a single
 interval.

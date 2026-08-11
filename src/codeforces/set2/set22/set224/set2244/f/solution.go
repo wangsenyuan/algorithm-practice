@@ -93,12 +93,12 @@ func solve(parent []int, a []int) string {
 				return false
 			}
 		}
-		return len(dp[u]) <= 2
+		return len(dp[u]) == 1
 	}
 
 	ok := dfs(0)
 
-	if ok && len(dp[0]) == 1 {
+	if ok {
 		return "YES"
 	}
 	return "NO"
