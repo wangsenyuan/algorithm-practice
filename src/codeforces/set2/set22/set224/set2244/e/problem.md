@@ -94,3 +94,41 @@ NO
 YES
 YES
 ```
+
+## Solution
+
+Goal: make `s[l..r]` strictly alternating with at most `k` subsegment
+flips. A window is beautiful iff it matches one of the two globally
+aligned targets `0101…` or `1010…` (`pat[i&1]` on the absolute index).
+Trying both covers both relative patterns on any `[l, r]`.
+
+### 1. Mismatch runs
+
+Against one target, set `val[i] = 1` on a mismatch. One flip covers a
+whole maximal mismatch run (and nothing else), so the min number of
+flips equals the number of those runs.
+
+### 2. Prefix of run starts
+
+`pref[i]` is the number of run starts on `[0..i]`. Sweep left to right
+and increment `cnt` when a mismatch begins (`val[i] = 1` and
+`i == 0` or `val[i-1] == 0`).
+
+### 3. Query on `[l, r]` (0-index)
+
+| piece | meaning |
+|---|---|
+| `k1 = pref[r] − pref[l−1]` | run starts inside the window |
+| `+1` if `val[l] = 1`, `l > 0`, and `val[l−1] = 1` | left cut splits a run; the leftover inside the window is an extra run |
+
+`YES` iff `k1 ≤ k` for at least one of the two targets.
+
+### 4. Offline sweep
+
+Bucket queries by `r`, then one left-to-right pass per target answers
+every query in `O(n + q)`.
+
+### One-liner
+
+Match against global `01` and `10`; min flips = mismatch-run count,
+with a `+1` when the left boundary splits a run.
