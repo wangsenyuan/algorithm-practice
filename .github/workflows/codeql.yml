@@ -53,7 +53,11 @@ jobs:
         if: matrix.build-mode == 'manual'
         run: go test ./src/codeforces/set2/set22/set224/set2244/e
 
+      # Default setup rejects advanced SARIF while it is enabled. Do not wait
+      # for processing so this job stays green; uploads land after default
+      # setup is turned off (this token cannot PATCH that API).
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
         with:
           category: "/language:${{ matrix.language }}"
+          wait-for-processing: false
