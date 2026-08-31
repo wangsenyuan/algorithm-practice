@@ -85,6 +85,11 @@ In the first test case, Ali can only choose `(i, j) = (1, 2)`, and Bahamin can r
 
 In the second test case, the best strategy for Bahamin is to keep the two arrays unchanged, regardless of what indices Ali selects. And the value of the game will be `v = |1 - 6| + |5 - 2| + |3 - 4| = 9`.
 
-## Status
+## ideas
+1. 对于A选择的(i, j), B的操作, 始终是排序后, 在a中保留最小的两个数, 在b中保留最大的两个数 
+2. (1, 2), (3, 4) (3 - 1) + (4 - 2) 和 (4 - 1) + (3 - 2) 是相同的
+3. 所以, 从A的角度看, 他操作后, 结果不可能更好(和不超过比), 所以虽然是操作k次, 但其实只能操作1次, 后面始终选择同样的(i, j)
+4. 那么就简单了
+5. 那么枚举(j), 看能否找到(i), 使得操作后增加的delta v最小
 
-I/O and official samples are in place. `solve` is left as a TODO.
+
