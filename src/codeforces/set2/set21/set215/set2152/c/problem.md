@@ -62,7 +62,36 @@ Output
 2
 ```
 
-## Status
+## Solution
 
-`solve` is intentionally left as a TODO. The tests preserve the official cases
-and are skipped until an implementation is added.
+Each operation removes three equal bits, so a subarray can be emptied only
+when its length is a multiple of `3` and its number of `1`s (equivalently
+`0`s) is also a multiple of `3`. Otherwise the answer is `-1`.
+
+When those congruences hold, every operation costs at least `1`, and `len/3`
+operations are required, so `len/3` is a lower bound. A pair of adjacent
+equal bits lets every operation be realized at cost `1` (a tight triple
+`000` or `111` can be formed and peeled). A fully alternating window
+`0101…` or `1010…` has no adjacent equals: the first triple of equal bits
+sits two steps apart and costs `2`, after which the remainder behaves like
+the ordinary case. That is exactly one extra unit, so the cost is
+`len/3 + 1`.
+
+Precompute a prefix of values and the length of the strict alternating run
+ending at each index. A query `[l, r]` is alternating iff that run at `r`
+covers the whole window. Each query is then `O(1)` after an `O(n)` scan.
+
+### Correctness sketch
+
+Necessity of the two mod-`3` conditions is immediate from the operation.
+Sufficiency of cost `len/3` when a window is not purely alternating follows
+from the existence of an adjacent equal pair: removing a tight triple never
+creates a new alternating obstruction that would force a later cost-`2`
+step. A purely alternating window has no tight triple, so at least one
+operation must cost `2`, matching the `+1`. Independent queries share the
+same prefixes, so the scan answers all of them.
+
+### Complexity
+
+`O(n + q)` time and `O(n)` memory per test. The sums of `n` and of `q` are
+each at most `2.5 · 10^5`.
