@@ -62,6 +62,33 @@ YES
 YES
 ```
 
-## Status
+## Solution
 
-I/O and official samples are in place. `solve` is left as a TODO.
+Swaps of distance `x` or `y` generate all index jumps that are multiples of
+`g = gcd(x, y)`. Positions `i` and `j` (0-based) therefore lie in the same
+connected component if and only if `i ≡ j (mod g)`. Values may be rearranged
+freely inside a residue class and cannot leave it.
+
+Group the permutation by `i % g`. In each class, sort the values and the
+positions separately, then write the sorted values back onto the sorted
+positions — the unique increasing layout of that class. The permutation can
+be sorted globally if and only if this reconstructed array is already
+`1, 2, …, n`.
+
+If `g >= n`, no legal swap exists, so the answer is whether `p` is already
+sorted. Under the given constraints this branch is unused (`x + y <= n`
+forces `g < n`), but it is a cheap guard.
+
+### Correctness sketch
+
+Any sequence of `±x` and `±y` steps changes an index by a multiple of `g`,
+and Bézout's identity says every sufficiently large multiple of `g` is
+reachable once both generators are available, so the residue classes are
+exactly the components. Sorting inside a component is always possible, and
+the reconstructed array is the unique candidate that is increasing on every
+class; it is a global sort if and only if those local sorts mesh.
+
+### Complexity
+
+One linear pass plus `g` class sorts: `O(n log n)` time and `O(n)` memory.
+The sum of `n` over tests is at most `2 · 10^5`.

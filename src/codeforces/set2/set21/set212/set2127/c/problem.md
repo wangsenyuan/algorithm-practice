@@ -85,11 +85,40 @@ In the first test case, Ali can only choose `(i, j) = (1, 2)`, and Bahamin can r
 
 In the second test case, the best strategy for Bahamin is to keep the two arrays unchanged, regardless of what indices Ali selects. And the value of the game will be `v = |1 - 6| + |5 - 2| + |3 - 4| = 9`.
 
-## ideas
-1. 对于A选择的(i, j), B的操作, 始终是排序后, 在a中保留最小的两个数, 在b中保留最大的两个数 
-2. (1, 2), (3, 4) (3 - 1) + (4 - 2) 和 (4 - 1) + (3 - 2) 是相同的
-3. 所以, 从A的角度看, 他操作后, 结果不可能更好(和不超过比), 所以虽然是操作k次, 但其实只能操作1次, 后面始终选择同样的(i, j)
-4. 那么就简单了
-5. 那么枚举(j), 看能否找到(i), 使得操作后增加的delta v最小
+## Solution
+
+Bahamin can always refuse to change a chosen pair, so Ali cannot decrease
+the initial value `sum |a_i - b_i|`. Extra rounds after the first cannot
+help Bahamin either: the four-number rearrange of a pair is idempotent, so
+it is enough to consider a single round. `k` is unused.
+
+Treat each index as a closed interval `[min(a_i, b_i), max(a_i, b_i)]`. The
+initial value is the sum of those lengths. Sorting the four numbers of two
+intervals yields two useful pictures:
+
+- if the intervals overlap, every rearrange keeps the same total length;
+- if they are disjoint, Bahamin can nest or interleave them and increase
+  the total by twice the gap between them.
+
+Ali therefore looks for a pair that Bahamin cannot improve. After sorting
+intervals by left endpoint, any overlap appears between neighbors. If such
+a neighbor pair exists, Ali always offers it and the answer is the initial
+sum. Otherwise every pair is disjoint, Bahamin will take the smallest gap,
+and the answer is the initial sum plus twice the minimum adjacent gap.
+
+### Correctness sketch
+
+The interval encoding is invariant under swapping `a_i` with `b_i`. Overlap
+of any two intervals implies overlap of some consecutive pair in left-endpoint
+order, so the linear scan detects Case 1 exactly. In the disjoint case the
+closest pair is also adjacent after that sort, and the increase is
+`2 · (left_{i} - right_{i-1})` as in the four-number calculation
+`2a_j - 2b_i`. Ali cannot force a smaller increase, and Bahamin cannot get a
+larger one than that minimum, so the value is optimal.
+
+### Complexity
+
+Sorting dominates: `O(n log n)` time and `O(n)` extra memory per test.
+The sum of `n` over tests is at most `2 · 10^5`.
 
 
