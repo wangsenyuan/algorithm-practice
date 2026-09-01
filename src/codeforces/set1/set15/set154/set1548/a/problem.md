@@ -95,6 +95,28 @@ In the second type `3` query, the only surviving noble is `4`.
 
 In the second example, two nobles die in the first round and one in the second, leaving a single survivor.
 
-## Status
+## Solution
 
-I/O and official samples are in place. `solve` is left as a TODO.
+Power equals index, so “all friends are stronger” means every neighbor has a
+larger label. A noble is therefore currently vulnerable iff they have at least
+one neighbor and no smaller neighbor.
+
+The full killing process does not need to be simulated. A noble survives if
+and only if they have **no stronger friend**:
+
+- If every neighbor is weaker (or they are isolated), they never become
+  vulnerable. Losing weaker friends can only isolate them, and isolated nobles
+  stay alive.
+- If they have a stronger friend, take the remaining such noble of minimum
+  power. All of their weaker neighbors would themselves have a stronger
+  friend, so they are already gone. The original stronger neighbor is still
+  alive, so this noble is now vulnerable and dies. Repeat.
+
+Maintain `stronger[u]` = number of neighbors `> u`. The answer is the number
+of nobles with `stronger[u] = 0`. An edge `{u, v}` with `u < v` only changes
+`stronger[u]` by `±1`; when that count crosses zero, adjust the live count.
+
+### Complexity
+
+`O(1)` per edge or query after `O(n)` setup, so `O(n + m + q)` time and
+`O(n)` memory.
