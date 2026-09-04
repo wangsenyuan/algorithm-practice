@@ -82,3 +82,36 @@ In the first example, engineers distributed the work across them and got the bon
 
 In the second example, the bonus project requires too many work units to complete, so it's more beneficial for engineers not to work at all.
 
+## Solution
+
+Engineer `i` will not take a negative benefit, so they contribute at most
+`⌊a_i / b_i⌋`. Let `suf[i]` be the sum of those caps from `i` through the
+end. If `suf[0] < k`, the project cannot finish with nonnegative benefits,
+and everyone contributes `0`.
+
+Otherwise later engineers will fill up to their caps to help. Engineer `i`,
+wanting to minimize their own work, therefore does only what is still
+required after earlier commitments `tot` and after assuming everyone to the
+right does their maximum:
+
+```text
+c_i = max(0, k - suf[i+1] - tot)
+```
+
+Scanning `i = 1..n` in order yields the unique optimum: earlier engineers
+free-ride on later caps, and no one exceeds `⌊a_i / b_i⌋`.
+
+### Correctness sketch
+
+`suf[0] >= k` is necessary and sufficient for a feasible nonnegative
+allocation. At step `i`, `tot + suf[i] >= k` is preserved, so
+`k - suf[i+1] - tot <= ⌊a_i / b_i⌋`. Any smaller `c_i` would leave the
+suffix unable to reach `k` even at full cap, so the project would fail and
+everyone would drop to `0`, which is worse for `i`. Hence each prefix
+choice is forced.
+
+### Complexity
+
+One backward pass for suffix caps and one forward pass for the assignment:
+`O(n)` time and `O(n)` extra memory.
+
