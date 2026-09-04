@@ -82,6 +82,3 @@ In the first example, engineers distributed the work across them and got the bon
 
 In the second example, the bonus project requires too many work units to complete, so it's more beneficial for engineers not to work at all.
 
-## Status
-
-I/O and official samples are in place. `solve` is left as a TODO.

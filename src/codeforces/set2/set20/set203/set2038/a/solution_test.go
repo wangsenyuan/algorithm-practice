@@ -9,7 +9,6 @@ import (
 
 func runSample(t *testing.T, s string, expect []int) {
 	t.Helper()
-	t.Skip("solve TODO")
 	reader := bufio.NewReader(strings.NewReader(s))
 	res := drive(reader)
 	if !slices.Equal(res, expect) {
