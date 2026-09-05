@@ -69,6 +69,34 @@ For each test case, print a single line containing a meximum array `a_1, a_2, �
 
 In the first test case, `min(a_1, a_2, a_3)` must be `2` and `MEX(a_2, …, a_6)` must be `2`. One valid array is `[2, 5, 4, 3, 0, 1]`.
 
-## Status
+## Solution
 
-I/O and official samples are in place. `solve` is left as a TODO.
+Difference arrays mark every index that sits in a `min` constraint and
+every index that sits in a `MEX` constraint. After the prefix sums, each
+position falls into one of four kinds:
+
+- **min only** — must be `>= k` and should equal `k` so the min is hit;
+- **MEX only** — must not be `k`, and should be `< k` so the range can
+  collect `{0, …, k-1}`;
+- **both** — must be `>= k` and `!= k`, so `k+1`;
+- **neither** — unconstrained, left as `0`.
+
+The remaining MEX-only positions, in left-to-right order, are filled with
+`i mod k`. A valid input always has at least `k` such positions inside
+every MEX range, so that cyclic fill puts every residue `0..k-1` into the
+range and never writes `k`.
+
+### Correctness sketch
+
+A min-only cell cannot lie in a MEX range (else it would be marked both),
+so writing `k` there satisfies the min without injecting `k` into a MEX.
+Both-covered cells are `k+1`, which is legal for min and invisible to MEX.
+MEX-only cells in one range form a contiguous block of the global leftover
+sequence; length at least `k` plus `i mod k` yields all of `0..k-1` and
+omits `k`, so the MEX is exactly `k`. Unconstrained zeros sit outside every
+query.
+
+### Complexity
+
+Difference arrays and one fill pass: `O(n + q)` time and `O(n)` memory.
+`n` and `q` are at most `100`.
