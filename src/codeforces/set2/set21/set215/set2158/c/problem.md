@@ -80,6 +80,7 @@ For each test case, print a single integer — the final score after `k` turns, 
 
 In the first test case every `b_i` is `0`, so moves cannot change `a`. The maximum non-empty subarray sum is `11`.
 
-## Status
-
-I/O and official samples are in place. `solve` is left as a TODO.
+## ideas
+1. alice will use +, and bob will decrease
+2. 如果k是奇数, 只需要考虑1次, 否则就是0次
+3. 这是因为, 如果alice的操作使得结果更好, 对bob来说, 只能取消这次操作
