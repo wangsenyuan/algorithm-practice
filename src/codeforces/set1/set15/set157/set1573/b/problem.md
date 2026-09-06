@@ -73,6 +73,7 @@ In the first example, `a` is already lexicographically smaller than `b`, so no o
 
 In the second example, one way is to swap `5` and `3` and then swap `2` and `4`, which results in `[3, 5, 1]` and `[4, 2, 6]`.
 
-## Status
-
-I/O and official samples are in place. `solve` is left as a TODO.
+## ideas
+1. a[0] != b[0]
+2. 所以, 有一个简单的策略是调整a中的, 找到最近的a[i] < b[0] (或者 a[0] < b[j])
+3. 有没有情况是, 找到a[i] < b[j], 将它们调整到(0, 0)
