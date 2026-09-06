@@ -73,7 +73,30 @@ In the first example, `a` is already lexicographically smaller than `b`, so no o
 
 In the second example, one way is to swap `5` and `3` and then swap `2` and `4`, which results in `[3, 5, 1]` and `[4, 2, 6]`.
 
-## ideas
-1. a[0] != b[0]
-2. 所以, 有一个简单的策略是调整a中的, 找到最近的a[i] < b[0] (或者 a[0] < b[j])
-3. 有没有情况是, 找到a[i] < b[j], 将它们调整到(0, 0)
+## Solution
+
+Every `a_i` is odd and every `b_j` is even, so the arrays never tie at
+index `0`. Lexicographic order is therefore just `a[0] < b[0]`. Adjacent
+swaps bubble any chosen pair to the front: bringing `a[j]` to position
+`0` costs `j` swaps and bringing `b[i]` to position `0` costs `i`. The
+rest of each array does not matter.
+
+The answer is `min(i + j)` over all pairs with `a[j] < b[i]`. A segment
+tree stores each odd value's index in `a`. For even `v = b[i]`, a
+range-min query on values `[1, v)` returns the leftmost (cheapest) odd
+strictly less than `v`, and the scan keeps the best `i + j`.
+
+### Correctness sketch
+
+After any sequence of adjacent swaps the first position still compares an
+odd to an even, so the only way `a` becomes lex-smaller is `a[0] < b[0]`.
+Any such first pair `(a[j], b[i])` can be moved to the front independently
+in exactly `i + j` swaps, and no cheaper way exists because each element
+must travel its own distance. The range query enumerates, for every even,
+the cheapest compatible odd, so the recorded minimum is global.
+
+### Complexity
+
+Build and `n` updates plus `n` range-min queries on a tree of size
+`O(n)`: `O(n log n)` time and `O(n)` memory. The sum of `n` over tests
+is at most `10^5`.
