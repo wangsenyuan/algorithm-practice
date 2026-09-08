@@ -63,6 +63,29 @@ In the first test case, it's optimal to complete task `1` and `2` in order, gain
 
 In the second test case, it's optimal to complete task `1`, give up task `2`, and complete task `3`. Before completing task `3`, your stamina has dropped to `1 - 5/100 = 0.95`. So your gain is `10 + 20 * 0.95 = 29` points in total.
 
-## Status
+## Solution
 
-I/O and official samples are in place. `solve` is left as a TODO.
+Stamina scales every later reward by the same factor, so the optimal
+choices on a suffix do not depend on the stamina you arrive with. Let
+`f` be the maximum score on the remaining suffix assuming `S = 1`. Scan
+from the last task to the first. For task `i` the two options are:
+
+- skip it and keep `f`;
+- take it and score `c_i` now, then scale the old suffix by
+  `(1 - p_i / 100)`.
+
+So `f` becomes `max(f, c_i + f * (1 - p_i / 100))`. After the scan, `f`
+is the answer for the whole array at stamina `1`.
+
+### Correctness sketch
+
+A suffix score at stamina `S` is exactly `S` times the same suffix at
+stamina `1`, because every completed task multiplies the current stamina
+and adds a linear reward. Therefore the skip/take comparison on a suffix
+is independent of `S`, and the right-to-left recurrence enumerates both
+choices against an already-optimal suffix.
+
+### Complexity
+
+One reverse pass: `O(n)` time and `O(1)` extra memory. The sum of `n`
+over tests is at most `10^5`.

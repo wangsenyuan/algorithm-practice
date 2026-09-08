@@ -80,6 +80,31 @@ In the second test case, the initial string is `110`.
 
 The string `10` contains no palindromic substrings of length at least `2`, so no further operations can be performed. The minimum possible length is `2`.
 
-## Status
+## Solution
 
-I/O and official samples are in place. `solve` is left as a TODO.
+Any binary string of length at least `3` has a palindromic substring of
+length at least `2`: a repeated pair `00`/`11`, or an alternating triple
+`010`/`101`. Each operation deletes one character, so the string can
+always be reduced to length `1` or `2`. Length `1` is terminal. Length
+`2` is terminal only for `01` and `10`.
+
+Those two strings arise precisely when `s` is two runs — a block of one
+character followed by a block of the other. Inside a run you can shrink
+`00`/`11`, but there is no wrapping palindrome `x…x` that can delete the
+second run, so both characters survive. Any other string (one run, or
+three or more) can be reduced to a single character.
+
+The implementation walks the first run and, if a second run consumes the
+rest of `s`, returns `2`; otherwise it returns `1`.
+
+### Correctness sketch
+
+Length `>= 3` always admits an operation, so the minimum is `1` or `2`.
+Two runs compress to `01`/`10` and then stop. One run compresses to a
+single character. With three or more runs a wrapping palindrome or an
+extra run lets you delete until only one character remains.
+
+### Complexity
+
+One scan of `s`: `O(n)` time and `O(1)` extra memory. `n` is at most
+`100`.
