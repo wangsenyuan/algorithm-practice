@@ -28,7 +28,22 @@ func drive(reader *bufio.Reader) int {
 }
 
 func solve(s string) int {
-	// TODO
-	_ = s
-	return 0
+	// 只有一个是2, 其他都是1
+	x := s[0]
+	var i int
+	for i < len(s) && s[i] == x {
+		i++
+	}
+	// 如果剩下的都和x不同, 就是2
+	if i < len(s) {
+		y := s[i]
+		for i < len(s) && s[i] == y {
+			i++
+		}
+		if i == len(s) {
+			return 2
+		}
+	}
+
+	return 1
 }

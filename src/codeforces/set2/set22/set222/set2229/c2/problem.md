@@ -39,6 +39,54 @@ Then output `k` integers `b_1, …, b_k` where `b_i` is the index you perform th
 
 After performing the operations the sum of `a` should be maximal.
 
+## Solution
+
+If no operation is performed, the final sum is simply `sum(a)`.
+
+Otherwise, let `p` be the largest index on which an operation is performed.
+No later operation can change `a_p`, so `a_p` must be initially positive and
+becomes `-a_p` after its operation. All elements after `p` are unchanged. The
+best possible outcome for every element before `p` is its absolute value, so
+every non-empty optimal result has the form:
+
+```text
+[|a_1|, |a_2|, ..., |a_{p-1}|, -a_p, a_{p+1}, ..., a_n]
+```
+
+for an initially positive `a_p`. Its sum is:
+
+```text
+sum(abs(a[1:p])) - a[p] + sum(a[p+1:n])
+```
+
+Evaluate this expression for every positive pivot `p` using prefix sums of
+absolute values and suffix sums of original values, while also considering the
+no-operation sum.
+
+### Construction
+
+For the chosen pivot `p`, first make all elements before it negative. Scan
+from `p - 1` down to `1`; whenever the current value is positive, operate on
+that index. Each such operation flips the still-unprocessed prefix, so a
+single parity flag is enough to determine the current sign without modifying
+the array. Finally, operate on `p`. This turns the negative prefix positive
+and makes `a_p` negative, producing the target form above. Every selected
+index is positive at the moment it is used, and there are at most `p <= n`
+operations.
+
+### Correctness
+
+The pivot argument gives an upper bound: after the largest operation, its own
+value must be `-a_p`, positions to its right cannot change, and no position to
+its left can contribute more than its absolute value. The construction reaches
+that upper bound for each eligible pivot. Taking the best pivot (or no
+operation) therefore maximises the final sum.
+
+### Complexity
+
+Prefix/suffix evaluation and operation construction both take `O(n)` time and
+use `O(n)` auxiliary space.
+
 ## Example
 
 ### Input
@@ -84,4 +132,5 @@ This has sum `11`, which can be proven to be maximal.
 
 ## Status
 
-I/O and official samples are in place. `solve` is left as a TODO.
+Implemented with the pivot construction above; official samples are covered by
+the package tests.

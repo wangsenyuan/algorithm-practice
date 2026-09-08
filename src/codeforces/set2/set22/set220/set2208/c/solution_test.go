@@ -9,7 +9,6 @@ import (
 
 func runSample(t *testing.T, s string, expect float64) {
 	t.Helper()
-	t.Skip("solve TODO")
 	reader := bufio.NewReader(strings.NewReader(s))
 	res := drive(reader)
 	if math.Abs(res-expect)/max(1, math.Abs(expect)) > 1e-6 {

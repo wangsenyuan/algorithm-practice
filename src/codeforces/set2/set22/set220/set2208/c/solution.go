@@ -30,8 +30,11 @@ func drive(reader *bufio.Reader) float64 {
 }
 
 func solve(c, p []int) float64 {
-	// TODO
-	_ = c
-	_ = p
-	return 0
+	n := len(c)
+	var f float64
+	for i := n - 1; i >= 0; i-- {
+		f = max(f, f*(1.0-float64(p[i])/100)+float64(c[i]))
+	}
+
+	return f
 }
