@@ -77,6 +77,21 @@ In the second example, `a = [1, 1, 1, 1, 1]`:
 - The subarray of length `5` is good: `[1, 1, 1, 1, 1]` with `i = 2` becomes `[1, 1, 1]`, then with `i = 2` becomes `[1]`.
 - Total good subarrays `= 5 + 3 + 1 = 9`.
 
-## Status
-
-I/O and official samples are in place. `solve` is left as a TODO.
+## ideas
+1. c[i-1] + c[i+1] > c[i]
+2. 然后替换为c[i-1] + c[i+1] - c[i]
+3. 这里不变的东西, 好像是奇数位的sum - 偶数位的sum
+4. [1, 2, 3] => 2
+5. 如果奇数位的sum > 偶数位的sum, 那么一定可以吗?
+6. 偶数长度的肯定不行(因为每次减少都是2)
+7. 所以, 只有奇数长度的(有可能)变成1
+8. 如果长度为11的能变成1, 那么长度为9的也可以吗? 不一定. 因为有可能在11的的地方有一个很大的数字
+9. 也就是找到最长的, 奇数sum > 偶数sum的地方
+10. 假设l...r (奇数长度满足这个条件)
+11. a[l] + a[l+2] + .. + a[r] > a[l+1] + a[l+3] .. + a[r-1]
+12. a[l] - a[l+1] + a[l+2] - a[l+3] ... + a[r-2] - a[r-1] + a[r] > 0
+13. fix r 要计算有多少个这样的l
+14.  let f[i] = f[i-2] + a[i] - a[i+1] (要区分奇偶性)
+15.  s[l...r] = a[l] - a[l+1] + a[l+2] - a[l+3] ... + a[r-2] - a[r-1] + a[r]
+16.   = f[r-2] - f[l-2] + a[r] > 0
+17.   f[l-2] < f[r-2] + a[r] 满足这个的l的数量
