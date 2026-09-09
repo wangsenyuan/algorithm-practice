@@ -1,7 +1,8 @@
 # Learning Timeline
 
-<!-- through-commit: d27dcfa677b80817cac388dcc3559ae5cb17a101 -->
+<!-- through-commit: a448d5e5cc846b8dc65198983ec788612b02b3ad -->
 
+- [2026-09-09](2026-09-09.md)
 - [2026-09-08](2026-09-08.md)
 - [2026-09-06](2026-09-06.md)
 - [2026-09-05](2026-09-05.md)
