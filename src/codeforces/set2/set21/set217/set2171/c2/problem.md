@@ -92,6 +92,9 @@ Now, Ajisai's final score is `3 ⊕ 2 ⊕ 6 ⊕ 7 = 0` and Mai's final score is 
 
 It is not guaranteed that the above description is representative of optimal play.
 
-## Status
-
-I/O and official samples are in place. `solve` is left as a TODO.
+## ideas
+1. 在最高位进行考虑, 如果a[i] & hi != b[i] & hi, 且只有一个, i是奇数
+2. 那么alice获胜, 因为alice可以得到一个最高位被设置的结果
+3. 如果存在偶数位这样的情况, 那么bob可以抵消掉
+4. 假设这样的个数奇数位更多, 那还是alice获胜
+5. 如果一样多, 那么最高位比不出来, 但是某些结果已经被确定了

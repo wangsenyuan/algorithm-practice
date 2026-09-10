@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math/bits"
 	"os"
 )
 
@@ -33,8 +34,26 @@ func drive(reader *bufio.Reader) string {
 }
 
 func solve(a, b []int) string {
-	// TODO
-	_ = a
-	_ = b
-	return ""
+	var x int
+	for _, v := range a {
+		x ^= v
+	}
+	for _, v := range b {
+		x ^= v
+	}
+	if x == 0 {
+		return "Tie"
+	}
+	h := bits.Len(uint(x)) - 1
+
+	for i := len(a) - 1; i >= 0; i-- {
+		if (a[i]^b[i])&(1<<h) > 0 {
+			if i&1 == 0 {
+				return "Ajisai"
+			}
+			return "Mai"
+		}
+	}
+
+	return "Tie"
 }
