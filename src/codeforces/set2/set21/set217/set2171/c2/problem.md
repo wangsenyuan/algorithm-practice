@@ -92,9 +92,29 @@ Now, Ajisai's final score is `3 ⊕ 2 ⊕ 6 ⊕ 7 = 0` and Mai's final score is 
 
 It is not guaranteed that the above description is representative of optimal play.
 
-## ideas
-1. 在最高位进行考虑, 如果a[i] & hi != b[i] & hi, 且只有一个, i是奇数
-2. 那么alice获胜, 因为alice可以得到一个最高位被设置的结果
-3. 如果存在偶数位这样的情况, 那么bob可以抵消掉
-4. 假设这样的个数奇数位更多, 那还是alice获胜
-5. 如果一样多, 那么最高位比不出来, 但是某些结果已经被确定了
+## Solution
+
+A swap only moves a value between the two arrays, so the XOR `S` of all
+`2n` entries is invariant. That value is also Ajisai's score XOR Mai's
+score, so the scores are equal for every play if and only if `S = 0`,
+which is a forced tie.
+
+Otherwise the scores differ, and the comparison is decided by the
+highest bit `h` of `S`. Positions with `(a_i XOR b_i)` missing bit `h`
+cannot move that bit. Among positions that can, the last one in turn
+order chooses who receives bit `h` after every earlier move is fixed,
+so that player takes it and wins. Index `i` (0-based) even is Ajisai's
+turn; odd is Mai's.
+
+### Correctness sketch
+
+`S` never changes, so a zero `S` really is a tie. For nonzero `S`, bit
+`h` of the two scores is complementary. The last index whose pair
+differs on bit `h` can assign that bit to either player independently of
+earlier choices, and later indices cannot touch it. That player
+therefore forces a strictly larger score.
+
+### Complexity
+
+One pass to form `S` and one reverse scan: `O(n)` time and `O(1)` extra
+memory. The sum of `n` over tests is at most `2 · 10^5`.
