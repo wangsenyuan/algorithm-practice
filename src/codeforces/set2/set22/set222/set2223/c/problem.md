@@ -71,6 +71,38 @@ In the first test case, if you start at time `4`, the signpost of node `1` point
 
 In the second test case, if you start at time `3`, the signpost of node `1` points to node `2`. You arrive at node `2` at time `4`. At that moment the signpost of node `2` points to node `4`, so you arrive at node `4` at time `7`. Then the signpost of node `4` points to node `9`, so you arrive at node `9` at time `15` and stop there.
 
-## Status
+## Solution
 
-I/O and official samples are in place. `solve` is left as a TODO.
+Arrival time at node `u` is always `m + dist(u)`, so the child chosen
+there is `s_{u, (m + dist(u)) mod d_u}`. Queries that have followed the
+same path so far share a congruence `m ≡ rem (mod M)`.
+
+DFS carries a bucket of such queries. At a leaf everyone in the bucket
+stops. At an internal node:
+
+- if `d_u` divides `M` (or `M` already exceeds `10^18`), every query
+  picks the same child `(rem + dist(u)) mod d_u`, and the whole bucket
+  moves down;
+- otherwise the bucket splits by that child index, `M` becomes
+  `lcm(M, d_u)`, and each sub-bucket stores a fresh `rem = m mod M`.
+
+Children are already in increasing index order because nodes are
+appended as `2, …, n` are read.
+
+### Correctness sketch
+
+The unique root-to-`u` path fixes `dist(u)`, so the signpost at `u`
+depends only on `m + dist(u)`. Sharing `m ≡ rem (mod M)` after a path
+means those queries made the same choices so far. When `d_u | M` the
+next residue is determined by `rem`. When not, queries that take the
+same child also satisfy `m ≡ (child) - dist(u) (mod d_u)`; together with
+the old congruence this is one class modulo `lcm(M, d_u)`, so the first
+query's `m mod M` is a valid representative. Each split multiplies `M`
+by at least `2`, and once `M > 10^18` a class contains at most one
+feasible `m`.
+
+### Complexity
+
+Each query participates in `O(log 10^18)` splits, and non-splitting
+descents cost `O(n)` overall: `O(n + q log 10^18)` time and `O(n + q)`
+memory. The sums of `n` and `q` are at most `5 · 10^5` and `10^6`.
