@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"slices"
 )
 
 func main() {
@@ -30,11 +31,97 @@ func drive(reader *bufio.Reader) int {
 	return solve(c, a, b, cc)
 }
 
-func solve(c [][]int, a, b, cc int) int {
-	// TODO
-	_ = c
-	_ = a
-	_ = b
-	_ = cc
-	return 0
+func solve(g [][]int, a, b, c int) int {
+	n := len(g)
+	m := len(g[0])
+	row := make([]int, n)
+	col := make([]int, m)
+	var tot int
+	for i, cur := range g {
+		for j, v := range cur {
+			row[i] += v
+			col[j] += v
+			tot += v
+		}
+	}
+
+	if tot != a+b+c {
+		return 0
+	}
+
+	arr := []int{a, b, c}
+	slices.Sort(arr)
+
+	var res int
+
+	play := func(row []int) {
+		// 这个0还比较麻烦
+		var pref []int
+		var sum int
+		for i, v := range row {
+			sum += v
+			if sum > arr[0] {
+				break
+			}
+			if sum == arr[0] {
+				pref = append(pref, i)
+			}
+		}
+
+		sum = 0
+		for i := len(row) - 1; i > 0 && len(pref) > 0; i-- {
+			sum += row[i]
+			if sum > arr[2] {
+				break
+			}
+			for len(pref) > 0 && pref[len(pref)-1] >= i-1 {
+				pref = pref[:len(pref)-1]
+			}
+
+			if len(pref) == 0 {
+				break
+			}
+			if sum == arr[2] {
+				res += len(pref)
+			}
+		}
+	}
+
+	for {
+		play(row)
+		play(col)
+		if !nextPermutation(arr) {
+			break
+		}
+	}
+
+	return res
+}
+
+func nextPermutation(arr []int) bool {
+	// Find longest decreasing suffix
+	i := len(arr) - 2
+	for i >= 0 && arr[i] >= arr[i+1] {
+		i--
+	}
+
+	if i < 0 {
+		return false // No next permutation
+	}
+
+	// Find successor to pivot in suffix
+	j := len(arr) - 1
+	for arr[j] <= arr[i] {
+		j--
+	}
+
+	// Swap pivot with successor
+	arr[i], arr[j] = arr[j], arr[i]
+
+	// Reverse the suffix
+	for k := 1; i+k < len(arr)-k; k++ {
+		arr[i+k], arr[len(arr)-k] = arr[len(arr)-k], arr[i+k]
+	}
+
+	return true
 }

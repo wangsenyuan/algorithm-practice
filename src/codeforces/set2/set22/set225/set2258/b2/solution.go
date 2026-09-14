@@ -28,13 +28,44 @@ func drive(reader *bufio.Reader) string {
 	return formatInts(solve(m, a))
 }
 
-func formatInts(a []int64) string {
+func formatInts(a []int) string {
 	s := fmt.Sprintf("%v", a)
 	return s[1 : len(s)-1]
 }
 
-func solve(m int, a []int) []int64 {
-	// TODO
-	_ = a
-	return make([]int64, m)
+func solve(m int, a []int) []int {
+	ans := make([]int, m)
+
+	freq := make([]int, m+2)
+	var sum int
+
+	for _, v := range a {
+		freq[v]++
+		sum += v
+	}
+
+	for i := m - 1; i >= 0; i-- {
+		freq[i] += freq[i+1]
+	}
+
+	for k := 1; k <= m; k++ {
+		if k > 18 || 1<<k > m {
+			ans[k-1] = sum
+		} else {
+			for x := 1; x <= m/(1<<k)+3; x++ {
+				var cnt int
+
+				for j := 1; j < 1<<k && x*j <= m; j++ {
+					cnt += freq[x*j]
+				}
+				if x*(1<<k) <= m {
+					cnt += freq[x*(1<<k)] - freq[x*(1<<k)+1]
+				}
+
+				ans[k-1] = max(ans[k-1], cnt)
+			}
+		}
+	}
+
+	return ans
 }

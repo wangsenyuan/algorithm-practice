@@ -29,7 +29,26 @@ func drive(reader *bufio.Reader) string {
 }
 
 func solve(a []int) string {
-	// TODO
-	_ = a
-	return ""
+	var zeros []int
+	for i, v := range a {
+		if v == 0 {
+			zeros = append(zeros, i)
+		}
+	}
+	if len(zeros) == 1 {
+		return "NO"
+	}
+	buf := make([]byte, len(a))
+	if len(zeros) > 0 {
+		buf[zeros[0]] = 'A'
+		for i := 1; i < len(zeros); i++ {
+			buf[zeros[i]] = 'B'
+		}
+	}
+	for i, v := range a {
+		if v != 0 {
+			buf[i] = 'C'
+		}
+	}
+	return fmt.Sprintf("YES\n%s", string(buf))
 }

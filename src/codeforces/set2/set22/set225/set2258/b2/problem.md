@@ -76,6 +76,11 @@ For `k = 1`, it is best to choose `x = 2` with the set `[2, 3, 4, 4]`. After the
 
 For `k = 2`, it is best to choose `x = 2` with the set `[2, 3, 4, 4]`. After the operation, we'll get `[1, 2, 2, 1, 2, 2, 2, 2]`. For the second operation, it is best to choose `x = 1` with the set of all of the carrots. Resulting in `14` carrots, all of the same length. We can sell `14` carrots of length `1`.
 
-## Status
-
-I/O and official samples are in place. `solve` is left as a TODO.
+## ideas
+1. 每次都应该选择所有的数进行处理. 假设选择了x, 如果 a[i] <= x, 那么只能得到a[i]
+2. 如果a[i] > x, 那么有可能得到 1个x, 或者2个x (看 a[i] - x)
+3. 假设选择x, 那么a[i]的贡献 y = a[i] / x (个数), 当 k >= y 的时候
+4. 所以, 可以选定x? 好像不对.
+5. 假设得到了x, 然后再2分, 再2分?
+6. 所以, 最多是20次, 当 k > 40 的时候, 都是1了
+7. 前面40次, 要怎么处理?

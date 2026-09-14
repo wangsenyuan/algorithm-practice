@@ -62,7 +62,6 @@ func parseCase(s string) []int {
 
 func runSample(t *testing.T, s string, expectOK bool) {
 	t.Helper()
-	t.Skip("solve TODO")
 	a := parseCase(s)
 	reader := bufio.NewReader(strings.NewReader(s))
 	res := drive(reader)

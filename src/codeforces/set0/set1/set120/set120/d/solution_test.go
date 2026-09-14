@@ -8,7 +8,6 @@ import (
 
 func runSample(t *testing.T, s string, expect int) {
 	t.Helper()
-	t.Skip("solve TODO")
 	reader := bufio.NewReader(strings.NewReader(s))
 	res := drive(reader)
 	if res != expect {
@@ -40,4 +39,22 @@ func TestSample3(t *testing.T) {
 2 3 1
 5 6 7
 `, 0)
+}
+
+func TestSample4(t *testing.T) {
+	runSample(t, `3 3
+0 0 0
+0 0 1
+1 1 0
+2 1 0
+`, 1)
+}
+
+func TestSample5(t *testing.T) {
+	runSample(t, `3 3
+0 0 0
+0 1 0
+0 0 0
+1 0 0
+`, 2)
 }
