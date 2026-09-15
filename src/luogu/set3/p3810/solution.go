@@ -2,18 +2,21 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	"cmp"
 	"fmt"
 	"os"
+	"slices"
 )
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-	writer := bufio.NewWriter(os.Stdout)
-	defer writer.Flush()
-
-	for _, x := range drive(reader) {
-		fmt.Fprintln(writer, x)
+	res := drive(reader)
+	var buf bytes.Buffer
+	for _, x := range res {
+		buf.WriteString(fmt.Sprintf("%d\n", x))
 	}
+	buf.WriteTo(os.Stdout)
 }
 
 func drive(reader *bufio.Reader) []int {
@@ -27,7 +30,85 @@ func drive(reader *bufio.Reader) []int {
 }
 
 func solve(k int, a [][3]int) []int {
-	// TODO
-	_ = k
-	return make([]int, len(a))
+	freq := make(map[[3]int]int)
+	for _, cur := range a {
+		freq[cur]++
+	}
+	type item struct {
+		a int
+		b int
+		c int
+		f int
+	}
+	// n := len(freq)
+	var arr []item
+	for k, v := range freq {
+		arr = append(arr, item{k[0], k[1], k[2], v})
+	}
+
+	slices.SortFunc(arr, func(first item, second item) int {
+		return cmp.Or(first.a-second.a, first.b-second.b, first.c-second.c)
+	})
+
+	f := make([]int, len(arr))
+	for i, cur := range arr {
+		f[i] = cur.f - 1
+	}
+
+	t := make(BIT, k+3)
+
+	var play func(l int, r int)
+
+	play = func(l int, r int) {
+		if l+1 == r {
+			return
+		}
+		mid := (l + r) >> 1
+		play(l, mid)
+		play(mid, r)
+		i := l
+		for j := mid; j < r; j++ {
+			for i < mid && arr[i].b <= arr[j].b {
+				t.update(arr[i].c, arr[i].f)
+				i++
+			}
+			f[j] += t.get(arr[j].c)
+		}
+		for i--; i >= l; i-- {
+			t.update(arr[i].c, -arr[i].f)
+		}
+		slices.SortFunc(arr[l:r], func(first item, second item) int {
+			return cmp.Or(first.b-second.b, first.c-second.c)
+		})
+	}
+
+	play(0, len(arr))
+
+	g := make([]int, len(a))
+
+	for j, v := range f {
+		g[v] += arr[j].f
+	}
+
+	return g
+}
+
+type BIT []int
+
+func (bit BIT) update(p int, v int) {
+	p++
+	for p < len(bit) {
+		bit[p] += v
+		p += p & -p
+	}
+}
+
+func (bit BIT) get(p int) int {
+	var res int
+	p++
+	for p > 0 {
+		res += bit[p]
+		p -= p & -p
+	}
+	return res
 }
