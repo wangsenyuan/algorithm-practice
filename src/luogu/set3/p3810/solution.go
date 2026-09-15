@@ -35,25 +35,20 @@ func solve(k int, a [][3]int) []int {
 		freq[cur]++
 	}
 	type item struct {
-		a int
-		b int
-		c int
-		f int
+		a   int
+		b   int
+		c   int
+		f   int
+		res int
 	}
-	// n := len(freq)
 	var arr []item
-	for k, v := range freq {
-		arr = append(arr, item{k[0], k[1], k[2], v})
+	for key, v := range freq {
+		arr = append(arr, item{key[0], key[1], key[2], v, v - 1})
 	}
 
 	slices.SortFunc(arr, func(first item, second item) int {
 		return cmp.Or(first.a-second.a, first.b-second.b, first.c-second.c)
 	})
-
-	f := make([]int, len(arr))
-	for i, cur := range arr {
-		f[i] = cur.f - 1
-	}
 
 	t := make(BIT, k+3)
 
@@ -72,7 +67,7 @@ func solve(k int, a [][3]int) []int {
 				t.update(arr[i].c, arr[i].f)
 				i++
 			}
-			f[j] += t.get(arr[j].c)
+			arr[j].res += t.get(arr[j].c)
 		}
 		for i--; i >= l; i-- {
 			t.update(arr[i].c, -arr[i].f)
@@ -85,11 +80,9 @@ func solve(k int, a [][3]int) []int {
 	play(0, len(arr))
 
 	g := make([]int, len(a))
-
-	for j, v := range f {
-		g[v] += arr[j].f
+	for _, cur := range arr {
+		g[cur.res] += cur.f
 	}
-
 	return g
 }
 
