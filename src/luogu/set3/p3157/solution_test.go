@@ -7,9 +7,8 @@ import (
 	"testing"
 )
 
-func runSample(t *testing.T, s string, expect []int64) {
+func runSample(t *testing.T, s string, expect []int) {
 	t.Helper()
-	t.Skip("solve TODO")
 	reader := bufio.NewReader(strings.NewReader(s))
 	res := drive(reader)
 	if !slices.Equal(res, expect) {
@@ -28,5 +27,5 @@ func TestSample1(t *testing.T) {
 1
 4
 2
-`, []int64{5, 2, 2, 1})
+`, []int{5, 2, 2, 1})
 }
