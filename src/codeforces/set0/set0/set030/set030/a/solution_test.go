@@ -6,35 +6,26 @@ import (
 	"testing"
 )
 
-func runSample(t *testing.T, s string, expect int) {
+func runSample(t *testing.T, s string, expect string) {
 	t.Helper()
 	reader := bufio.NewReader(strings.NewReader(s))
 	res := drive(reader)
 	if res != expect {
-		t.Fatalf("Sample expect %d, but got %d", expect, res)
+		t.Fatalf("Sample expect %q, but got %q", expect, res)
 	}
 }
 
 func TestSample1(t *testing.T) {
-	runSample(t, `4 2
-1 2 3 4
-`, 8)
+	runSample(t, `2 18 2
+`, "3")
 }
 
 func TestSample2(t *testing.T) {
-	runSample(t, `5 3
-5 5 7 3 1
-`, 15)
-}
-
-func TestSample3(t *testing.T) {
-	runSample(t, `2 3
-1 2
-`, 0)
+	runSample(t, `-1 8 3
+`, "-2")
 }
 
 func TestSample4(t *testing.T) {
-	runSample(t, `2 2
-3 3
-`, 6)
+	runSample(t, `1 16 5
+`, "No solution")
 }

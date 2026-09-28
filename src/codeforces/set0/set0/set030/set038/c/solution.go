@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"slices"
 )
 
 func main() {
@@ -25,9 +26,17 @@ func drive(reader *bufio.Reader) int {
 }
 
 func solve(n, l int, a []int) int {
-	_ = n
-	_ = l
-	_ = a
-	// TODO: solve by hand first.
-	return 0
+	var best int
+
+	x := slices.Max(a)
+
+	for d := l; d <= x; d++ {
+		var tmp int
+		for _, v := range a {
+			tmp += v / d * d
+		}
+		best = max(best, tmp)
+	}
+
+	return best
 }
