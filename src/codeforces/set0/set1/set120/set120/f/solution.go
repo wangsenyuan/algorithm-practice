@@ -33,7 +33,54 @@ func drive(reader *bufio.Reader) int {
 }
 
 func solve(spiders [][][2]int) int {
-	_ = spiders
-	// TODO: solve by hand first.
-	return 0
+	var res int
+	for _, cur := range spiders {
+		res += getDimeter(cur)
+	}
+
+	return res
+}
+
+func getDimeter(g [][2]int) int {
+	n := len(g) + 1
+	adj := make([][]int, n)
+	for _, cur := range g {
+		u, v := cur[0]-1, cur[1]-1
+		adj[u] = append(adj[u], v)
+		adj[v] = append(adj[v], u)
+	}
+
+	var res int
+
+	var dfs func(p int, u int) int
+	dfs = func(p int, u int) int {
+		var far []int
+		for _, v := range adj[u] {
+			if p != v {
+				c := dfs(u, v)
+				for i := range far {
+					if c >= far[i] {
+						far[i], c = c, far[i]
+					}
+				}
+				if len(far) < 2 {
+					far = append(far, c)
+				}
+			}
+		}
+
+		if len(far) == 2 {
+			res = max(res, far[0]+1+far[1])
+		} else if len(far) == 1 {
+			res = max(res, far[0]+1)
+		} else {
+			res = max(res, 1)
+			far = append(far, 0)
+		}
+		return far[0] + 1
+	}
+
+	dfs(-1, 0)
+
+	return res - 1
 }

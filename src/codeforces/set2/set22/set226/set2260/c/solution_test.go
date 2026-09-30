@@ -26,6 +26,9 @@ func TestSample2(t *testing.T) {
 }
 
 func TestSample3(t *testing.T) {
+	// 1010
+	// 0100
+	// 
 	runSample(t, `6 4
 `, 10, 4)
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math/bits"
 	"os"
 )
 
@@ -25,9 +26,10 @@ func drive(reader *bufio.Reader) (int, int) {
 	return solve(x, y)
 }
 
-func solve(x, y int) (int, int) {
-	_ = x
-	_ = y
-	// TODO: solve by hand first.
-	return 0, 0
+func solve(x, y int) (res int, cnt int) {
+	res = x + y
+	w := bits.Len(uint(x &^ res))
+	mask := 1<<w - 1
+	cnt = x&mask - res&mask
+	return
 }
