@@ -19,3 +19,4 @@ src/sourcegraph.com/
 
 .claude/settings.local.json
 .worktrees/
+.playwright-mcp/

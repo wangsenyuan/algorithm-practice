@@ -24,16 +24,12 @@ func drive(reader *bufio.Reader) []int {
 
 func solve(a []int) []int {
 	n := len(a)
-	suf := make([]int, n+1)
 	dp := make([]int, n+1)
-
+	var sum int
 	for i := n - 1; i >= 0; i-- {
-		suf[i] = suf[i+1] + a[i]
-		// dp[i] = 0
-		for j := i; j < n; j++ {
-			dp[i] = max(dp[i], suf[j]-dp[j+1])
-		}
+		sum += a[i]
+		dp[i] = max(dp[i+1], sum-dp[i+1])
 	}
 
-	return []int{suf[0] - dp[0], dp[0]}
+	return []int{sum - dp[0], dp[0]}
 }
