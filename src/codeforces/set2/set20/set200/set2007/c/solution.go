@@ -76,7 +76,6 @@ const inf = 1 << 60
 
 func solve(a int, b int, c []int) int {
 	g := gcd(a, b)
-	// n := len(c)
 	for i := range c {
 		c[i] %= g
 	}
